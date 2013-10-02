@@ -14,6 +14,33 @@
 		8218D18617FA6E8B0053AFAC /* libtelehash.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8218D16D17FA6E8A0053AFAC /* libtelehash.a */; };
 		8218D18C17FA6E8B0053AFAC /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 8218D18A17FA6E8B0053AFAC /* InfoPlist.strings */; };
 		8218D18E17FA6E8B0053AFAC /* telehashTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 8218D18D17FA6E8B0053AFAC /* telehashTests.m */; };
+		8218D19D17FA6EA50053AFAC /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8218D19C17FA6EA50053AFAC /* Foundation.framework */; };
+		8218D1A217FA6EA50053AFAC /* telehash_ios.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8218D1A117FA6EA50053AFAC /* telehash_ios.h */; };
+		8218D1A417FA6EA50053AFAC /* telehash_ios.m in Sources */ = {isa = PBXBuildFile; fileRef = 8218D1A317FA6EA50053AFAC /* telehash_ios.m */; };
+		8218D1AA17FA6EA60053AFAC /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8218D18117FA6E8B0053AFAC /* XCTest.framework */; };
+		8218D1AB17FA6EA60053AFAC /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8218D19C17FA6EA50053AFAC /* Foundation.framework */; };
+		8218D1AD17FA6EA60053AFAC /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8218D1AC17FA6EA60053AFAC /* UIKit.framework */; };
+		8218D1B017FA6EA60053AFAC /* libtelehash-ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8218D19B17FA6EA50053AFAC /* libtelehash-ios.a */; };
+		8218D1B617FA6EA60053AFAC /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 8218D1B417FA6EA60053AFAC /* InfoPlist.strings */; };
+		8218D1B817FA6EA60053AFAC /* telehash_iosTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 8218D1B717FA6EA60053AFAC /* telehash_iosTests.m */; };
+		8218D1C217FA6F410053AFAC /* RSA.h in Headers */ = {isa = PBXBuildFile; fileRef = 8218D1C017FA6F410053AFAC /* RSA.h */; };
+		8218D1C317FA6F410053AFAC /* RSA.mm in Sources */ = {isa = PBXBuildFile; fileRef = 8218D1C117FA6F410053AFAC /* RSA.mm */; };
+		8218D1C417FA6F410053AFAC /* RSA.mm in Sources */ = {isa = PBXBuildFile; fileRef = 8218D1C117FA6F410053AFAC /* RSA.mm */; };
+		822C6D2F17FCCD0C008C04BA /* ECDH.h in Headers */ = {isa = PBXBuildFile; fileRef = 822C6D2D17FCCD0C008C04BA /* ECDH.h */; };
+		822C6D3017FCCD0C008C04BA /* ECDH.mm in Sources */ = {isa = PBXBuildFile; fileRef = 822C6D2E17FCCD0C008C04BA /* ECDH.mm */; };
+		822C6D3117FCCD0C008C04BA /* ECDH.mm in Sources */ = {isa = PBXBuildFile; fileRef = 822C6D2E17FCCD0C008C04BA /* ECDH.mm */; };
+		822C6D3417FCD3F6008C04BA /* CTRAES256.h in Headers */ = {isa = PBXBuildFile; fileRef = 822C6D3217FCD3F6008C04BA /* CTRAES256.h */; };
+		822C6D3517FCD3F6008C04BA /* CTRAES256.mm in Sources */ = {isa = PBXBuildFile; fileRef = 822C6D3317FCD3F6008C04BA /* CTRAES256.mm */; };
+		822C6D3617FCD3F6008C04BA /* CTRAES256.mm in Sources */ = {isa = PBXBuildFile; fileRef = 822C6D3317FCD3F6008C04BA /* CTRAES256.mm */; };
+		822C6D3917FCD754008C04BA /* SHA256.h in Headers */ = {isa = PBXBuildFile; fileRef = 822C6D3717FCD754008C04BA /* SHA256.h */; };
+		822C6D3A17FCD754008C04BA /* SHA256.mm in Sources */ = {isa = PBXBuildFile; fileRef = 822C6D3817FCD754008C04BA /* SHA256.mm */; };
+		822C6D3B17FCD754008C04BA /* SHA256.mm in Sources */ = {isa = PBXBuildFile; fileRef = 822C6D3817FCD754008C04BA /* SHA256.mm */; };
+		822C6D3E17FCD8C5008C04BA /* RNG.h in Headers */ = {isa = PBXBuildFile; fileRef = 822C6D3C17FCD8C5008C04BA /* RNG.h */; };
+		822C6D3F17FCD8C5008C04BA /* RNG.mm in Sources */ = {isa = PBXBuildFile; fileRef = 822C6D3D17FCD8C5008C04BA /* RNG.mm */; };
+		822C6D4017FCD8C5008C04BA /* RNG.mm in Sources */ = {isa = PBXBuildFile; fileRef = 822C6D3D17FCD8C5008C04BA /* RNG.mm */; };
+		822C6D4417FCDB31008C04BA /* THPacket.h in Headers */ = {isa = PBXBuildFile; fileRef = 822C6D4217FCDB31008C04BA /* THPacket.h */; };
+		822C6D4517FCDB31008C04BA /* THPacket.m in Sources */ = {isa = PBXBuildFile; fileRef = 822C6D4317FCDB31008C04BA /* THPacket.m */; };
+		822C6D4617FCDB31008C04BA /* THPacket.m in Sources */ = {isa = PBXBuildFile; fileRef = 822C6D4317FCDB31008C04BA /* THPacket.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -24,7 +51,27 @@
 			remoteGlobalIDString = 8218D16C17FA6E8A0053AFAC;
 			remoteInfo = telehash;
 		};
+		8218D1AE17FA6EA60053AFAC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8218D16517FA6E8A0053AFAC /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8218D19A17FA6EA50053AFAC;
+			remoteInfo = "telehash-ios";
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		8218D19917FA6EA50053AFAC /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "include/$(PRODUCT_NAME)";
+			dstSubfolderSpec = 16;
+			files = (
+				8218D1A217FA6EA50053AFAC /* telehash_ios.h in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		8218D16D17FA6E8A0053AFAC /* libtelehash.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libtelehash.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -40,6 +87,28 @@
 		8218D18917FA6E8B0053AFAC /* telehashTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "telehashTests-Info.plist"; sourceTree = "<group>"; };
 		8218D18B17FA6E8B0053AFAC /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		8218D18D17FA6E8B0053AFAC /* telehashTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = telehashTests.m; sourceTree = "<group>"; };
+		8218D19B17FA6EA50053AFAC /* libtelehash-ios.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libtelehash-ios.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		8218D19C17FA6EA50053AFAC /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		8218D1A017FA6EA50053AFAC /* telehash-ios-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "telehash-ios-Prefix.pch"; sourceTree = "<group>"; };
+		8218D1A117FA6EA50053AFAC /* telehash_ios.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = telehash_ios.h; sourceTree = "<group>"; };
+		8218D1A317FA6EA50053AFAC /* telehash_ios.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = telehash_ios.m; sourceTree = "<group>"; };
+		8218D1A917FA6EA60053AFAC /* telehash-iosTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "telehash-iosTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		8218D1AC17FA6EA60053AFAC /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
+		8218D1B317FA6EA60053AFAC /* telehash-iosTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "telehash-iosTests-Info.plist"; sourceTree = "<group>"; };
+		8218D1B517FA6EA60053AFAC /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		8218D1B717FA6EA60053AFAC /* telehash_iosTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = telehash_iosTests.m; sourceTree = "<group>"; };
+		8218D1C017FA6F410053AFAC /* RSA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RSA.h; sourceTree = "<group>"; };
+		8218D1C117FA6F410053AFAC /* RSA.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = RSA.mm; sourceTree = "<group>"; };
+		822C6D2D17FCCD0C008C04BA /* ECDH.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ECDH.h; sourceTree = "<group>"; };
+		822C6D2E17FCCD0C008C04BA /* ECDH.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ECDH.mm; sourceTree = "<group>"; };
+		822C6D3217FCD3F6008C04BA /* CTRAES256.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CTRAES256.h; sourceTree = "<group>"; };
+		822C6D3317FCD3F6008C04BA /* CTRAES256.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = CTRAES256.mm; sourceTree = "<group>"; };
+		822C6D3717FCD754008C04BA /* SHA256.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SHA256.h; sourceTree = "<group>"; };
+		822C6D3817FCD754008C04BA /* SHA256.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = SHA256.mm; sourceTree = "<group>"; };
+		822C6D3C17FCD8C5008C04BA /* RNG.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RNG.h; sourceTree = "<group>"; };
+		822C6D3D17FCD8C5008C04BA /* RNG.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = RNG.mm; sourceTree = "<group>"; };
+		822C6D4217FCDB31008C04BA /* THPacket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THPacket.h; sourceTree = "<group>"; };
+		822C6D4317FCDB31008C04BA /* THPacket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THPacket.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -61,14 +130,37 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		8218D19817FA6EA50053AFAC /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8218D19D17FA6EA50053AFAC /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8218D1A617FA6EA60053AFAC /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8218D1AA17FA6EA60053AFAC /* XCTest.framework in Frameworks */,
+				8218D1B017FA6EA60053AFAC /* libtelehash-ios.a in Frameworks */,
+				8218D1AD17FA6EA60053AFAC /* UIKit.framework in Frameworks */,
+				8218D1AB17FA6EA60053AFAC /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		8218D16417FA6E8A0053AFAC = {
 			isa = PBXGroup;
 			children = (
+				822C6D4117FCDAA5008C04BA /* common */,
+				8218D1BF17FA6EF50053AFAC /* cryptopp */,
 				8218D17617FA6E8A0053AFAC /* telehash */,
 				8218D18717FA6E8B0053AFAC /* telehashTests */,
+				8218D19E17FA6EA50053AFAC /* telehash-ios */,
+				8218D1B117FA6EA60053AFAC /* telehash-iosTests */,
 				8218D16F17FA6E8A0053AFAC /* Frameworks */,
 				8218D16E17FA6E8A0053AFAC /* Products */,
 			);
@@ -79,6 +171,8 @@
 			children = (
 				8218D16D17FA6E8A0053AFAC /* libtelehash.a */,
 				8218D18017FA6E8B0053AFAC /* telehashTests.xctest */,
+				8218D19B17FA6EA50053AFAC /* libtelehash-ios.a */,
+				8218D1A917FA6EA60053AFAC /* telehash-iosTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -88,6 +182,8 @@
 			children = (
 				8218D17017FA6E8A0053AFAC /* Cocoa.framework */,
 				8218D18117FA6E8B0053AFAC /* XCTest.framework */,
+				8218D19C17FA6EA50053AFAC /* Foundation.framework */,
+				8218D1AC17FA6EA60053AFAC /* UIKit.framework */,
 				8218D17217FA6E8A0053AFAC /* Other Frameworks */,
 			);
 			name = Frameworks;
@@ -139,6 +235,69 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
+		8218D19E17FA6EA50053AFAC /* telehash-ios */ = {
+			isa = PBXGroup;
+			children = (
+				8218D1A117FA6EA50053AFAC /* telehash_ios.h */,
+				8218D1A317FA6EA50053AFAC /* telehash_ios.m */,
+				8218D19F17FA6EA50053AFAC /* Supporting Files */,
+			);
+			path = "telehash-ios";
+			sourceTree = "<group>";
+		};
+		8218D19F17FA6EA50053AFAC /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				8218D1A017FA6EA50053AFAC /* telehash-ios-Prefix.pch */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		8218D1B117FA6EA60053AFAC /* telehash-iosTests */ = {
+			isa = PBXGroup;
+			children = (
+				8218D1B717FA6EA60053AFAC /* telehash_iosTests.m */,
+				8218D1B217FA6EA60053AFAC /* Supporting Files */,
+			);
+			path = "telehash-iosTests";
+			sourceTree = "<group>";
+		};
+		8218D1B217FA6EA60053AFAC /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				8218D1B317FA6EA60053AFAC /* telehash-iosTests-Info.plist */,
+				8218D1B417FA6EA60053AFAC /* InfoPlist.strings */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		8218D1BF17FA6EF50053AFAC /* cryptopp */ = {
+			isa = PBXGroup;
+			children = (
+				8218D1C017FA6F410053AFAC /* RSA.h */,
+				8218D1C117FA6F410053AFAC /* RSA.mm */,
+				822C6D2D17FCCD0C008C04BA /* ECDH.h */,
+				822C6D2E17FCCD0C008C04BA /* ECDH.mm */,
+				822C6D3217FCD3F6008C04BA /* CTRAES256.h */,
+				822C6D3317FCD3F6008C04BA /* CTRAES256.mm */,
+				822C6D3717FCD754008C04BA /* SHA256.h */,
+				822C6D3817FCD754008C04BA /* SHA256.mm */,
+				822C6D3C17FCD8C5008C04BA /* RNG.h */,
+				822C6D3D17FCD8C5008C04BA /* RNG.mm */,
+			);
+			name = cryptopp;
+			path = crypto;
+			sourceTree = "<group>";
+		};
+		822C6D4117FCDAA5008C04BA /* common */ = {
+			isa = PBXGroup;
+			children = (
+				822C6D4217FCDB31008C04BA /* THPacket.h */,
+				822C6D4317FCDB31008C04BA /* THPacket.m */,
+			);
+			path = common;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -146,6 +305,12 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				822C6D2F17FCCD0C008C04BA /* ECDH.h in Headers */,
+				8218D1C217FA6F410053AFAC /* RSA.h in Headers */,
+				822C6D3417FCD3F6008C04BA /* CTRAES256.h in Headers */,
+				822C6D3E17FCD8C5008C04BA /* RNG.h in Headers */,
+				822C6D4417FCDB31008C04BA /* THPacket.h in Headers */,
+				822C6D3917FCD754008C04BA /* SHA256.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -187,6 +352,41 @@
 			productReference = 8218D18017FA6E8B0053AFAC /* telehashTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		8218D19A17FA6EA50053AFAC /* telehash-ios */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8218D1B917FA6EA60053AFAC /* Build configuration list for PBXNativeTarget "telehash-ios" */;
+			buildPhases = (
+				8218D19717FA6EA50053AFAC /* Sources */,
+				8218D19817FA6EA50053AFAC /* Frameworks */,
+				8218D19917FA6EA50053AFAC /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "telehash-ios";
+			productName = "telehash-ios";
+			productReference = 8218D19B17FA6EA50053AFAC /* libtelehash-ios.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+		8218D1A817FA6EA60053AFAC /* telehash-iosTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8218D1BC17FA6EA60053AFAC /* Build configuration list for PBXNativeTarget "telehash-iosTests" */;
+			buildPhases = (
+				8218D1A517FA6EA60053AFAC /* Sources */,
+				8218D1A617FA6EA60053AFAC /* Frameworks */,
+				8218D1A717FA6EA60053AFAC /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				8218D1AF17FA6EA60053AFAC /* PBXTargetDependency */,
+			);
+			name = "telehash-iosTests";
+			productName = "telehash-iosTests";
+			productReference = 8218D1A917FA6EA60053AFAC /* telehash-iosTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -210,6 +410,8 @@
 			targets = (
 				8218D16C17FA6E8A0053AFAC /* telehash */,
 				8218D17F17FA6E8B0053AFAC /* telehashTests */,
+				8218D19A17FA6EA50053AFAC /* telehash-ios */,
+				8218D1A817FA6EA60053AFAC /* telehash-iosTests */,
 			);
 		};
 /* End PBXProject section */
@@ -223,6 +425,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		8218D1A717FA6EA60053AFAC /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8218D1B617FA6EA60053AFAC /* InfoPlist.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -230,6 +440,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8218D1C317FA6F410053AFAC /* RSA.mm in Sources */,
+				822C6D4517FCDB31008C04BA /* THPacket.m in Sources */,
+				822C6D3A17FCD754008C04BA /* SHA256.mm in Sources */,
+				822C6D3517FCD3F6008C04BA /* CTRAES256.mm in Sources */,
+				822C6D3F17FCD8C5008C04BA /* RNG.mm in Sources */,
+				822C6D3017FCCD0C008C04BA /* ECDH.mm in Sources */,
 				8218D17B17FA6E8A0053AFAC /* telehash.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -242,6 +458,28 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		8218D19717FA6EA50053AFAC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8218D1C417FA6F410053AFAC /* RSA.mm in Sources */,
+				822C6D4617FCDB31008C04BA /* THPacket.m in Sources */,
+				822C6D3B17FCD754008C04BA /* SHA256.mm in Sources */,
+				822C6D3617FCD3F6008C04BA /* CTRAES256.mm in Sources */,
+				822C6D4017FCD8C5008C04BA /* RNG.mm in Sources */,
+				822C6D3117FCCD0C008C04BA /* ECDH.mm in Sources */,
+				8218D1A417FA6EA50053AFAC /* telehash_ios.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8218D1A517FA6EA60053AFAC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8218D1B817FA6EA60053AFAC /* telehash_iosTests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -250,6 +488,11 @@
 			target = 8218D16C17FA6E8A0053AFAC /* telehash */;
 			targetProxy = 8218D18417FA6E8B0053AFAC /* PBXContainerItemProxy */;
 		};
+		8218D1AF17FA6EA60053AFAC /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8218D19A17FA6EA50053AFAC /* telehash-ios */;
+			targetProxy = 8218D1AE17FA6EA60053AFAC /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
@@ -257,6 +500,14 @@
 			isa = PBXVariantGroup;
 			children = (
 				8218D18B17FA6E8B0053AFAC /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		8218D1B417FA6EA60053AFAC /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				8218D1B517FA6EA60053AFAC /* en */,
 			);
 			name = InfoPlist.strings;
 			sourceTree = "<group>";
@@ -339,6 +590,7 @@
 			buildSettings = {
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "telehash/telehash-Prefix.pch";
+				HEADER_SEARCH_PATHS = /usr/local/include;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -348,6 +600,7 @@
 			buildSettings = {
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "telehash/telehash-Prefix.pch";
+				HEADER_SEARCH_PATHS = /usr/local/include;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -388,6 +641,86 @@
 			};
 			name = Release;
 		};
+		8218D1BA17FA6EA60053AFAC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DSTROOT = /tmp/telehash_ios.dst;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "telehash-ios/telehash-ios-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				HEADER_SEARCH_PATHS = /usr/local/include;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		8218D1BB17FA6EA60053AFAC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DSTROOT = /tmp/telehash_ios.dst;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "telehash-ios/telehash-ios-Prefix.pch";
+				HEADER_SEARCH_PATHS = /usr/local/include;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		8218D1BD17FA6EA60053AFAC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+					"$(SYSTEM_APPS_DIR)/Xcode5-DP.app/Contents/Developer/Library/Frameworks",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "telehash-ios/telehash-ios-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				HEADER_SEARCH_PATHS = /usr/local/include;
+				INFOPLIST_FILE = "telehash-iosTests/telehash-iosTests-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				USER_HEADER_SEARCH_PATHS = /usr/local/include;
+				WRAPPER_EXTENSION = xctest;
+			};
+			name = Debug;
+		};
+		8218D1BE17FA6EA60053AFAC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+					"$(SYSTEM_APPS_DIR)/Xcode5-DP.app/Contents/Developer/Library/Frameworks",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "telehash-ios/telehash-ios-Prefix.pch";
+				HEADER_SEARCH_PATHS = /usr/local/include;
+				INFOPLIST_FILE = "telehash-iosTests/telehash-iosTests-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				USER_HEADER_SEARCH_PATHS = /usr/local/include;
+				VALIDATE_PRODUCT = YES;
+				WRAPPER_EXTENSION = xctest;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -407,6 +740,7 @@
 				8218D19317FA6E8B0053AFAC /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		8218D19417FA6E8B0053AFAC /* Build configuration list for PBXNativeTarget "telehashTests" */ = {
 			isa = XCConfigurationList;
@@ -415,6 +749,25 @@
 				8218D19617FA6E8B0053AFAC /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		8218D1B917FA6EA60053AFAC /* Build configuration list for PBXNativeTarget "telehash-ios" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8218D1BA17FA6EA60053AFAC /* Debug */,
+				8218D1BB17FA6EA60053AFAC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		8218D1BC17FA6EA60053AFAC /* Build configuration list for PBXNativeTarget "telehash-iosTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8218D1BD17FA6EA60053AFAC /* Debug */,
+				8218D1BE17FA6EA60053AFAC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
