@@ -9,5 +9,5 @@
 #import <Foundation/Foundation.h>
 
 @interface CryptoPPUtil : NSObject
-
++(NSData*)randomBytes:(NSInteger)length;
 @end

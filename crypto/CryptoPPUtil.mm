@@ -7,7 +7,14 @@
 //
 
 #import "CryptoPPUtil.h"
+#include <cryptopp/osrng.h>
+
+using namespace CryptoPP::AutoSeededRandomPool;
 
 @implementation CryptoPPUtil
-
++(NSData*)randomBytes:(NSInteger)length;
+{
+    NSData* retData = [NSData dataWithLength:length];
+    
+}
 @end

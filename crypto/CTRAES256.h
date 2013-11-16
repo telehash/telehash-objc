@@ -9,11 +9,13 @@
 #import <Foundation/Foundation.h>
 
 @interface CTRAES256Encryptor : NSObject
--(id)initWithKey:(NSData*)key andIV:(NSData*)iv;
++(NSData*)encryptPlaintext:(NSData*)data key:(NSData*)key iv:(NSData*)iv;
+-(id)initWithKey:(NSData*)key iv:(NSData*)iv;
 -(NSData*)encryptPlaintext:(NSData*)plaintext;
 @end
 
 @interface CTRAES256Decryptor : NSObject
--(id)initWithKey:(NSData*)key andIV:(NSData*)iv;
++(NSData*)decryptPlaintext:(NSData*)data key:(NSData*)key iv:(NSData*)iv;
+-(id)initWithKey:(NSData*)key iv:(NSData*)iv;
 -(NSData*)decryptCiphertext:(NSData*)ciphertext;
 @end

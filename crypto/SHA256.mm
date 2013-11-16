@@ -7,6 +7,7 @@
 //
 
 #import "SHA256.h"
+#import "NSData+HexString.h"
 
 #include <cryptopp/sha.h>
 using CryptoPP::SHA256;
@@ -19,6 +20,13 @@ using CryptoPP::SHA256;
 @end
 
 @implementation SHA256
++(NSData*)hashWithData:(NSData*)data;
+{
+    SHA256* sha = [SHA256 new];
+    [sha updateWithData:data];
+    return [sha finalize];
+}
+
 -(void)updateWithData:(NSData *)data;
 {
     sha.Update((const byte*)[data bytes], [data length]);
@@ -26,7 +34,7 @@ using CryptoPP::SHA256;
 
 -(NSData*)finalize;
 {
-    NSMutableData* hash = [NSMutableData dataWithCapacity:32];
+    NSMutableData* hash = [NSMutableData dataWithLength:32];
     sha.Final((byte*)[hash mutableBytes]);
     return hash;
 }

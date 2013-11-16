@@ -8,7 +8,11 @@
 
 #import <Cocoa/Cocoa.h>
 
-@interface THAppDelegate : NSObject <NSApplicationDelegate>
+@class THSwitch;
+
+@interface THAppDelegate : NSObject <NSApplicationDelegate> {
+    THSwitch* thSwitch;
+}
 
 @property (assign) IBOutlet NSWindow *window;
 

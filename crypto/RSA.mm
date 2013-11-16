@@ -52,7 +52,7 @@ using CryptoPP::PKCS1v15;
     CryptoPP::ByteQueue bytes;
     self->publicKey.DEREncode(bytes);
     
-    NSMutableData* DERData = [NSMutableData dataWithCapacity:bytes.MaxRetrievable()];
+    NSMutableData* DERData = [NSMutableData dataWithLength:bytes.MaxRetrievable()];
     
     CryptoPP::ArraySink out((byte*)[DERData mutableBytes], [DERData length]);
     self->publicKey.DEREncode(out);
@@ -125,7 +125,7 @@ using CryptoPP::PKCS1v15;
     RSASS<PKCS1v15, SHA256>::Signer signer(self->privateKey);
     AutoSeededRandomPool rng;
     
-    NSMutableData* signature = [NSMutableData dataWithCapacity:self.signatureLength];
+    NSMutableData* signature = [NSMutableData dataWithLength:self.signatureLength];
     signer.SignMessage(rng, (const byte*)[data bytes], [data length], (byte*)[signature mutableBytes]);
     
     return signature;
@@ -142,7 +142,7 @@ using CryptoPP::PKCS1v15;
     RSAES< OAEP<SHA> >::Encryptor encryptor(self->publicKey);
     AutoSeededRandomPool rng;
     
-    NSMutableData* cipherText = [NSMutableData dataWithCapacity:[self encryptedLength:[plaintext length]]];
+    NSMutableData* cipherText = [NSMutableData dataWithLength:[self encryptedLength:[plaintext length]]];
     encryptor.Encrypt(rng, (const byte*)[plaintext bytes], [plaintext length], (byte*)[cipherText mutableBytes]);
     
     return cipherText;
@@ -153,7 +153,7 @@ using CryptoPP::PKCS1v15;
     RSAES< OAEP<SHA> >::Decryptor decryptor(self->privateKey);
     AutoSeededRandomPool rng;
     
-    NSMutableData* plaintext = [NSMutableData dataWithCapacity:decryptor.MaxPlaintextLength([cipherText length])];
+    NSMutableData* plaintext = [NSMutableData dataWithLength:decryptor.MaxPlaintextLength([cipherText length])];
     DecodingResult result = decryptor.Decrypt(rng, (const byte*)[cipherText bytes], [cipherText length], (byte*)[plaintext mutableBytes]);
     [plaintext setLength:result.messageLength];
     return plaintext;

@@ -14,7 +14,7 @@
 
 +(NSData*)randomBytesOfLength:(unsigned long)length;
 {
-    NSMutableData* ret = [NSMutableData dataWithCapacity:length];
+    NSMutableData* ret = [NSMutableData dataWithLength:length];
     CryptoPP::AutoSeededRandomPool rng;
     rng.GenerateBlock((byte*)[ret mutableBytes], length);
     return ret;

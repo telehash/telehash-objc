@@ -7,7 +7,25 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "RSA.h"
 
 @interface THIdentity : NSObject
 
++(id)identityFromPublicKey:(NSString*)publicKeyPath privateKey:(NSString*)privateKeyPath;
++(id)identityFromPublicKey:(NSData*)key;
+// Keys, hashname, address
+
+-(id)initWithPublicKeyPath:(NSString*)publicKeyPath privateKey:(NSString*)privateKeyPath;
+-(id)initWithPublicKey:(NSData*)key;
+
+@property RSA* rsaKeys;
+@property (readonly) NSString* hashname;
+// TODO:  Method to create a channel for a type
+
 @end
+
+/*
+
+TODO: Category for personal identity that allows for listening for a channel type
+
+*/

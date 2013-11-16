@@ -14,6 +14,11 @@
 @property (atomic) NSMutableDictionary* json;
 @property (atomic) NSData* body;
 
--(void)parse;
++(id)packetData:(NSData*)packetData;
+
+-(NSData*)encode;
+
+-(void)encryptWithKey:(NSData*)key iv:(NSData*)iv;
+-(void)decryptWithKey:(NSData*)key iv:(NSData*)iv;
 
 @end

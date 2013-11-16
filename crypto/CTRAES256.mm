@@ -28,8 +28,14 @@ using CryptoPP::CTR_Mode;
 @end
 
 @implementation CTRAES256Decryptor
++(NSData*)decryptPlaintext:(NSData*)data key:(NSData*)key iv:(NSData*)iv;
+{
+    CTRAES256Decryptor* decryptor = [[CTRAES256Decryptor alloc] initWithKey:key iv:iv];
+    if (!decryptor) return nil;
+    return [decryptor decryptCiphertext:data];
+}
 
--(id)initWithKey:(NSData *)key andIV:(NSData *)iv;
+-(id)initWithKey:(NSData *)key iv:(NSData *)iv;
 {
     self = [super init];
     if (self) {
@@ -40,14 +46,21 @@ using CryptoPP::CTR_Mode;
 
 -(NSData*)decryptCiphertext:(NSData *)ciphertext;
 {
-    NSMutableData* plaintext = [NSMutableData dataWithCapacity:[ciphertext length]];
+    NSMutableData* plaintext = [NSMutableData dataWithLength:[ciphertext length]];
     aes.ProcessData((byte*)[plaintext mutableBytes], (const byte*)[ciphertext bytes], [ciphertext length]);
     return plaintext;
 }
 @end
 
 @implementation CTRAES256Encryptor
--(id)initWithKey:(NSData *)key andIV:(NSData *)iv;
++(NSData*)encryptPlaintext:(NSData*)data key:(NSData*)key iv:(NSData*)iv;
+{
+    CTRAES256Encryptor* encryptor = [[CTRAES256Encryptor alloc] initWithKey:key iv:iv];
+    if (!encryptor) return nil;
+    return [encryptor encryptPlaintext:data];
+}
+
+-(id)initWithKey:(NSData *)key iv:(NSData *)iv;
 {
     self = [super init];
     if (self) {
@@ -58,7 +71,7 @@ using CryptoPP::CTR_Mode;
 
 -(NSData*)encryptPlaintext:(NSData *)plaintext;
 {
-    NSMutableData* ciphertext = [NSMutableData dataWithCapacity:[plaintext length]];
+    NSMutableData* ciphertext = [NSMutableData dataWithLength:[plaintext length]];
     aes.ProcessData((byte*)[ciphertext mutableBytes], (const byte*)[plaintext bytes], [plaintext length]);
     return ciphertext;
 }

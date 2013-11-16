@@ -18,8 +18,11 @@
 
 @end
 
-@interface THSwitch<GCDAsyncUdpSocketDelegate> : NSObject
+@interface THSwitch : NSObject <GCDAsyncUdpSocketDelegate>
 
++(id)defaultSwitch;
+
+@property THIdentity* identity;
 @property id<ChannelHandler> channelHandler;
 
 +(id)THSWitchWithIdentity:(THIdentity*)identity;
@@ -28,7 +31,7 @@
 
 -channelForType:(NSString*)type to:(NSString*)hashname;
 
-#pragma region UDP Handlers
+#pragma mark UDP Handlers
 -(void)udpSocket:(GCDAsyncUdpSocket *)sock didReceiveData:(NSData *)data fromAddress:(NSData *)address withFilterContext:(id)filterContext;
 -(void)udpSocket:(GCDAsyncUdpSocket *)sock didSendDataWithTag:(long)tag;
 
