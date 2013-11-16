@@ -12,7 +12,7 @@
 
 @property (atomic) NSMutableData* raw;
 @property (atomic) NSMutableDictionary* json;
-@property (atomic) NSMutableData* body;
+@property (atomic) NSData* body;
 
 -(void)parse;
 

@@ -7,6 +7,7 @@
 //
 
 #import <XCTest/XCTest.h>
+#import "THPacket.h"
 
 @interface telehashTests : XCTestCase
 
@@ -28,9 +29,12 @@
     [super tearDown];
 }
 
-- (void)testExample
+-(void)testPacketParsing
 {
-    XCTFail(@"No implementation for \"%s\"", __PRETTY_FUNCTION__);
+    THPacket* pkt = [THPacket new];
+    pkt.raw = [NSMutableData data];
+    [pkt parse];
+    
 }
 
 @end
