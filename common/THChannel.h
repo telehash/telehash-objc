@@ -27,9 +27,6 @@
 @property id<THChannelDelegate> delegate;
 @property BOOL channelIsReady;
 @property THIdentity* toIdentity;
-@property ECDH* ecdh;
-@property NSString* outLineId;
-@property NSString* inLineId;
 
 -(id)initToIdentity:(THIdentity*)identity delegate:(id<THChannelDelegate>)delegate;
 // TODO:  init method that allows creation against THSwitch instances other than the shared one

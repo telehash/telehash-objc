@@ -13,8 +13,11 @@
 #import "SHA256.h"
 #import "CTRAES256.h"
 #import "NSString+HexString.h"
+#import "THLine.h"
 
 @interface THSwitch()
+
+@property NSMutableDictionary* openLines;
 
 @property GCDAsyncUdpSocket* udpSocket;
 
@@ -45,6 +48,7 @@
 -(id)init;
 {
     if (self) {
+        self.openLines = [NSMutableDictionary dictionary];
         self.udpSocket = [[GCDAsyncUdpSocket alloc] initWithDelegate:self delegateQueue:dispatch_get_main_queue()];
     }
     return self;
@@ -65,6 +69,12 @@
     // TODO: Needs more error handling
 }
 
+-(void)sendPacket:(THPacket*)packet toAddress:(NSData*)address;
+{
+    //TODO:  Evaluate using a timeout!
+    [self.udpSocket sendData:[packet encode] toAddress:address withTimeout:-1 tag:0];
+}
+
 /*
 -channelForType:(NSString*)type to:(NSString*)hashname;
 {
@@ -83,15 +93,13 @@
     }
     
     if ([[incomingPacket.json objectForKey:@"type"] isEqualToString:@"open"]) {
+        // TODO:  Check the open lines for this address?
+        
         // Process an open packet
         NSData* decodedKey = [[NSData alloc] initWithBase64EncodedData:[incomingPacket.json objectForKey:@"open"] options:0];
         NSData* eccKey =  [self.identity.rsaKeys decrypt:decodedKey];
-        NSLog(@"Got ecc key: %@", eccKey);
-        ECDH* dh = [ECDH new];
-        NSData* agreedValue = [dh agreeWithRemotePublicKey:eccKey];
         
         NSData* innerPacketKey = [SHA256 hashWithData:eccKey];
-        NSLog(@"Decrypt key is %@", innerPacketKey);
         NSData* iv = [[incomingPacket.json objectForKey:@"iv"] dataFromHexString];
         THPacket* innerPacket = [THPacket packetData:[CTRAES256Decryptor decryptPlaintext:incomingPacket.body key:innerPacketKey iv:iv]];
         
@@ -112,10 +120,27 @@
             return;
         }
         
-        NSLog(@"The crypto checks out, should setup a channel");
-        //TODO:  Setup the channel
+        THLine* newLine = [THLine new];
+        newLine.outLineId = [innerPacket.json objectForKey:@"line"];
+        newLine.toIdentity = senderIdentity;
+        newLine.address = address;
+        newLine.remoteECCKey = eccKey;
+        
+        NSLog(@"Line setup for %@", newLine.outLineId);
+        
+        [newLine sendOpen];
+        
+        [self.openLines setObject:newLine forKey:newLine.inLineId];
+        
     } else if([[incomingPacket.json objectForKey:@"type"] isEqualToString:@"line"]) {
+        NSLog(@"Received a line packet for %@", [incomingPacket.json objectForKey:@"line"]);
         // Process a line packet
+        THLine* line = [self.openLines objectForKey:[incomingPacket.json objectForKey:@"line"]];
+        // If there is no line to handle this dump it
+        if (line == nil) {
+            return;
+        }
+        [line handlePacket:incomingPacket];
     } else {
         NSLog(@"We received an unknown packet type: %@", [incomingPacket.json objectForKey:@"type"]);
         return;

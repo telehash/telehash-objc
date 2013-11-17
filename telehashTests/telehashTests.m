@@ -40,6 +40,7 @@
     XCTAssertEqualObjects(pkt.body, [NSData dataWithBytes:"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f" length:16], @"body was incorrect");
 }
 
+#if 0
 -(void)testSwitch
 {
     THSwitch* thSwitch = [THSwitch defaultSwitch];
@@ -50,6 +51,20 @@
     }];
     */
     [thSwitch start];
+}
+#endif
+
+-(void)testPacketCreation
+{
+    THPacket* pkt = [THPacket new];
+    [pkt.json setObject:@"open" forKey:@"type"];
+    [pkt.json setObject:@"1234567890" forKey:@"iv"];
+    pkt.body = [NSData dataWithBytes:"\x00\x01\x02\x03\x04" length:5];
+    
+    THPacket* parsedPacket = [THPacket packetData:[pkt encode]];
+    XCTAssertNotNil(parsedPacket, @"Packet was parsed");
+    XCTAssertEqualObjects(@"open", [parsedPacket.json objectForKey:@"type"], @"JSON has an open");
+    XCTAssertEqualObjects(@"1234567890", [parsedPacket.json objectForKey:@"iv"], @"JSON has an iv");
 }
 
 @end

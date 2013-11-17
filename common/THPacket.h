@@ -14,6 +14,9 @@
 @property (atomic) NSMutableDictionary* json;
 @property (atomic) NSData* body;
 
+-(id)init;
+-(id)initWithJson:(NSMutableDictionary*)json;
+
 +(id)packetData:(NSData*)packetData;
 
 -(NSData*)encode;

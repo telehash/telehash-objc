@@ -20,10 +20,8 @@
         NSLog(@"Invalid JSON header length");
         return nil;
     }
-    NSLog(@"Length is %d", jsonLength);
     
     NSError* parserError;
-    NSLog(@"Gonig to parse %@", [packetData subdataWithRange:NSMakeRange(2, jsonLength)]);
     id parsedJson = [NSJSONSerialization JSONObjectWithData:[packetData subdataWithRange:NSMakeRange(2, jsonLength)] options:0 error:&parserError];
     
     THPacket* packet;
@@ -32,13 +30,31 @@
         NSLog(@"Something went wrong parsing: %@", parserError);
         return nil;
     } else {
-        packet = [THPacket new];
-        packet.json = parsedJson;
+        packet = [[THPacket alloc] initWithJson:parsedJson];
     }
     packet.body = [packetData subdataWithRange:NSMakeRange(2 + jsonLength, packetData.length - jsonLength - 2)];
 
     return packet;
 }
+
+-(id)init;
+{
+    self = [super init];
+    if (self) {
+        self.json = [NSMutableDictionary dictionary];
+    }
+    return self;
+}
+
+-(id)initWithJson:(NSMutableDictionary *)json;
+{
+    self = [super init];
+    if (self) {
+        self.json = json;
+    }
+    return self;
+}
+
 
 -(NSData*)encode;
 {
@@ -47,7 +63,7 @@
     short totalLength = encodedJSON.length + self.body.length + 2;
     NSMutableData* packetData = [NSMutableData dataWithCapacity:totalLength];
     
-    totalLength = HTONS(totalLength);
+    totalLength = htons(encodedJSON.length);
     [packetData appendBytes:&totalLength length:sizeof(short)];
     [packetData appendData:encodedJSON];
     [packetData appendData:self.body];

@@ -45,6 +45,9 @@
 		8231EBC51836BD3600BC41C1 /* NSString+HexString.h in Headers */ = {isa = PBXBuildFile; fileRef = 8231EBC31836BD3600BC41C1 /* NSString+HexString.h */; };
 		8231EBC61836BD3600BC41C1 /* NSString+HexString.m in Sources */ = {isa = PBXBuildFile; fileRef = 8231EBC41836BD3600BC41C1 /* NSString+HexString.m */; };
 		8231EBC71836BD3600BC41C1 /* NSString+HexString.m in Sources */ = {isa = PBXBuildFile; fileRef = 8231EBC41836BD3600BC41C1 /* NSString+HexString.m */; };
+		8231EC1B1836F37F00BC41C1 /* THLine.h in Headers */ = {isa = PBXBuildFile; fileRef = 8231EC191836F37F00BC41C1 /* THLine.h */; };
+		8231EC1C1836F37F00BC41C1 /* THLine.m in Sources */ = {isa = PBXBuildFile; fileRef = 8231EC1A1836F37F00BC41C1 /* THLine.m */; };
+		8231EC1D1836F37F00BC41C1 /* THLine.m in Sources */ = {isa = PBXBuildFile; fileRef = 8231EC1A1836F37F00BC41C1 /* THLine.m */; };
 		82A31BA3183457EB005077AD /* NSData+HexString.h in Headers */ = {isa = PBXBuildFile; fileRef = 82A31BA1183457EB005077AD /* NSData+HexString.h */; };
 		82A31BA4183457EB005077AD /* NSData+HexString.m in Sources */ = {isa = PBXBuildFile; fileRef = 82A31BA2183457EB005077AD /* NSData+HexString.m */; };
 		82A31BA5183457EB005077AD /* NSData+HexString.m in Sources */ = {isa = PBXBuildFile; fileRef = 82A31BA2183457EB005077AD /* NSData+HexString.m */; };
@@ -147,6 +150,8 @@
 		8231EBC31836BD3600BC41C1 /* NSString+HexString.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+HexString.h"; sourceTree = "<group>"; };
 		8231EBC41836BD3600BC41C1 /* NSString+HexString.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+HexString.m"; sourceTree = "<group>"; };
 		8231EC081836C60D00BC41C1 /* Telehash Playground.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "Telehash Playground.xcodeproj"; path = "Telehash Playground/Telehash Playground.xcodeproj"; sourceTree = "<group>"; };
+		8231EC191836F37F00BC41C1 /* THLine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THLine.h; sourceTree = "<group>"; };
+		8231EC1A1836F37F00BC41C1 /* THLine.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THLine.m; sourceTree = "<group>"; };
 		82A31BA1183457EB005077AD /* NSData+HexString.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+HexString.h"; sourceTree = "<group>"; };
 		82A31BA2183457EB005077AD /* NSData+HexString.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData+HexString.m"; sourceTree = "<group>"; };
 		82B1720217FDE18F00C29EAF /* test.pkt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file; path = test.pkt; sourceTree = "<group>"; };
@@ -359,6 +364,8 @@
 				82A31BA2183457EB005077AD /* NSData+HexString.m */,
 				8231EBC31836BD3600BC41C1 /* NSString+HexString.h */,
 				8231EBC41836BD3600BC41C1 /* NSString+HexString.m */,
+				8231EC191836F37F00BC41C1 /* THLine.h */,
+				8231EC1A1836F37F00BC41C1 /* THLine.m */,
 			);
 			path = common;
 			sourceTree = "<group>";
@@ -384,6 +391,7 @@
 				822C6D3417FCD3F6008C04BA /* CTRAES256.h in Headers */,
 				822C6D3E17FCD8C5008C04BA /* RNG.h in Headers */,
 				82B1721018009A6C00C29EAF /* GCDAsyncUdpSocket.h in Headers */,
+				8231EC1B1836F37F00BC41C1 /* THLine.h in Headers */,
 				822C6D4417FCDB31008C04BA /* THPacket.h in Headers */,
 				822C6D3917FCD754008C04BA /* SHA256.h in Headers */,
 				82B1720B180095B100C29EAF /* THChannel.h in Headers */,
@@ -547,6 +555,7 @@
 				8218D1C317FA6F410053AFAC /* RSA.mm in Sources */,
 				822C6D4517FCDB31008C04BA /* THPacket.m in Sources */,
 				822C6D3A17FCD754008C04BA /* SHA256.mm in Sources */,
+				8231EC1C1836F37F00BC41C1 /* THLine.m in Sources */,
 				82B1720717FDE90600C29EAF /* THSwitch.m in Sources */,
 				822C6D3517FCD3F6008C04BA /* CTRAES256.mm in Sources */,
 				8231EBC61836BD3600BC41C1 /* NSString+HexString.m in Sources */,
@@ -575,6 +584,7 @@
 				8218D1C417FA6F410053AFAC /* RSA.mm in Sources */,
 				822C6D4617FCDB31008C04BA /* THPacket.m in Sources */,
 				822C6D3B17FCD754008C04BA /* SHA256.mm in Sources */,
+				8231EC1D1836F37F00BC41C1 /* THLine.m in Sources */,
 				82B1720817FDE90600C29EAF /* THSwitch.m in Sources */,
 				822C6D3617FCD3F6008C04BA /* CTRAES256.mm in Sources */,
 				8231EBC71836BD3600BC41C1 /* NSString+HexString.m in Sources */,

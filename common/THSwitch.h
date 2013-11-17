@@ -11,6 +11,7 @@
 
 @class THIdentity;
 @class THChannel;
+@class THPacket;
 
 @protocol ChannelHandler <NSObject>
 
@@ -28,6 +29,7 @@
 +(id)THSWitchWithIdentity:(THIdentity*)identity;
 
 -(void)start;
+-(void)sendPacket:(THPacket*)packet toAddress:(NSData*)address;
 
 -channelForType:(NSString*)type to:(NSString*)hashname;
 
