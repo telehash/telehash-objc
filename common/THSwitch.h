@@ -12,9 +12,11 @@
 @class THIdentity;
 @class THChannel;
 @class THPacket;
+@class THLine;
 
-@protocol ChannelHandler <NSObject>
+@protocol SwitchHandler <NSObject>
 
+-(void)openedLine:(THLine*)line;
 -(void)chanelReadyForType:(NSString*)type from:(NSString*)hashname;
 
 @end
@@ -24,12 +26,13 @@
 +(id)defaultSwitch;
 
 @property THIdentity* identity;
-@property id<ChannelHandler> channelHandler;
+@property id<SwitchHandler> delegate;
 
 +(id)THSWitchWithIdentity:(THIdentity*)identity;
 
 -(void)start;
 -(void)sendPacket:(THPacket*)packet toAddress:(NSData*)address;
+-(NSArray*)seek:(NSString*)hashname;
 
 -channelForType:(NSString*)type to:(NSString*)hashname;
 

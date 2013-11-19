@@ -25,4 +25,6 @@
 
 -(void)sendOpen;
 -(void)handlePacket:(THPacket*)packet;
+-(NSString*)seekString;
+-(void)sendPacket:(THPacket*)packet;
 @end

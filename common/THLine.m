@@ -17,6 +17,8 @@
 #import "CTRAES256.h"
 #import "NSString+HexString.h"
 
+#include <arpa/inet.h>
+
 @implementation THLine
 -(void)sendOpen;
 {
@@ -78,9 +80,45 @@
 -(void)handlePacket:(THPacket *)packet;
 {
     NSLog(@"Going to handle a packet");
-    THPacket* innerPacket = [THPacket packetData:[CTRAES256Decryptor decryptPlaintext:packet.body
-                                                                                  key:self.decryptorKey
-                                                                                   iv:[[packet.json objectForKey:@"iv"] dataFromHexString]]];
-    NSLog(@"Packet is %@", innerPacket);
+    THPacket* innerPacket = [THPacket packetData:[CTRAES256Decryptor decryptPlaintext:packet.body key:self.decryptorKey iv:[[packet.json objectForKey:@"iv"] dataFromHexString]]];
+    NSLog(@"Packet is type %@", [innerPacket.json objectForKey:@"type"]);
+    NSString* channelId = [innerPacket.json objectForKey:@"c"];
+    NSString* channelType = [innerPacket.json objectForKey:@"type"];
+    
+    if ([channelType isEqualToString:@"seek"]) {
+        // On a seek we send back what we know about
+        THPacket* response = [THPacket new];
+        [response.json setObject:@(YES) forKey:@"end"];
+        [response.json setObject:channelId forKey:@"c"];
+        THSwitch* defaultSwitch = [THSwitch defaultSwitch];
+        NSArray* sees = [defaultSwitch seek:[innerPacket.json objectForKey:@"seek"]];
+        if (sees == nil) {
+            sees = [NSArray array];
+        }
+        [response.json setObject:[sees valueForKey:@"seekString"] forKey:@"see"];
+        
+        [self sendPacket:response];
+    }
+}
+
+-(NSString*)seekString;
+{
+    const struct sockaddr_in* addr = [self.address bytes];
+    return [NSString stringWithFormat:@"%@,%s,%d", self.toIdentity.hashname, inet_ntoa(addr->sin_addr),addr->sin_port];
+}
+
+-(void)sendPacket:(THPacket *)packet;
+{
+    THPacket* linePacket = [THPacket new];
+    [linePacket.json setObject:self.outLineId forKey:@"line"];
+    [linePacket.json setObject:@"line" forKey:@"type"];
+    NSData* iv = [RNG randomBytesOfLength:16];
+    [linePacket.json setObject:[iv hexString] forKey:@"iv"];
+    linePacket.body = [packet encode];
+    
+    [linePacket encryptWithKey:self.encryptorKey iv:iv];
+    
+    THSwitch* defaultSwitch = [THSwitch defaultSwitch];
+    [defaultSwitch sendPacket:linePacket toAddress:self.address];
 }
 @end

@@ -82,6 +82,18 @@
 }
 */
 
+-(NSArray*)seek:(NSString *)hashname;
+{
+    NSMutableArray* entries = [NSMutableArray array];
+    [self.openLines enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+        THLine* line = (THLine*)obj;
+        if ([line.toIdentity.hashname isEqualToString:hashname]) {
+            [entries addObject:line];
+        }
+    }];
+    return entries;
+}
+
 #pragma region -- UDP Handlers
 
 -(void)udpSocket:(GCDAsyncUdpSocket *)sock didReceiveData:(NSData *)data fromAddress:(NSData *)address withFilterContext:(id)filterContext
@@ -131,6 +143,9 @@
         [newLine sendOpen];
         
         [self.openLines setObject:newLine forKey:newLine.inLineId];
+        if ([self.delegate respondsToSelector:@selector(openedLine:)]) {
+            [self.delegate openedLine:newLine];
+        }
         
     } else if([[incomingPacket.json objectForKey:@"type"] isEqualToString:@"line"]) {
         NSLog(@"Received a line packet for %@", [incomingPacket.json objectForKey:@"line"]);
