@@ -760,6 +760,7 @@
 					XCTest,
 					"-lcryptopp",
 					"-L/usr/local/lib",
+					"-ObjC",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = xctest;
@@ -783,6 +784,7 @@
 					XCTest,
 					"-lcryptopp",
 					"-L/usr/local/lib",
+					"-ObjC",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = xctest;

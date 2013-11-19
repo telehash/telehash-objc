@@ -20,7 +20,10 @@
 
 @property RSA* rsaKeys;
 @property (readonly) NSString* hashname;
+
 // TODO:  Method to create a channel for a type
+
+-(NSInteger)distanceFrom:(THIdentity*)identity;
 
 @end
 

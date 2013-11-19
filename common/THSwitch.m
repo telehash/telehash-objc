@@ -91,6 +91,17 @@
             [entries addObject:line];
         }
     }];
+    [entries sortedArrayUsingComparator:^NSComparisonResult(id obj1, id obj2) {
+        THLine* lh = (THLine*)obj1;
+        THLine* rh = (THLine*)obj2;
+        
+        NSInteger lhDistance = [self.identity distanceFrom:lh.toIdentity];
+        NSInteger rhDistance = [self.identity distanceFrom:rh.toIdentity];
+        
+        if (lhDistance > rhDistance) return (NSComparisonResult)NSOrderedDescending;
+        if (lhDistance < rhDistance) return (NSComparisonResult)NSOrderedAscending;
+        return (NSComparisonResult)NSOrderedSame;
+    }];
     return entries;
 }
 
