@@ -64,6 +64,9 @@
 		82B172151800A51B00C29EAF /* THIdentity.h in Headers */ = {isa = PBXBuildFile; fileRef = 82B172131800A51B00C29EAF /* THIdentity.h */; };
 		82B172161800A51B00C29EAF /* THIdentity.m in Sources */ = {isa = PBXBuildFile; fileRef = 82B172141800A51B00C29EAF /* THIdentity.m */; };
 		82B172171800A51B00C29EAF /* THIdentity.m in Sources */ = {isa = PBXBuildFile; fileRef = 82B172141800A51B00C29EAF /* THIdentity.m */; };
+		82B70ACE18404D4900E819F3 /* THPacketBuffer.h in Headers */ = {isa = PBXBuildFile; fileRef = 82B70ACC18404D4900E819F3 /* THPacketBuffer.h */; };
+		82B70ACF18404D4900E819F3 /* THPacketBuffer.m in Sources */ = {isa = PBXBuildFile; fileRef = 82B70ACD18404D4900E819F3 /* THPacketBuffer.m */; };
+		82B70AD018404D4900E819F3 /* THPacketBuffer.m in Sources */ = {isa = PBXBuildFile; fileRef = 82B70ACD18404D4900E819F3 /* THPacketBuffer.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -163,6 +166,8 @@
 		82B1720F18009A6C00C29EAF /* GCDAsyncUdpSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GCDAsyncUdpSocket.m; sourceTree = "<group>"; };
 		82B172131800A51B00C29EAF /* THIdentity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THIdentity.h; sourceTree = "<group>"; };
 		82B172141800A51B00C29EAF /* THIdentity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THIdentity.m; sourceTree = "<group>"; };
+		82B70ACC18404D4900E819F3 /* THPacketBuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THPacketBuffer.h; sourceTree = "<group>"; };
+		82B70ACD18404D4900E819F3 /* THPacketBuffer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THPacketBuffer.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -366,6 +371,8 @@
 				8231EBC41836BD3600BC41C1 /* NSString+HexString.m */,
 				8231EC191836F37F00BC41C1 /* THLine.h */,
 				8231EC1A1836F37F00BC41C1 /* THLine.m */,
+				82B70ACC18404D4900E819F3 /* THPacketBuffer.h */,
+				82B70ACD18404D4900E819F3 /* THPacketBuffer.m */,
 			);
 			path = common;
 			sourceTree = "<group>";
@@ -386,6 +393,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				82B70ACE18404D4900E819F3 /* THPacketBuffer.h in Headers */,
 				822C6D2F17FCCD0C008C04BA /* ECDH.h in Headers */,
 				8218D1C217FA6F410053AFAC /* RSA.h in Headers */,
 				822C6D3417FCD3F6008C04BA /* CTRAES256.h in Headers */,
@@ -560,6 +568,7 @@
 				822C6D3517FCD3F6008C04BA /* CTRAES256.mm in Sources */,
 				8231EBC61836BD3600BC41C1 /* NSString+HexString.m in Sources */,
 				82B1720C180095B100C29EAF /* THChannel.m in Sources */,
+				82B70ACF18404D4900E819F3 /* THPacketBuffer.m in Sources */,
 				82B1721118009A6C00C29EAF /* GCDAsyncUdpSocket.m in Sources */,
 				82A31BA4183457EB005077AD /* NSData+HexString.m in Sources */,
 				822C6D3F17FCD8C5008C04BA /* RNG.mm in Sources */,
@@ -589,6 +598,7 @@
 				822C6D3617FCD3F6008C04BA /* CTRAES256.mm in Sources */,
 				8231EBC71836BD3600BC41C1 /* NSString+HexString.m in Sources */,
 				82B1720D180095B100C29EAF /* THChannel.m in Sources */,
+				82B70AD018404D4900E819F3 /* THPacketBuffer.m in Sources */,
 				82B1721218009A6C00C29EAF /* GCDAsyncUdpSocket.m in Sources */,
 				82A31BA5183457EB005077AD /* NSData+HexString.m in Sources */,
 				822C6D4017FCD8C5008C04BA /* RNG.mm in Sources */,

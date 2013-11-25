@@ -50,6 +50,8 @@
     if (self) {
         self.openLines = [NSMutableDictionary dictionary];
         self.udpSocket = [[GCDAsyncUdpSocket alloc] initWithDelegate:self delegateQueue:dispatch_get_main_queue()];
+        self.channelQueue = dispatch_queue_create("channelWorkQueue", NULL);
+        self.dhtQueue = dispatch_queue_create("dhtWorkQueue", NULL);
     }
     return self;
 }
@@ -105,6 +107,12 @@
     return entries;
 }
 
+-(THLine*)lineToHashname:(NSString*)hashname;
+{
+    // XXX: If we don't have a line should we do an open here?
+    return [self.openLines objectForKey:hashname];
+}
+
 #pragma region -- UDP Handlers
 
 -(void)udpSocket:(GCDAsyncUdpSocket *)sock didReceiveData:(NSData *)data fromAddress:(NSData *)address withFilterContext:(id)filterContext
@@ -152,6 +160,7 @@
         NSLog(@"Line setup for %@", newLine.outLineId);
         
         [newLine sendOpen];
+        [newLine openLine];
         
         [self.openLines setObject:newLine forKey:newLine.inLineId];
         if ([self.delegate respondsToSelector:@selector(openedLine:)]) {

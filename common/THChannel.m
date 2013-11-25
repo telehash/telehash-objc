@@ -14,17 +14,112 @@
 #import "SHA256.h"
 #import "THSwitch.h"
 #import "CTRAES256.h"
+#import "THLine.h"
+#import "THPacketBuffer.h"
 
 @implementation THChannel
 
--(id)initToIdentity:(THIdentity*)identity delegate:(id<THChannelDelegate>)delegate;
+-(id)initToIdentity:(THIdentity*)identity
 {
     self = [super init];
     if (self) {
-        self.delegate = delegate;
+        self.toIdentity = identity;
         self.channelIsReady = NO;
+        THSwitch* defaultSwitch = [THSwitch defaultSwitch];
+        self.line = [defaultSwitch lineToHashname:self.toIdentity.hashname];
+        if (!self.line || !self.line.isOpen) {
+            NSLog(@"Uh oh, the line isn't done, do something.");
+            // TODO:  Make this watch what delegate?
+        }
     }
     return self;
 }
 
+@end
+
+@interface THReliableChannel() {
+    dispatch_queue_t channelQueue;
+    dispatch_semaphore_t channelSemaphore;
+}
+-(void)checkAckPing:(NSUInteger)packetTime;
+-(void)delegateHandlePackets;
+@end
+
+@implementation THReliableChannel
+-(id)initToIdentity:(THIdentity *)identity;
+{
+    self = [super initToIdentity:identity];
+    if (self) {
+        sequence = 0;
+        inPacketBuffer = [THPacketBuffer new];
+        outPacketBuffer = [THPacketBuffer new];
+        channelQueue = NULL;
+    }
+    return self;
+}
+-(void)handlePacket:(THPacket *)packet;
+{
+    NSNumber* curSeq = [packet.json objectForKey:@"seq"];
+    if ([curSeq isGreaterThan:self.maxSeen]) {
+        self.maxSeen = curSeq;
+    }
+    NSNumber* ack = [packet.json objectForKey:@"ack"];
+    if (ack) {
+        // Let's clean up the out buffer based on their ack position
+        [outPacketBuffer clearThrough:[ack unsignedIntegerValue]];
+        
+    }
+    // XXX: Make sure we're pinging every second
+    //[self checkAckPing:time(NULL)];
+    [inPacketBuffer push:packet];
+    
+    
+}
+-(void)checkAckPing:(NSUInteger)packetTime;
+{
+    THSwitch* defaultSwitch = [THSwitch defaultSwitch];
+    double delayInSeconds = 1.0;
+    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
+    dispatch_after(popTime, defaultSwitch.channelQueue, ^(void){
+        if (lastAck < (packetTime + 1)) {
+            [self sendPacket:[THPacket new]];
+        }
+    });
+}
+-(void)sendPacket:(THPacket *)packet;
+{
+    // If the packet has a body or other json we increment the seq
+    if ([packet.json count] > 0 || packet.body != nil) {
+        // Append seq
+        [packet.json setObject:[NSNumber numberWithUnsignedLong:sequence] forKey:@"seq"];
+    }
+    // Append misses
+    // Append channel id
+    [packet.json setObject:self.channelId forKey:@"cid"];
+    // Append ack
+    [packet.json setObject:[NSNumber numberWithUnsignedLong:maxProcessed] forKey:@"ack"];
+    
+    [outPacketBuffer push:packet];
+    
+    [self.line sendPacket:packet];
+}
+
+-(void)delegateHandlePackets;
+{
+    if (channelSemaphore != NULL) {
+        dispatch_semaphore_signal(channelSemaphore);
+    };
+    channelQueue = dispatch_queue_create([[NSString stringWithFormat:@"telehash.channel.%@", self.channelId] UTF8String], NULL);
+    channelSemaphore = dispatch_semaphore_create(0);
+    dispatch_async(channelQueue, ^{
+        while (self) {
+            while (inPacketBuffer.length > 0) {
+                THPacket* curPacket = [inPacketBuffer pop];
+                [self.delegate handlePacket:curPacket];
+                maxProcessed = [[curPacket.json objectForKey:@"seq"] unsignedIntegerValue];
+            }
+            dispatch_semaphore_wait(channelSemaphore, DISPATCH_TIME_FOREVER);
+        }
+    });
+}
 @end

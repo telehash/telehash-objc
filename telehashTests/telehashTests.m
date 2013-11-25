@@ -10,6 +10,7 @@
 #import "THPacket.h"
 #import "THSwitch.h"
 #import "THIdentity.h"
+#import "THPacketBuffer.h"
 
 @interface telehashTests : XCTestCase
 
@@ -90,6 +91,39 @@
     
     [remote setValue:@"736711cf55ff95fa967aa980855a0ee9f7af47d6287374a8cd65e1a36171ef08" forKey:@"_hashnameCache"];
     XCTAssert([origin distanceFrom:remote] == 0, @"Distance should be 0 got %ld", [origin distanceFrom:remote]);
+}
+
+-(void)testPacketBuffer;
+{
+    THPacketBuffer* buffer = [THPacketBuffer new];
+    
+    THPacket* packet = [THPacket new];
+    [packet.json setObject:@0 forKey:@"seq"];
+    
+    [buffer push:packet];
+    XCTAssertEqual([buffer length], 1UL, @"Buffer length is 1");
+    
+    // Ensure we can't push the same seq twice
+    [buffer push:packet];
+    XCTAssertEqual([buffer length], 1UL, @"Buffer length is 1");
+    
+    [buffer pop];
+    XCTAssertEqual([buffer length], 0UL, @"Buffer is empty");
+    
+    packet = [THPacket new];
+    [packet.json setObject:@1 forKey:@"seq"];
+    [buffer push:packet];
+    packet = [THPacket new];
+    [packet.json setObject:@3 forKey:@"seq"];
+    [buffer push:packet];
+    packet = [THPacket new];
+    [packet.json setObject:@2 forKey:@"seq"];
+    [buffer push:packet];
+    
+    XCTAssertEqual([buffer length], 3UL, @"Buffer is length 3");
+    
+    [buffer clearThrough:2];
+    XCTAssertEqual([buffer length], 1UL, @"Buffer length is 1");
 }
 
 @end

@@ -16,10 +16,21 @@
 #import "THSwitch.h"
 #import "CTRAES256.h"
 #import "NSString+HexString.h"
+#import "THChannel.h"
 
 #include <arpa/inet.h>
 
 @implementation THLine
+
+-(id)init;
+{
+    self = [super init];
+    if (self) {
+        self.isOpen = NO;
+    }
+    return self;
+}
+
 -(void)sendOpen;
 {
     THPacket* openPacket = [THPacket new];
@@ -61,6 +72,10 @@
     [openPacket.json setObject:[encryptedSig base64EncodedStringWithOptions:0] forKey:@"sig"];
     
     [defaultSwitch sendPacket:openPacket toAddress:self.address];
+}
+
+-(void)openLine;
+{
     
     NSData* sharedSecret = [self.ecdh agreeWithRemotePublicKey:self.remoteECCKey];
     NSMutableData* keyingMaterial = [NSMutableData dataWithLength:32 + sharedSecret.length];
@@ -75,6 +90,8 @@
     NSLog(@"Encryptor key: %@", self.encryptorKey);
     
     NSLog(@"Decryptor key: %@", self.decryptorKey);
+    
+    self.isOpen = YES;
 }
 
 -(void)handlePacket:(THPacket *)packet;
@@ -98,6 +115,30 @@
         [response.json setObject:[sees valueForKey:@"seekString"] forKey:@"see"];
         
         [self sendPacket:response];
+    } else {
+        // Let the channel instance handle it
+        THChannel* channel = [self.channels objectForKey:channelId];
+        if (channel) {
+            [channel handlePacket:innerPacket];
+        } else {
+            // See if it's a reliable or unreliable channel
+            NSNumber* seq = [innerPacket.json objectForKey:@"seq"];
+            THChannel* newChannel;
+            THChannelType channelType;
+            if (seq && [seq unsignedIntegerValue] == 0) {
+                newChannel = [[THReliableChannel alloc] initToIdentity:self.toIdentity];
+                channelType = ReliableChannel;
+            } else {
+                // newChannel = [[THUnreliableChannel alloc] initToIdentity:self.toIdentity];
+                channelType = UnreliableChannel;
+            }
+            newChannel.channelId = channelId;
+            THSwitch* defaultSwitch = [THSwitch defaultSwitch];
+            [defaultSwitch.delegate channelReady:newChannel type:channelType];
+            [self.channels setObject:newChannel forKey:channelId];
+            [newChannel handlePacket:innerPacket];
+        }
+        
     }
 }
 

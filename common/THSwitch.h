@@ -14,10 +14,15 @@
 @class THPacket;
 @class THLine;
 
+typedef enum {
+    ReliableChannel,
+    UnreliableChannel
+} THChannelType;
+
 @protocol SwitchHandler <NSObject>
 
 -(void)openedLine:(THLine*)line;
--(void)chanelReadyForType:(NSString*)type from:(NSString*)hashname;
+-(void)channelReady:(THChannel*)channel type:(THChannelType)type;
 
 @end
 
@@ -27,14 +32,15 @@
 
 @property THIdentity* identity;
 @property id<SwitchHandler> delegate;
+@property dispatch_queue_t channelQueue;
+@property dispatch_queue_t dhtQueue;
 
 +(id)THSWitchWithIdentity:(THIdentity*)identity;
 
 -(void)start;
 -(void)sendPacket:(THPacket*)packet toAddress:(NSData*)address;
 -(NSArray*)seek:(NSString*)hashname;
-
--channelForType:(NSString*)type to:(NSString*)hashname;
+-(THLine*)lineToHashname:(NSString*)hashname;
 
 #pragma mark UDP Handlers
 -(void)udpSocket:(GCDAsyncUdpSocket *)sock didReceiveData:(NSData *)data fromAddress:(NSData *)address withFilterContext:(id)filterContext;
