@@ -19,10 +19,10 @@ typedef enum {
     UnreliableChannel
 } THChannelType;
 
-@protocol SwitchHandler <NSObject>
+@protocol THSwitchDelegate <NSObject>
 
 -(void)openedLine:(THLine*)line;
--(void)channelReady:(THChannel*)channel type:(THChannelType)type;
+-(THPacket*)channelReady:(THChannel*)channel type:(THChannelType)type firstPacket:(THPacket*)packet;
 
 @end
 
@@ -31,13 +31,14 @@ typedef enum {
 +(id)defaultSwitch;
 
 @property THIdentity* identity;
-@property id<SwitchHandler> delegate;
+@property id<THSwitchDelegate> delegate;
 @property dispatch_queue_t channelQueue;
 @property dispatch_queue_t dhtQueue;
 
 +(id)THSWitchWithIdentity:(THIdentity*)identity;
 
 -(void)start;
+-(void)startOnPort:(unsigned short)port;
 -(void)sendPacket:(THPacket*)packet toAddress:(NSData*)address;
 -(NSArray*)seek:(NSString*)hashname;
 -(THLine*)lineToHashname:(NSString*)hashname;

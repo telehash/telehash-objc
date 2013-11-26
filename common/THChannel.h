@@ -21,7 +21,7 @@
 -(void)channelDidFinishOpen:(THChannel*)channel;
 #pragma mark Error Handling
 -(void)channel:(THChannel*)channel didFailWithError:(NSError*)error;
--(BOOL)handlePacket:(THPacket*)packet;
+-(BOOL)channel:(THChannel*)channel handlePacket:(THPacket*)packet;
 @end
 
 @interface THChannel : NSObject

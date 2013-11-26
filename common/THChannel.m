@@ -40,9 +40,11 @@
 @interface THReliableChannel() {
     dispatch_queue_t channelQueue;
     dispatch_semaphore_t channelSemaphore;
+    NSArray* missing;
 }
 -(void)checkAckPing:(NSUInteger)packetTime;
 -(void)delegateHandlePackets;
+-(void)checkSequenceOrder;
 @end
 
 @implementation THReliableChannel
@@ -53,6 +55,7 @@
         sequence = 0;
         inPacketBuffer = [THPacketBuffer new];
         outPacketBuffer = [THPacketBuffer new];
+        self.maxSeen = @0;
         channelQueue = NULL;
     }
     return self;
@@ -71,10 +74,13 @@
     }
     // XXX: Make sure we're pinging every second
     //[self checkAckPing:time(NULL)];
+    NSLog(@"Putting on the buffer: %@ ", packet.json);
     [inPacketBuffer push:packet];
     
-    
+    missing = [inPacketBuffer missingSeq];
+    [self delegateHandlePackets];
 }
+
 -(void)checkAckPing:(NSUInteger)packetTime;
 {
     THSwitch* defaultSwitch = [THSwitch defaultSwitch];
@@ -92,16 +98,27 @@
     if ([packet.json count] > 0 || packet.body != nil) {
         // Append seq
         [packet.json setObject:[NSNumber numberWithUnsignedLong:sequence] forKey:@"seq"];
+        ++sequence;
     }
     // Append misses
+    if (missing) {
+        [packet.json setObject:missing forKey:@"miss"];
+    }
     // Append channel id
-    [packet.json setObject:self.channelId forKey:@"cid"];
+    [packet.json setObject:self.channelId forKey:@"c"];
     // Append ack
     [packet.json setObject:[NSNumber numberWithUnsignedLong:maxProcessed] forKey:@"ack"];
     
     [outPacketBuffer push:packet];
     
     [self.line sendPacket:packet];
+}
+
+-(void)checkSequenceOrder;
+{
+    // Check the inPacketBuffer for any missing segments
+    NSMutableArray* missing = [inPacketBuffer missingSeq];
+    
 }
 
 -(void)delegateHandlePackets;
@@ -113,9 +130,15 @@
     channelSemaphore = dispatch_semaphore_create(0);
     dispatch_async(channelQueue, ^{
         while (self) {
-            while (inPacketBuffer.length > 0) {
+            BOOL inOrder = YES;
+            while (inPacketBuffer.length > 0 && inOrder) {
+                if (inPacketBuffer.frontSeq != (maxProcessed + 1)) {
+                    inOrder = NO;
+                    // XXX dispatch a missing queue?
+                    continue;
+                }
                 THPacket* curPacket = [inPacketBuffer pop];
-                [self.delegate handlePacket:curPacket];
+                [self.delegate channel:self handlePacket:curPacket];
                 maxProcessed = [[curPacket.json objectForKey:@"seq"] unsignedIntegerValue];
             }
             dispatch_semaphore_wait(channelSemaphore, DISPATCH_TIME_FOREVER);

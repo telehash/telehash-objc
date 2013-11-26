@@ -88,16 +88,36 @@
 
 -(void)clearThrough:(NSUInteger)lastAck;
 {
-    while (firstNode.seq <= lastAck) {
-        THPacketNode* curNode = firstNode;
+    THPacketNode* curNode = firstNode;
+    while (curNode && curNode.seq <= lastAck) {
         firstNode = curNode.next;
+        THPacketNode* nextNode = curNode.next;
         curNode.next = nil;
         curNode.packet = nil;
+        curNode = nextNode;
     }
     if (firstNode == nil) tailNode = nil;
 }
 -(NSUInteger)frontSeq;
 {
     return firstNode.seq;
+}
+
+-(NSArray*)missingSeq;
+{
+    NSMutableArray* missing;
+    THPacketNode* curNode = firstNode;
+    THPacketNode* nextNode;
+    while (curNode) {
+        nextNode = curNode.next;
+        if (nextNode != nil && nextNode.seq != curNode.seq + 1) {
+            if (!missing) missing = [NSMutableArray array];
+            for (NSUInteger seq = curNode.seq + 1; seq < nextNode.seq; ++seq) {
+                [missing addObject:[NSNumber numberWithUnsignedInteger:seq]];
+            }
+        }
+        curNode = nextNode;
+    }
+    return missing;
 }
 @end

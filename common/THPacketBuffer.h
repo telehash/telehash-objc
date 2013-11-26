@@ -27,4 +27,5 @@
 -(THPacket*)pop;
 -(void)clearThrough:(NSUInteger)lastAck;
 -(NSUInteger)frontSeq;
+-(NSArray*)missingSeq;
 @end

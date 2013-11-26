@@ -1,3 +1,4 @@
+
 //
 //  THLine.m
 //  telehash
@@ -27,6 +28,7 @@
     self = [super init];
     if (self) {
         self.isOpen = NO;
+        self.channels = [NSMutableDictionary dictionary];
     }
     return self;
 }
@@ -134,9 +136,10 @@
             }
             newChannel.channelId = channelId;
             THSwitch* defaultSwitch = [THSwitch defaultSwitch];
-            [defaultSwitch.delegate channelReady:newChannel type:channelType];
+            THPacket* respPacket = [defaultSwitch.delegate channelReady:newChannel type:channelType firstPacket:innerPacket];
             [self.channels setObject:newChannel forKey:channelId];
-            [newChannel handlePacket:innerPacket];
+            if (respPacket) [newChannel sendPacket:respPacket];
+            //[newChannel handlePacket:innerPacket];
         }
         
     }

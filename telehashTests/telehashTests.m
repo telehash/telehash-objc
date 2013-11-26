@@ -126,4 +126,42 @@
     XCTAssertEqual([buffer length], 1UL, @"Buffer length is 1");
 }
 
+-(void)testPacketBufferMissing;
+{
+    THPacketBuffer* buffer = [THPacketBuffer new];
+    
+    THPacket* packet = [THPacket new];
+    [packet.json setObject:@0 forKey:@"seq"];
+    
+    [buffer push:packet];
+    
+    packet = [THPacket new];
+    [packet.json setObject:@1 forKey:@"seq"];
+    
+    [buffer push:packet];
+    
+    XCTAssertNil([buffer missingSeq], @"Missing should be nil");
+    
+    packet = [THPacket new];
+    [packet.json setObject:@4 forKey:@"seq"];
+    
+    [buffer push:packet];
+    NSArray* missing = [buffer missingSeq];
+    XCTAssertEqual(missing.count, 2UL, @"Missing should have two entries");
+    XCTAssertEqualObjects(missing, (@[ @2U, @3U ]), @"Missing should have entries of 3 and 4");
+    
+    packet = [THPacket new];
+    [packet.json setObject:@3 forKey:@"seq"];
+    [buffer push:packet];
+    
+    missing = [buffer missingSeq];
+    XCTAssertEqualObjects(missing, (@[ @2U ]), @"Missing should have one entry of 2");
+    
+    packet = [THPacket new];
+    [packet.json setObject:@2 forKey:@"seq"];
+    [buffer push:packet];
+    
+    XCTAssertNil([buffer missingSeq], @"Missing shoudl be nil");
+}
+
 @end

@@ -58,8 +58,12 @@
 
 -(void)start;
 {
+    [self startOnPort:0];
+}
+-(void)startOnPort:(unsigned short)port
+{
     NSError* bindError;
-    [self.udpSocket bindToPort:0 error:&bindError];
+    [self.udpSocket bindToPort:port error:&bindError];
     if (bindError != nil) {
         // TODO:  How do we show errors?!
         NSLog(@"%@", bindError);
@@ -110,7 +114,16 @@
 -(THLine*)lineToHashname:(NSString*)hashname;
 {
     // XXX: If we don't have a line should we do an open here?
-    return [self.openLines objectForKey:hashname];
+    // XXX: This is a common lookup, should we cache this another way as well?
+    __block THLine* ret = nil;
+    [self.openLines enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+        THLine* line = (THLine*)obj;
+        if (line.toIdentity.hashname == hashname) {
+            ret = line;
+            *stop = YES;
+        }
+    }];
+    return ret;
 }
 
 #pragma region -- UDP Handlers
@@ -157,10 +170,10 @@
         newLine.address = address;
         newLine.remoteECCKey = eccKey;
         
-        NSLog(@"Line setup for %@", newLine.outLineId);
-        
         [newLine sendOpen];
         [newLine openLine];
+        
+        NSLog(@"Line setup for %@", newLine.inLineId);
         
         [self.openLines setObject:newLine forKey:newLine.inLineId];
         if ([self.delegate respondsToSelector:@selector(openedLine:)]) {

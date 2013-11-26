@@ -7,13 +7,15 @@
 //
 
 #import <Cocoa/Cocoa.h>
+#import <THSwitch.h>
+#import <THChannel.h>
 
-@class THSwitch;
-
-@interface THAppDelegate : NSObject <NSApplicationDelegate> {
+@interface THAppDelegate : NSObject <THSwitchDelegate, THChannelDelegate> {
     THSwitch* thSwitch;
 }
 
 @property (assign) IBOutlet NSWindow *window;
 
+-(THPacket*)channelReady:(THChannel *)channel type:(THChannelType)type firstPacket:(THPacket *)packet;
+-(BOOL)channel:(THChannel*)channel handlePacket:(THPacket *)packet;
 @end
