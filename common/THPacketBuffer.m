@@ -67,6 +67,7 @@
 {
     THPacket* retPacket = firstNode.packet;
     firstNode = firstNode.next;
+    if (firstNode == nil) tailNode = nil;
     return retPacket;
 }
 

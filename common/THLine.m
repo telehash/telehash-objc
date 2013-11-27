@@ -89,18 +89,17 @@
     [keyingMaterial replaceBytesInRange:NSMakeRange(sharedSecret.length, 16) withBytes:[[self.inLineId dataFromHexString] bytes] length:16];
     [keyingMaterial replaceBytesInRange:NSMakeRange(keyingMaterial.length - 16, 16) withBytes:[[self.outLineId dataFromHexString] bytes] length:16];
     self.encryptorKey = [SHA256 hashWithData:keyingMaterial];
-    NSLog(@"Encryptor key: %@", self.encryptorKey);
-    
-    NSLog(@"Decryptor key: %@", self.decryptorKey);
+    //NSLog(@"Encryptor key: %@", self.encryptorKey);
+    //NSLog(@"Decryptor key: %@", self.decryptorKey);
     
     self.isOpen = YES;
 }
 
 -(void)handlePacket:(THPacket *)packet;
 {
-    NSLog(@"Going to handle a packet");
+    //NSLog(@"Going to handle a packet");
     THPacket* innerPacket = [THPacket packetData:[CTRAES256Decryptor decryptPlaintext:packet.body key:self.decryptorKey iv:[[packet.json objectForKey:@"iv"] dataFromHexString]]];
-    NSLog(@"Packet is type %@", [innerPacket.json objectForKey:@"type"]);
+    //NSLog(@"Packet is type %@", [innerPacket.json objectForKey:@"type"]);
     NSString* channelId = [innerPacket.json objectForKey:@"c"];
     NSString* channelType = [innerPacket.json objectForKey:@"type"];
     
@@ -136,9 +135,9 @@
             }
             newChannel.channelId = channelId;
             THSwitch* defaultSwitch = [THSwitch defaultSwitch];
-            THPacket* respPacket = [defaultSwitch.delegate channelReady:newChannel type:channelType firstPacket:innerPacket];
+            [defaultSwitch.delegate channelReady:newChannel type:channelType firstPacket:innerPacket];
+            newChannel.channelIsReady = YES;
             [self.channels setObject:newChannel forKey:channelId];
-            if (respPacket) [newChannel sendPacket:respPacket];
             //[newChannel handlePacket:innerPacket];
         }
         

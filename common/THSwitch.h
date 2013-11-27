@@ -22,7 +22,7 @@ typedef enum {
 @protocol THSwitchDelegate <NSObject>
 
 -(void)openedLine:(THLine*)line;
--(THPacket*)channelReady:(THChannel*)channel type:(THChannelType)type firstPacket:(THPacket*)packet;
+-(void)channelReady:(THChannel*)channel type:(THChannelType)type firstPacket:(THPacket*)packet;
 
 @end
 

@@ -16,6 +16,6 @@
 
 @property (assign) IBOutlet NSWindow *window;
 
--(THPacket*)channelReady:(THChannel *)channel type:(THChannelType)type firstPacket:(THPacket *)packet;
+-(void)channelReady:(THChannel *)channel type:(THChannelType)type firstPacket:(THPacket *)packet;
 -(BOOL)channel:(THChannel*)channel handlePacket:(THPacket *)packet;
 @end

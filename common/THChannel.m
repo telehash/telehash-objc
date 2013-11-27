@@ -35,6 +35,15 @@
     return self;
 }
 
+-(void)sendPacket:(THPacket *)packet;
+{
+    NSAssert(YES, @"This is a base method that should be implemented in concrete channel types.");
+}
+
+-(void)handlePacket:(THPacket *)packet;
+{
+    NSAssert(YES, @"This is a base method that should be implemented in concrete channel types.");
+}
 @end
 
 @interface THReliableChannel() {
@@ -44,7 +53,6 @@
 }
 -(void)checkAckPing:(NSUInteger)packetTime;
 -(void)delegateHandlePackets;
--(void)checkSequenceOrder;
 @end
 
 @implementation THReliableChannel
@@ -63,7 +71,7 @@
 -(void)handlePacket:(THPacket *)packet;
 {
     NSNumber* curSeq = [packet.json objectForKey:@"seq"];
-    if ([curSeq isGreaterThan:self.maxSeen]) {
+    if (curSeq.unsignedIntegerValue > self.maxSeen.unsignedIntegerValue) {
         self.maxSeen = curSeq;
     }
     NSNumber* ack = [packet.json objectForKey:@"ack"];
@@ -74,8 +82,11 @@
     }
     // XXX: Make sure we're pinging every second
     //[self checkAckPing:time(NULL)];
-    NSLog(@"Putting on the buffer: %@ ", packet.json);
-    [inPacketBuffer push:packet];
+    // If this is a new seq object we'll need to pass it off
+    if ([packet.json objectForKey:@"seq"]) {
+        NSLog(@"Putting on the buffer: %@ ", packet.json);
+        [inPacketBuffer push:packet];
+    }
     
     missing = [inPacketBuffer missingSeq];
     [self delegateHandlePackets];
@@ -114,22 +125,16 @@
     [self.line sendPacket:packet];
 }
 
--(void)checkSequenceOrder;
-{
-    // Check the inPacketBuffer for any missing segments
-    NSMutableArray* missing = [inPacketBuffer missingSeq];
-    
-}
-
 -(void)delegateHandlePackets;
 {
     if (channelSemaphore != NULL) {
         dispatch_semaphore_signal(channelSemaphore);
+        return;
     };
     channelQueue = dispatch_queue_create([[NSString stringWithFormat:@"telehash.channel.%@", self.channelId] UTF8String], NULL);
     channelSemaphore = dispatch_semaphore_create(0);
     dispatch_async(channelQueue, ^{
-        while (self) {
+        while (self.channelIsReady) {
             BOOL inOrder = YES;
             while (inPacketBuffer.length > 0 && inOrder) {
                 if (inPacketBuffer.frontSeq != (maxProcessed + 1)) {
