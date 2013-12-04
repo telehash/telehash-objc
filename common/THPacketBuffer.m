@@ -121,4 +121,14 @@
     }
     return missing;
 }
+
+-(void)forEach:(void(^)(THPacket* packet))block;
+{
+    THPacketNode* curNode = firstNode;
+    while (curNode) {
+        NSLog(@"Applying block for %@", curNode.packet.json);
+        block(curNode.packet);
+        curNode = curNode.next;
+    }
+}
 @end

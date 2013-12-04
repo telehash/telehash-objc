@@ -25,12 +25,9 @@
     if (self) {
         self.toIdentity = identity;
         self.channelIsReady = NO;
+        self.channelId  = [[RNG randomBytesOfLength:16] hexString]; // We'll just go ahead and make one
         THSwitch* defaultSwitch = [THSwitch defaultSwitch];
         self.line = [defaultSwitch lineToHashname:self.toIdentity.hashname];
-        if (!self.line || !self.line.isOpen) {
-            NSLog(@"Uh oh, the line isn't done, do something.");
-            // TODO:  Make this watch what delegate?
-        }
     }
     return self;
 }
@@ -122,7 +119,7 @@
     
     [outPacketBuffer push:packet];
     
-    [self.line sendPacket:packet];
+    if (self.channelIsReady) [self.line sendPacket:packet];
 }
 
 -(void)delegateHandlePackets;
@@ -149,5 +146,14 @@
             dispatch_semaphore_wait(channelSemaphore, DISPATCH_TIME_FOREVER);
         }
     });
+}
+
+// Flush our out buffer
+-(void)flushOut;
+{
+    [outPacketBuffer forEach:^(THPacket *packet) {
+        NSLog(@"Sending packet on %@ %@", self.line, packet.json);
+        [self.line sendPacket:packet];
+    }];
 }
 @end

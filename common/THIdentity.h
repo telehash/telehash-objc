@@ -20,6 +20,7 @@
 
 @property RSA* rsaKeys;
 @property (readonly) NSString* hashname;
+@property NSData* address;
 
 // TODO:  Method to create a channel for a type
 

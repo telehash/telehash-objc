@@ -92,6 +92,18 @@
     //NSLog(@"Encryptor key: %@", self.encryptorKey);
     //NSLog(@"Decryptor key: %@", self.decryptorKey);
     
+    [self.channels enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+        NSLog(@"Checking %@ as %@", obj, [obj class]);
+        // Get all our pending reliable channels spun out
+        if ([obj class] != [THReliableChannel class]) return;
+        THReliableChannel* channel = (THReliableChannel*)obj;
+        // If the channel already thinks it's good, we'll just ignore it's state
+        if (channel.channelIsReady) return;
+
+        NSLog(@"Going to flush");
+        [channel flushOut];
+    }];
+    
     self.isOpen = YES;
 }
 
@@ -100,6 +112,7 @@
     //NSLog(@"Going to handle a packet");
     THPacket* innerPacket = [THPacket packetData:[CTRAES256Decryptor decryptPlaintext:packet.body key:self.decryptorKey iv:[[packet.json objectForKey:@"iv"] dataFromHexString]]];
     //NSLog(@"Packet is type %@", [innerPacket.json objectForKey:@"type"]);
+    NSLog(@"Line handling %@", innerPacket.json);
     NSString* channelId = [innerPacket.json objectForKey:@"c"];
     NSString* channelType = [innerPacket.json objectForKey:@"type"];
     
@@ -137,6 +150,7 @@
             THSwitch* defaultSwitch = [THSwitch defaultSwitch];
             [defaultSwitch.delegate channelReady:newChannel type:channelType firstPacket:innerPacket];
             newChannel.channelIsReady = YES;
+            NSLog(@"Adding a channel");
             [self.channels setObject:newChannel forKey:channelId];
             //[newChannel handlePacket:innerPacket];
         }
@@ -158,6 +172,8 @@
     NSData* iv = [RNG randomBytesOfLength:16];
     [linePacket.json setObject:[iv hexString] forKey:@"iv"];
     linePacket.body = [packet encode];
+    
+    NSLog(@"Sending %@", linePacket.json);
     
     [linePacket encryptWithKey:self.encryptorKey iv:iv];
     

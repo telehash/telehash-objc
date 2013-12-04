@@ -14,13 +14,12 @@
 #import "CTRAES256.h"
 #import "NSString+HexString.h"
 #import "THLine.h"
+#import "THChannel.h"
 
 @interface THSwitch()
 
 @property NSMutableDictionary* openLines;
-
 @property GCDAsyncUdpSocket* udpSocket;
-
 
 @end
 
@@ -115,15 +114,37 @@
 {
     // XXX: If we don't have a line should we do an open here?
     // XXX: This is a common lookup, should we cache this another way as well?
+    NSLog(@"looking for %@", hashname);
     __block THLine* ret = nil;
     [self.openLines enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
         THLine* line = (THLine*)obj;
-        if (line.toIdentity.hashname == hashname) {
+        if ([line.toIdentity.hashname isEqualToString:hashname]) {
             ret = line;
             *stop = YES;
         }
     }];
+    NSLog(@"We found %@", ret);
     return ret;
+}
+
+-(void)openChannel:(THChannel *)channel firstPacket:(THPacket *)packet;
+{
+    // Check for an already open lines
+    THLine* channelLine = [self.openLines objectForKey:channel.toIdentity.hashname];
+    if (!channelLine) {
+        channelLine = [THLine new];
+        channelLine.toIdentity = channel.toIdentity;
+        channelLine.address = channel.toIdentity.address;
+        
+        channel.line = channelLine;
+        [channel sendPacket:packet];
+        
+        [channelLine.channels setObject:channel forKey:channel.channelId];
+        
+        [self.openLines setObject:channelLine forKey:channel.toIdentity.hashname];
+        
+        [channelLine sendOpen];
+    }
 }
 
 #pragma region -- UDP Handlers
@@ -163,21 +184,41 @@
             NSLog(@"Invalid signature, dumping.");
             return;
         }
-        
-        THLine* newLine = [THLine new];
-        newLine.outLineId = [innerPacket.json objectForKey:@"line"];
-        newLine.toIdentity = senderIdentity;
-        newLine.address = address;
-        newLine.remoteECCKey = eccKey;
-        
-        [newLine sendOpen];
-        [newLine openLine];
-        
-        NSLog(@"Line setup for %@", newLine.inLineId);
-        
-        [self.openLines setObject:newLine forKey:newLine.inLineId];
-        if ([self.delegate respondsToSelector:@selector(openedLine:)]) {
-            [self.delegate openedLine:newLine];
+
+        NSLog(@"Finding line for  %@ in %@", senderIdentity.hashname, self.openLines);
+        //[self.openLines objectForKey:[innerPacket.json objectForKey:@"line"]];
+        THLine* newLine = [self lineToHashname:senderIdentity.hashname];
+        if (newLine) {
+            NSLog(@"Finish open on %@", newLine);
+            newLine.outLineId = [innerPacket.json objectForKey:@"line"];
+            newLine.remoteECCKey = eccKey;
+            [newLine openLine];
+            
+            [newLine openLine];
+            
+            [self.openLines removeObjectForKey:senderIdentity.hashname];
+            [self.openLines setObject:newLine forKey:newLine.inLineId];
+            
+            if ([self.delegate respondsToSelector:@selector(openedLine:)]) {
+                [self.delegate openedLine:newLine];
+            }
+        } else {
+            
+            newLine = [THLine new];
+            newLine.toIdentity = senderIdentity;
+            newLine.address = address;
+            newLine.outLineId = [innerPacket.json objectForKey:@"line"];
+            newLine.remoteECCKey = eccKey;
+            
+            [newLine sendOpen];
+            [newLine openLine];
+            
+            NSLog(@"Line setup for %@", newLine.inLineId);
+            
+            [self.openLines setObject:newLine forKey:newLine.inLineId];
+            if ([self.delegate respondsToSelector:@selector(openedLine:)]) {
+                [self.delegate openedLine:newLine];
+            }
         }
         
     } else if([[incomingPacket.json objectForKey:@"type"] isEqualToString:@"line"]) {

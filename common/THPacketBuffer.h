@@ -28,4 +28,5 @@
 -(void)clearThrough:(NSUInteger)lastAck;
 -(NSUInteger)frontSeq;
 -(NSArray*)missingSeq;
+-(void)forEach:(void(^)(THPacket* packet))block;
 @end

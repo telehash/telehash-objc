@@ -55,6 +55,7 @@
 -(id)initToIdentity:(THIdentity*)identity;
 -(void)handlePacket:(THPacket*)packet;
 -(void)sendPacket:(THPacket*)packet;
+-(void)flushOut;
 @end
 
 @interface THBulkTransferChannel : THChannel

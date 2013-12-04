@@ -42,6 +42,7 @@ typedef enum {
 -(void)sendPacket:(THPacket*)packet toAddress:(NSData*)address;
 -(NSArray*)seek:(NSString*)hashname;
 -(THLine*)lineToHashname:(NSString*)hashname;
+-(void)openChannel:(THChannel*)channel firstPacket:(THPacket*)packet;
 
 #pragma mark UDP Handlers
 -(void)udpSocket:(GCDAsyncUdpSocket *)sock didReceiveData:(NSData *)data fromAddress:(NSData *)address withFilterContext:(id)filterContext;
