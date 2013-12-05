@@ -42,6 +42,8 @@
 @end
 
 @interface THUnreliableChannel : THChannel
+-(void)handlePacket:(THPacket *)packet;
+-(void)sendPacket:(THPacket *)packet;
 @end
 
 @interface THReliableChannel : THChannel {

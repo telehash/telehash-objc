@@ -19,6 +19,7 @@
 @interface THSwitch()
 
 @property NSMutableDictionary* openLines;
+@property NSMutableDictionary* pendingLines;
 @property GCDAsyncUdpSocket* udpSocket;
 
 @end
@@ -48,6 +49,7 @@
 {
     if (self) {
         self.openLines = [NSMutableDictionary dictionary];
+        self.pendingLines = [NSMutableDictionary dictionary];
         self.udpSocket = [[GCDAsyncUdpSocket alloc] initWithDelegate:self delegateQueue:dispatch_get_main_queue()];
         self.channelQueue = dispatch_queue_create("channelWorkQueue", NULL);
         self.dhtQueue = dispatch_queue_create("dhtWorkQueue", NULL);
@@ -130,21 +132,22 @@
 -(void)openChannel:(THChannel *)channel firstPacket:(THPacket *)packet;
 {
     // Check for an already open lines
-    THLine* channelLine = [self.openLines objectForKey:channel.toIdentity.hashname];
+    THLine* channelLine = [self lineToHashname:channel.toIdentity.hashname];
     if (!channelLine) {
         channelLine = [THLine new];
         channelLine.toIdentity = channel.toIdentity;
         channelLine.address = channel.toIdentity.address;
         
-        channel.line = channelLine;
-        [channel sendPacket:packet];
-        
-        [channelLine.channels setObject:channel forKey:channel.channelId];
-        
-        [self.openLines setObject:channelLine forKey:channel.toIdentity.hashname];
+        [self.pendingLines setObject:channelLine forKey:channel.toIdentity.hashname];
         
         [channelLine sendOpen];
+    } else {
+        // If we already have a valid line we're all set to use it
+        channel.channelIsReady = YES;
     }
+    channel.line = channelLine;
+    [channelLine.channels setObject:channel forKey:channel.channelId];
+    [channel sendPacket:packet];
 }
 
 #pragma region -- UDP Handlers
@@ -187,16 +190,14 @@
 
         NSLog(@"Finding line for  %@ in %@", senderIdentity.hashname, self.openLines);
         //[self.openLines objectForKey:[innerPacket.json objectForKey:@"line"]];
-        THLine* newLine = [self lineToHashname:senderIdentity.hashname];
+        THLine* newLine = [self.pendingLines objectForKey:senderIdentity.hashname];
         if (newLine) {
             NSLog(@"Finish open on %@", newLine);
             newLine.outLineId = [innerPacket.json objectForKey:@"line"];
             newLine.remoteECCKey = eccKey;
             [newLine openLine];
             
-            [newLine openLine];
-            
-            [self.openLines removeObjectForKey:senderIdentity.hashname];
+            [self.pendingLines removeObjectForKey:senderIdentity.hashname];
             [self.openLines setObject:newLine forKey:newLine.inLineId];
             
             if ([self.delegate respondsToSelector:@selector(openedLine:)]) {

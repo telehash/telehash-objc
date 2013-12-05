@@ -15,6 +15,11 @@
 
 #define SERVER_TEST 0
 
+@interface THAppDelegate () {
+    NSString* startChannelId;
+}
+@end
+
 @implementation THAppDelegate
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
@@ -35,10 +40,13 @@
     inet_pton(AF_INET, "127.0.0.1", &ipAddress.sin_addr);
     identity.address = [NSData dataWithBytes:&ipAddress length:ipAddress.sin_len];
     THReliableChannel* channel = [[THReliableChannel alloc] initToIdentity:identity];
+    startChannelId = channel.channelId;
+    channel.delegate = self;
     
     THPacket* packet = [THPacket new];
     [packet.json setObject:@"_members" forKey:@"type"];
     [packet.json setObject:@{ @"room": @"testRoom" } forKey:@"_"];
+    [packet.json setObject:@YES forKey:@"end"];
     
     [thSwitch openChannel:channel firstPacket:packet];
 #endif
@@ -68,6 +76,16 @@
         NSLog(@"We're in the other generic handler now.  What do?");
     }
 #else
+    if ([channel.channelId isEqualToString:startChannelId]) {
+        THReliableChannel* newChannel = [[THReliableChannel alloc] initToIdentity:channel.toIdentity];
+        newChannel.delegate = self;
+        
+        THPacket* outPacket = [THPacket new];
+        [outPacket.json setObject:@"_chat" forKey:@"type"];
+        [outPacket.json setObject:@{ @"room": @"testRoom" } forKey:@"_"];
+        
+        [thSwitch openChannel:newChannel firstPacket:outPacket];
+    }
 #endif
 }
 

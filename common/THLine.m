@@ -130,20 +130,29 @@
         
         [self sendPacket:response];
     } else {
+        NSNumber* seq = [innerPacket.json objectForKey:@"seq"];
         // Let the channel instance handle it
         THChannel* channel = [self.channels objectForKey:channelId];
         if (channel) {
+            if (seq) {
+                // This is a reliable channel, let's make sure we're in a good state
+                THReliableChannel* reliableChannel = (THReliableChannel*)channel;
+                if (seq.unsignedIntegerValue == 0 && [[innerPacket.json objectForKey:@"ack"] unsignedIntegerValue] == 0) {
+                    reliableChannel.channelIsReady = YES;
+                    THSwitch* defaultSwitch = [THSwitch defaultSwitch];
+                    [defaultSwitch.delegate channelReady:reliableChannel type:ReliableChannel firstPacket:innerPacket];
+                }
+            }
             [channel handlePacket:innerPacket];
         } else {
             // See if it's a reliable or unreliable channel
-            NSNumber* seq = [innerPacket.json objectForKey:@"seq"];
             THChannel* newChannel;
             THChannelType channelType;
             if (seq && [seq unsignedIntegerValue] == 0) {
                 newChannel = [[THReliableChannel alloc] initToIdentity:self.toIdentity];
                 channelType = ReliableChannel;
             } else {
-                // newChannel = [[THUnreliableChannel alloc] initToIdentity:self.toIdentity];
+                newChannel = [[THUnreliableChannel alloc] initToIdentity:self.toIdentity];
                 channelType = UnreliableChannel;
             }
             newChannel.channelId = channelId;
@@ -173,7 +182,7 @@
     [linePacket.json setObject:[iv hexString] forKey:@"iv"];
     linePacket.body = [packet encode];
     
-    NSLog(@"Sending %@", linePacket.json);
+    NSLog(@"Sending %@", packet.json);
     
     [linePacket encryptWithKey:self.encryptorKey iv:iv];
     

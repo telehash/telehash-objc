@@ -43,6 +43,25 @@
 }
 @end
 
+@implementation THUnreliableChannel
+-(id)initToIdentity:(THIdentity *)identity;
+{
+    self = [super initToIdentity:identity];
+    return self;
+}
+
+-(void)handlePacket:(THPacket *)packet;
+{
+    [self.delegate channel:self handlePacket:packet];
+}
+
+-(void)sendPacket:(THPacket *)packet;
+{
+    [packet.json setObject:self.channelId forKey:@"c"];
+    [self.line sendPacket:packet];
+}
+@end
+
 @interface THReliableChannel() {
     dispatch_queue_t channelQueue;
     dispatch_semaphore_t channelSemaphore;
