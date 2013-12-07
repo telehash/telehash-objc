@@ -116,6 +116,9 @@
     NSString* channelId = [innerPacket.json objectForKey:@"c"];
     NSString* channelType = [innerPacket.json objectForKey:@"type"];
     
+    // if the switch is handling it bail
+    if ([[THSwitch defaultSwitch] findPendingJob:innerPacket]) return;
+    
     if ([channelType isEqualToString:@"seek"]) {
         // On a seek we send back what we know about
         THPacket* response = [THPacket new];

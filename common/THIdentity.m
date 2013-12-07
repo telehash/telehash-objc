@@ -11,12 +11,19 @@
 #import "NSData+HexString.h"
 #import "NSString+HexString.h"
 
+#include <arpa/inet.h>
+
 @interface THIdentity() {
     NSString* _hashnameCache;
 }
 @end
 
 @implementation THIdentity
++(id)identityFromHashname:(NSString *)hashname;
+{
+    return [[THIdentity alloc] initWithHashname:hashname];
+}
+
 +(id)identityFromPublicKey:(NSString*)publicKeyPath privateKey:(NSString*)privateKeyPath;
 {
     return [[THIdentity alloc] initWithPublicKeyPath:publicKeyPath privateKey:privateKeyPath];
@@ -25,6 +32,15 @@
 +(id)identityFromPublicKey:(NSData*)key;
 {
     return [[THIdentity alloc] initWithPublicKey:key];
+}
+
+-(id)initWithHashname:(NSString *)hashname;
+{
+    self = [super init];
+    if (self) {
+        _hashnameCache = hashname;
+    }
+    return self;
 }
 
 -(id)initWithPublicKeyPath:(NSString*)publicKeyPath privateKey:(NSString*)privateKeyPath;
@@ -44,6 +60,15 @@
     return self;
 }
 
+-(void)setIP:(NSString*)ip port:(NSUInteger)port;
+{
+    struct sockaddr_in ipAddress;
+    ipAddress.sin_len = sizeof(ipAddress);
+    ipAddress.sin_family = AF_INET;
+    ipAddress.sin_port = htons(port);
+    inet_pton(AF_INET, [ip UTF8String], &ipAddress.sin_addr);
+    self.address = [NSData dataWithBytes:&ipAddress length:ipAddress.sin_len];
+}
 
 -(NSString*)hashname;
 {
@@ -78,7 +103,6 @@ int nlz(unsigned long x) {
         unsigned long theirs = strtoul(curData, NULL, 16);
         
         unsigned long outBit = ours ^ theirs;
-        NSLog(@"Outbit is %d at %d from %lx ^ %lx = %lx", nlz(outBit), i, ours, theirs, outBit);
         if (outBit != 0) {
             return 255 - (i * 4 + nlz(outBit));
         }

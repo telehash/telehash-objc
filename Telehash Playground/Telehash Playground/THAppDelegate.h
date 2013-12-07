@@ -10,7 +10,8 @@
 #import <THSwitch.h>
 #import <THChannel.h>
 
-@interface THAppDelegate : NSObject <THSwitchDelegate, THChannelDelegate> {
+@interface THAppDelegate : NSObject <THSwitchDelegate, THChannelDelegate, NSTableViewDataSource> {
+    IBOutlet NSTableView* tableView;
     THSwitch* thSwitch;
 }
 
@@ -18,4 +19,8 @@
 
 -(void)channelReady:(THChannel *)channel type:(THChannelType)type firstPacket:(THPacket *)packet;
 -(BOOL)channel:(THChannel*)channel handlePacket:(THPacket *)packet;
+
+-(NSInteger)numberOfRowsInTableView:(NSTableView *)tableView;
+- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex;
+
 @end

@@ -11,10 +11,12 @@
 
 @interface THIdentity : NSObject
 
++(id)identityFromHashname:(NSString*)hashname;
 +(id)identityFromPublicKey:(NSString*)publicKeyPath privateKey:(NSString*)privateKeyPath;
 +(id)identityFromPublicKey:(NSData*)key;
 // Keys, hashname, address
 
+-(id)initWithHashname:(NSString*)hashname;
 -(id)initWithPublicKeyPath:(NSString*)publicKeyPath privateKey:(NSString*)privateKeyPath;
 -(id)initWithPublicKey:(NSData*)key;
 
@@ -25,6 +27,7 @@
 // TODO:  Method to create a channel for a type
 
 -(NSInteger)distanceFrom:(THIdentity*)identity;
+-(void)setIP:(NSString*)ip port:(NSUInteger)port;
 
 @end
 

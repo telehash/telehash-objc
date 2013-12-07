@@ -97,7 +97,8 @@
         
     }
     // XXX: Make sure we're pinging every second
-    //[self checkAckPing:time(NULL)];
+    [self checkAckPing:time(NULL)];
+    
     // If this is a new seq object we'll need to pass it off
     if ([packet.json objectForKey:@"seq"]) {
         NSLog(@"Putting on the buffer: %@ ", packet.json);
@@ -114,7 +115,7 @@
     double delayInSeconds = 1.0;
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
     dispatch_after(popTime, defaultSwitch.channelQueue, ^(void){
-        if (lastAck < (packetTime + 1)) {
+        if (lastAck < maxProcessed) {
             [self sendPacket:[THPacket new]];
         }
     });
@@ -135,6 +136,7 @@
     [packet.json setObject:self.channelId forKey:@"c"];
     // Append ack
     [packet.json setObject:[NSNumber numberWithUnsignedLong:maxProcessed] forKey:@"ack"];
+    lastAck = time(NULL);
     
     [outPacketBuffer push:packet];
     

@@ -24,6 +24,8 @@
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
+    [tableView setDataSource:self];
+    
     // Insert code here to initialize your application
     thSwitch = [THSwitch defaultSwitch];
     thSwitch.delegate = self;
@@ -31,14 +33,29 @@
     NSLog(@"Hashname: %@", [thSwitch.identity hashname]);
     [thSwitch start];
     
+    [thSwitch loadSeeds:[NSData dataWithContentsOfFile:@"/tmp/telehash/seeds.json"]];
+}
+
+-(NSInteger)numberOfRowsInTableView:(NSTableView *)tableView;
+{
+    return [thSwitch.openLines count];
+}
+
+- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex;
+{
+    NSArray* keys = [thSwitch.openLines allKeys];
+    THLine* line = [thSwitch.openLines objectForKey:[keys objectAtIndex:rowIndex]];
+    return line.toIdentity.hashname;
+}
+
+
+-(void)openedLine:(THLine *)line;
+{
+    [tableView reloadData];
+    
 #if SERVER_TEST == 0
     THIdentity* identity = [THIdentity identityFromPublicKey:[NSData dataWithContentsOfFile:@"/tmp/telehash/chat.pder"]];
-    struct sockaddr_in ipAddress;
-    ipAddress.sin_len = sizeof(ipAddress);
-    ipAddress.sin_family = AF_INET;
-    ipAddress.sin_port = htons(42426);
-    inet_pton(AF_INET, "127.0.0.1", &ipAddress.sin_addr);
-    identity.address = [NSData dataWithBytes:&ipAddress length:ipAddress.sin_len];
+    //[identity setIP:@"127.0.0.1" port:42424];
     THReliableChannel* channel = [[THReliableChannel alloc] initToIdentity:identity];
     startChannelId = channel.channelId;
     channel.delegate = self;
@@ -50,6 +67,7 @@
     
     [thSwitch openChannel:channel firstPacket:packet];
 #endif
+
 }
 
 -(void)channelReady:(THChannel *)channel type:(THChannelType)type firstPacket:(THPacket *)packet;

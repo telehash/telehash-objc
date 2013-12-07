@@ -30,6 +30,7 @@ typedef enum {
 
 +(id)defaultSwitch;
 
+@property NSMutableDictionary* openLines;
 @property THIdentity* identity;
 @property id<THSwitchDelegate> delegate;
 @property dispatch_queue_t channelQueue;
@@ -43,6 +44,11 @@ typedef enum {
 -(NSArray*)seek:(NSString*)hashname;
 -(THLine*)lineToHashname:(NSString*)hashname;
 -(void)openChannel:(THChannel*)channel firstPacket:(THPacket*)packet;
+-(void)openLine:(THIdentity*)toIdentity;
+-(void)loadSeeds:(NSData*)seedData;
+
+// This is an internal handling hack
+-(BOOL)findPendingJob:(THPacket*)packet;
 
 #pragma mark UDP Handlers
 -(void)udpSocket:(GCDAsyncUdpSocket *)sock didReceiveData:(NSData *)data fromAddress:(NSData *)address withFilterContext:(id)filterContext;
