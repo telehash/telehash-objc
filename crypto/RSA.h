@@ -13,6 +13,7 @@
 @property (readonly) unsigned long signatureLength;
 @property (readonly) NSData* DERPublicKey;
 
++(id)generateRSAKeysOfLength:(unsigned int)length;
 +(id)RSAFromPublicKeyPath:(NSString*)publicKeyPath privateKeyPath:(NSString*)privateKeyPath;
 // privateKey may be nil
 +(id)RSAWithPublicKey:(NSData*)publicKey privateKey:(NSData*)privateKey;
@@ -25,4 +26,7 @@
 -(NSData*) decrypt:(NSData*)cipherText;
 
 -(BOOL) verify:(NSData*)message withSignature:(NSData*)signature;
+
+// XXX:  This is just for current testing
+-(void)savePublicKey:(NSString*)publicPath privateKey:(NSString*)privatePath;
 @end

@@ -19,6 +19,14 @@
 @end
 
 @implementation THIdentity
+
++(id)generateIdentity;
+{
+    THIdentity* identity = [THIdentity new];
+    identity.rsaKeys = [RSA generateRSAKeysOfLength:2048];
+    return identity;
+}
+
 +(id)identityFromHashname:(NSString *)hashname;
 {
     return [[THIdentity alloc] initWithHashname:hashname];
@@ -26,6 +34,9 @@
 
 +(id)identityFromPublicKey:(NSString*)publicKeyPath privateKey:(NSString*)privateKeyPath;
 {
+    if (![[NSFileManager defaultManager] fileExistsAtPath:publicKeyPath]) return nil;
+    if (![[NSFileManager defaultManager] fileExistsAtPath:privateKeyPath]) return nil;
+    
     return [[THIdentity alloc] initWithPublicKeyPath:publicKeyPath privateKey:privateKeyPath];
 }
 

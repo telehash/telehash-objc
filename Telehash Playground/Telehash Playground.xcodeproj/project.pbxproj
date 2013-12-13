@@ -20,6 +20,7 @@
 		8231EBFF1836C60D00BC41C1 /* Telehash_PlaygroundTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 8231EBFE1836C60D00BC41C1 /* Telehash_PlaygroundTests.m */; };
 		8231EC121836C62200BC41C1 /* libtelehash.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8231EC111836C62200BC41C1 /* libtelehash.a */; };
 		8231EC141836C76500BC41C1 /* libc++.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8231EC131836C76500BC41C1 /* libc++.dylib */; };
+		82835BD51857950100168C3B /* libcryptopp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 82835BD41857950100168C3B /* libcryptopp.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -54,6 +55,7 @@
 		8231EBFE1836C60D00BC41C1 /* Telehash_PlaygroundTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Telehash_PlaygroundTests.m; sourceTree = "<group>"; };
 		8231EC111836C62200BC41C1 /* libtelehash.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtelehash.a; path = "../../../../../Library/Developer/Xcode/DerivedData/telehash-hdsfxjzmsvyqtyccnkdyjwfyzarx/Build/Products/Debug/libtelehash.a"; sourceTree = "<group>"; };
 		8231EC131836C76500BC41C1 /* libc++.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libc++.dylib"; path = "usr/lib/libc++.dylib"; sourceTree = SDKROOT; };
+		82835BD41857950100168C3B /* libcryptopp.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcryptopp.a; path = "../cryptopp-ios/lib/libcryptopp.a"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -61,6 +63,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				82835BD51857950100168C3B /* libcryptopp.a in Frameworks */,
 				8231EC141836C76500BC41C1 /* libc++.dylib in Frameworks */,
 				8231EC121836C62200BC41C1 /* libtelehash.a in Frameworks */,
 				8231EBD51836C60D00BC41C1 /* Cocoa.framework in Frameworks */,
@@ -101,6 +104,7 @@
 		8231EBD31836C60D00BC41C1 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				82835BD41857950100168C3B /* libcryptopp.a */,
 				8231EC131836C76500BC41C1 /* libc++.dylib */,
 				8231EC111836C62200BC41C1 /* libtelehash.a */,
 				8231EBD41836C60D00BC41C1 /* Cocoa.framework */,
@@ -404,6 +408,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/telehash-hdsfxjzmsvyqtyccnkdyjwfyzarx/Build/Products/Debug",
+					"/Users/temas/Projects/telehash/objc/telehash/cryptopp-ios/lib",
 				);
 				OTHER_LDFLAGS = "-all_load";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -427,6 +432,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/telehash-hdsfxjzmsvyqtyccnkdyjwfyzarx/Build/Products/Debug",
+					"/Users/temas/Projects/telehash/objc/telehash/cryptopp-ios/lib",
 				);
 				OTHER_LDFLAGS = "-all_load";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -493,6 +499,7 @@
 				8231EC041836C60D00BC41C1 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		8231EC051836C60D00BC41C1 /* Build configuration list for PBXNativeTarget "Telehash PlaygroundTests" */ = {
 			isa = XCConfigurationList;
@@ -501,6 +508,7 @@
 				8231EC071836C60D00BC41C1 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

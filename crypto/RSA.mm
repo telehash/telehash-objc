@@ -41,6 +41,19 @@ using CryptoPP::PKCS1v15;
 
 @implementation RSA
 
++(id)generateRSAKeysOfLength:(unsigned int)length;
+{
+    CryptoPP::AutoSeededRandomPool rng;
+    CryptoPP::RSA::PrivateKey pkey;
+    pkey.GenerateRandomWithKeySize(rng, length);
+    
+    RSA* instance = [RSA new];
+    instance->publicKey = CryptoPP::RSA::PublicKey(pkey);
+    instance->privateKey = pkey;
+    
+    return instance;
+}
+
 -(unsigned long)signatureLength;
 {
     RSASS<PKCS1v15, SHA256>::Signer signer(self->privateKey);
@@ -163,6 +176,22 @@ using CryptoPP::PKCS1v15;
 {
     RSASS<PKCS1v15, SHA256>::Verifier verifier(self->publicKey);
     return verifier.VerifyMessage((const byte*)[message bytes], [message length], (const byte*)[signature bytes], [signature length]);
+}
+
+-(void)savePublicKey:(NSString *)publicPath privateKey:(NSString *)privatePath
+{
+    [[self DERPublicKey] writeToFile:publicPath atomically:YES];
+    
+    CryptoPP::ByteQueue bytes;
+    self->privateKey.DEREncode(bytes);
+    
+    NSMutableData* DERData = [NSMutableData dataWithLength:bytes.MaxRetrievable()];
+    
+    CryptoPP::ArraySink out((byte*)[DERData mutableBytes], [DERData length]);
+    self->privateKey.DEREncode(out);
+    out.MessageEnd();
+    
+    [DERData writeToFile:privatePath atomically:YES];
 }
 
 @end

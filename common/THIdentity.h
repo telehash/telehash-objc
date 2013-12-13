@@ -11,6 +11,7 @@
 
 @interface THIdentity : NSObject
 
++(id)generateIdentity;
 +(id)identityFromHashname:(NSString*)hashname;
 +(id)identityFromPublicKey:(NSString*)publicKeyPath privateKey:(NSString*)privateKeyPath;
 +(id)identityFromPublicKey:(NSData*)key;
