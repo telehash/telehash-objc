@@ -205,7 +205,8 @@ typedef void(^PendingJobBlock)(id result);
 
 -(void)openLine:(THIdentity *)toIdentity;
 {
-    if (toIdentity.address) {
+    // We have everything we need to direct request
+    if (toIdentity.address && toIdentity.rsaKeys) {
         THLine* channelLine = [THLine new];
         channelLine.toIdentity = toIdentity;
         channelLine.address = toIdentity.address;
@@ -216,10 +217,24 @@ typedef void(^PendingJobBlock)(id result);
         return;
     };
     
+    // Let's do a peer request
+    if (toIdentity.via) {
+        THPacket* peerPacket = [THPacket new];
+        [peerPacket.json setObject:[[RNG randomBytesOfLength:16] hexString] forKey:@"c"];
+        [peerPacket.json setObject:toIdentity.hashname forKey:@"peer"];
+        [peerPacket.json setObject:@YES forKey:@"end"];
+        
+        // We blind send this and hope for the best!
+        THLine* viaLine = [self lineToHashname:toIdentity.via.hashname];
+        [viaLine sendPacket:peerPacket];
+        return;
+    }
+    
     NSArray* nearby = [self seek:toIdentity.hashname];
     
     // TODO: parallize x3
     [nearby enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        THLine* nearLine = (THLine*)obj;
         // Send each nearby a seek packet for toIdentity
         THPacket* seekPacket = [THPacket new];
         [seekPacket.json setObject:[[RNG randomBytesOfLength:16] hexString] forKey:@"c"];
@@ -237,6 +252,7 @@ typedef void(^PendingJobBlock)(id result);
                 NSArray* seeParts = [seeString componentsSeparatedByString:@","];
                 if ([[seeParts objectAtIndex:0] isEqualToString:toIdentity.hashname]) {
                     // this is it!
+                    toIdentity.via = nearLine.toIdentity;
                     [toIdentity setIP:[seeParts objectAtIndex:1] port:[[seeParts objectAtIndex:2] integerValue]];
                     [self openLine:toIdentity];
                     foundIt = YES;
@@ -246,11 +262,11 @@ typedef void(^PendingJobBlock)(id result);
                 // Check that we're moving forward
                 THIdentity* nearIdentity = [THIdentity identityFromHashname:[seeParts objectAtIndex:0]];
                 NSInteger distance = [self.identity distanceFrom:nearIdentity];
-                NSLog(@"Step distance is %ld", distance);
+                NSLog(@"Step distance is %d", distance);
             }];
         }]];
         
-        [(THLine*)obj sendPacket:seekPacket];
+        [nearLine sendPacket:seekPacket];
     }];
     /*
     channelLine = [THLine new];
@@ -288,6 +304,7 @@ typedef void(^PendingJobBlock)(id result);
 -(void)udpSocket:(GCDAsyncUdpSocket *)sock didReceiveData:(NSData *)data fromAddress:(NSData *)address withFilterContext:(id)filterContext
 {
     THPacket* incomingPacket = [THPacket packetData:data];
+    incomingPacket.fromAddress = address;
     if (!incomingPacket) {
         NSLog(@"Unexpected or unparseable packet form %@", address);
         return;

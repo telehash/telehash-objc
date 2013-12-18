@@ -13,6 +13,7 @@
 @property (atomic) NSMutableData* raw;
 @property (atomic) NSMutableDictionary* json;
 @property (atomic) NSData* body;
+@property (atomic) NSData* fromAddress;
 
 -(id)init;
 -(id)initWithJson:(NSMutableDictionary*)json;

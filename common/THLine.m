@@ -116,8 +116,10 @@
     NSString* channelId = [innerPacket.json objectForKey:@"c"];
     NSString* channelType = [innerPacket.json objectForKey:@"type"];
     
+    THSwitch* thSwitch = [THSwitch defaultSwitch];
+    
     // if the switch is handling it bail
-    if ([[THSwitch defaultSwitch] findPendingJob:innerPacket]) return;
+    if ([thSwitch findPendingJob:innerPacket]) return;
     
     if ([channelType isEqualToString:@"seek"]) {
         // On a seek we send back what we know about
@@ -132,7 +134,22 @@
         [response.json setObject:[sees valueForKey:@"seekString"] forKey:@"see"];
         
         [self sendPacket:response];
-    } else {
+    } else if ([channelType isEqualToString:@"peer"]) {
+        THLine* peerLine = [thSwitch lineToHashname:[innerPacket.json objectForKey:@"peer"]];
+        if (!peerLine) {
+            // What? We don't know about this person, bye bye
+            return;
+        }
+        
+        THPacket* connectPacket = [THPacket new];
+        [connectPacket.json setObject:[RNG randomBytesOfLength:16] forKey:@"c"];
+        const struct sockaddr_in* addr = [packet.fromAddress bytes];
+        [connectPacket.json setObject:[NSString stringWithUTF8String:inet_ntoa(addr->sin_addr)] forKey:@"ip"];
+        [connectPacket.json setObject:[NSNumber numberWithUnsignedInt:addr->sin_port] forKey:@"port"];
+        connectPacket.body = [peerLine.toIdentity.rsaKeys DERPublicKey];
+        
+        [peerLine sendPacket:connectPacket];
+    }else {
         NSNumber* seq = [innerPacket.json objectForKey:@"seq"];
         // Let the channel instance handle it
         THChannel* channel = [self.channels objectForKey:channelId];

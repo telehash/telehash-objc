@@ -24,6 +24,7 @@
 @property RSA* rsaKeys;
 @property (readonly) NSString* hashname;
 @property NSData* address;
+@property THIdentity* via;
 
 // TODO:  Method to create a channel for a type
 
