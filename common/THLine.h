@@ -11,6 +11,7 @@
 #import "ECDH.h"
 
 @class THPacket;
+@class THChannel;
 
 @interface THLine : NSObject
 

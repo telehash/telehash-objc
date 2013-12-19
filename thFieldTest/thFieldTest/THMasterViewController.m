@@ -86,6 +86,7 @@
     thSwitch.delegate = self;
     
     [thSwitch startOnPort:42424];
+    NSLog(@"Online as %@", ourIdentity.hashname);
     
     NSString* filePath = [[NSBundle mainBundle] pathForResource:@"seeds" ofType:@"json"];
     NSData* seedData = [NSData dataWithContentsOfFile:filePath];

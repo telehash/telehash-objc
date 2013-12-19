@@ -341,8 +341,12 @@ typedef void(^PendingJobBlock)(id result);
         }
 
         NSLog(@"Finding line for  %@ in %@", senderIdentity.hashname, self.openLines);
-        //[self.openLines objectForKey:[innerPacket.json objectForKey:@"line"]];
-        THLine* newLine = [self.pendingLines objectForKey:senderIdentity.hashname];
+        THLine* newLine = [self lineToHashname:senderIdentity.hashname];
+        // remove any existing lines to this hashname
+        if (newLine) {
+            [self.openLines removeObjectForKey:newLine.inLineId];
+        }
+        newLine = [self.pendingLines objectForKey:senderIdentity.hashname];
         if (newLine) {
             NSLog(@"Finish open on %@", newLine);
             newLine.outLineId = [innerPacket.json objectForKey:@"line"];

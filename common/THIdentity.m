@@ -73,6 +73,9 @@
 
 -(void)setIP:(NSString*)ip port:(NSUInteger)port;
 {
+    // Only valid data please
+    if (ip == nil || port == 0) return;
+    
     struct sockaddr_in ipAddress;
     ipAddress.sin_len = sizeof(ipAddress);
     ipAddress.sin_family = AF_INET;

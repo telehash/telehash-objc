@@ -44,6 +44,11 @@
 @end
 
 @implementation THUnreliableChannel
+-(void)dealloc
+{
+    NSLog(@"gone for unreliable %@", self.channelId);
+}
+
 -(id)initToIdentity:(THIdentity *)identity;
 {
     self = [super initToIdentity:identity];
@@ -53,12 +58,18 @@
 -(void)handlePacket:(THPacket *)packet;
 {
     [self.delegate channel:self handlePacket:packet];
+    if ([[packet.json objectForKey:@"end"] boolValue] == YES) {
+        [self.line.channels removeObjectForKey:self.channelId];
+    }
 }
 
 -(void)sendPacket:(THPacket *)packet;
 {
     [packet.json setObject:self.channelId forKey:@"c"];
     [self.line sendPacket:packet];
+    if ([[packet.json objectForKey:@"end"] boolValue] == YES) {
+        [self.line.channels removeObjectForKey:self.channelId];
+    }
 }
 @end
 
@@ -145,12 +156,33 @@
 
 -(void)delegateHandlePackets;
 {
+#if 0
     if (channelSemaphore != NULL) {
         dispatch_semaphore_signal(channelSemaphore);
         return;
     };
-    channelQueue = dispatch_queue_create([[NSString stringWithFormat:@"telehash.channel.%@", self.channelId] UTF8String], NULL);
-    channelSemaphore = dispatch_semaphore_create(0);
+#endif
+    if (!channelQueue) {
+        channelQueue = dispatch_queue_create([[NSString stringWithFormat:@"telehash.channel.%@", self.channelId] UTF8String], NULL);
+        //channelSemaphore = dispatch_semaphore_create(0);
+    }
+
+    while (inPacketBuffer.length > 0) {
+        if (inPacketBuffer.frontSeq != (maxProcessed + 1)) {
+            // XXX dispatch a missing queue?
+            return;
+        }
+        THPacket* curPacket = [inPacketBuffer pop];
+        dispatch_async(channelQueue, ^{
+            [self.delegate channel:self handlePacket:curPacket];
+            if ([[curPacket.json objectForKey:@"end"] boolValue] == YES) {
+                // TODO: Shut it down!
+            }
+            maxProcessed = [[curPacket.json objectForKey:@"seq"] unsignedIntegerValue];
+        });
+    }
+
+#if 0
     dispatch_async(channelQueue, ^{
         while (self.channelIsReady) {
             BOOL inOrder = YES;
@@ -162,11 +194,15 @@
                 }
                 THPacket* curPacket = [inPacketBuffer pop];
                 [self.delegate channel:self handlePacket:curPacket];
+                if ([curPacket.json objectForKey:@"end"] == @YES) {
+                    // TODO: Shut it down!
+                }
                 maxProcessed = [[curPacket.json objectForKey:@"seq"] unsignedIntegerValue];
             }
             dispatch_semaphore_wait(channelSemaphore, DISPATCH_TIME_FOREVER);
         }
     });
+#endif
 }
 
 // Flush our out buffer
