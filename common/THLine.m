@@ -158,7 +158,7 @@
             return;
         }
         
-        [peerIdentity setIP:[innerPacket.json objectForKey:@"ip"] port:[innerPacket.json objectForKey:@"port"]];
+        [peerIdentity setIP:[innerPacket.json objectForKey:@"ip"] port:[[innerPacket.json objectForKey:@"port"] unsignedIntegerValue]];
         [thSwitch openLine:peerIdentity];
     } else {
         NSNumber* seq = [innerPacket.json objectForKey:@"seq"];
