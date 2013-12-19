@@ -143,13 +143,24 @@
         
         THPacket* connectPacket = [THPacket new];
         [connectPacket.json setObject:[RNG randomBytesOfLength:16] forKey:@"c"];
+        [connectPacket.json setObject:@"connect" forKey:@"type"];
         const struct sockaddr_in* addr = [packet.fromAddress bytes];
         [connectPacket.json setObject:[NSString stringWithUTF8String:inet_ntoa(addr->sin_addr)] forKey:@"ip"];
         [connectPacket.json setObject:[NSNumber numberWithUnsignedInt:addr->sin_port] forKey:@"port"];
         connectPacket.body = [peerLine.toIdentity.rsaKeys DERPublicKey];
         
         [peerLine sendPacket:connectPacket];
-    }else {
+    } else if ([channelType isEqualToString:@"connect"]) {
+        THIdentity* peerIdentity = [THIdentity identityFromPublicKey:innerPacket.body];
+        THLine* curLine = [thSwitch lineToHashname:peerIdentity.hashname];
+        if (curLine) {
+            // We don't need to do anything?
+            return;
+        }
+        
+        [peerIdentity setIP:[innerPacket.json objectForKey:@"ip"] port:[innerPacket.json objectForKey:@"port"]];
+        [thSwitch openLine:peerIdentity];
+    } else {
         NSNumber* seq = [innerPacket.json objectForKey:@"seq"];
         // Let the channel instance handle it
         THChannel* channel = [self.channels objectForKey:channelId];

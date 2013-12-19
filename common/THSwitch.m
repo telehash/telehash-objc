@@ -224,6 +224,8 @@ typedef void(^PendingJobBlock)(id result);
         [peerPacket.json setObject:toIdentity.hashname forKey:@"peer"];
         [peerPacket.json setObject:@YES forKey:@"end"];
         
+        [self.udpSocket sendData:[NSData data] toAddress:toIdentity.address withTimeout:-1 tag:0];
+        
         // We blind send this and hope for the best!
         THLine* viaLine = [self lineToHashname:toIdentity.via.hashname];
         [viaLine sendPacket:peerPacket];
