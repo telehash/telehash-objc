@@ -255,7 +255,9 @@ typedef void(^PendingJobBlock)(id result);
                 if ([[seeParts objectAtIndex:0] isEqualToString:toIdentity.hashname]) {
                     // this is it!
                     toIdentity.via = nearLine.toIdentity;
-                    [toIdentity setIP:[seeParts objectAtIndex:1] port:[[seeParts objectAtIndex:2] integerValue]];
+                    if (seeParts.count > 1) {
+                        [toIdentity setIP:[seeParts objectAtIndex:1] port:[[seeParts objectAtIndex:2] integerValue]];
+                    }
                     [self openLine:toIdentity];
                     foundIt = YES;
                     // Remove pending identity job
