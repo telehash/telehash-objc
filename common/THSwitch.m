@@ -195,6 +195,8 @@ typedef void(^PendingJobBlock)(id result);
     if (!channelLine) {
         [self.pendingChannels addObject:channel];
         [self openLine:channel.toIdentity];
+        // TODO:  Check this sendPacket
+        [channel sendPacket:packet];
         return;
     }
     channel.channelIsReady = YES;
@@ -381,6 +383,14 @@ typedef void(^PendingJobBlock)(id result);
             }
         }
         
+        [self.pendingChannels enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            THReliableChannel* channel = (THReliableChannel*)obj;
+            if ([channel.toIdentity.hashname isEqualToString:newLine.toIdentity.hashname]) {
+                channel.channelIsReady = YES;
+                [channel flushOut];
+            }
+        }];
+
     } else if([[incomingPacket.json objectForKey:@"type"] isEqualToString:@"line"]) {
         NSLog(@"Received a line packet for %@", [incomingPacket.json objectForKey:@"line"]);
         // Process a line packet
