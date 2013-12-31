@@ -222,6 +222,7 @@ typedef void(^PendingJobBlock)(id result);
         THPacket* peerPacket = [THPacket new];
         [peerPacket.json setObject:[[RNG randomBytesOfLength:16] hexString] forKey:@"c"];
         [peerPacket.json setObject:toIdentity.hashname forKey:@"peer"];
+        [peerPacket.json setObject:@"peer" forKey:@"type"];
         [peerPacket.json setObject:@YES forKey:@"end"];
         
         [self.udpSocket sendData:[NSData data] toAddress:toIdentity.address withTimeout:-1 tag:0];

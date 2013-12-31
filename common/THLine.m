@@ -46,7 +46,8 @@
     THPacket* innerPacket = [THPacket new];
     [innerPacket.json setObject:self.toIdentity.hashname forKey:@"to"];
     NSDate* now = [NSDate date];
-    NSInteger timestamp = (NSInteger)([now timeIntervalSince1970] * 1000);
+    NSInteger timestamp = (NSInteger)([now timeIntervalSince1970]);
+    NSLog(@"Open timestamp is %ld", timestamp);
     [innerPacket.json setObject:[NSNumber numberWithInteger:timestamp] forKey:@"at"];
     
     // Generate a new line id if we weren't given one
@@ -158,11 +159,18 @@
             return;
         }
         
-        [peerIdentity setIP:[innerPacket.json objectForKey:@"ip"] port:[[innerPacket.json objectForKey:@"port"] unsignedIntegerValue]];
+        // Iterate over the paths and find the ipv4
+        [[innerPacket.json objectForKey:@"paths"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            NSDictionary* pathInfo = (NSDictionary*)obj;
+            if ([[obj objectForKey:@"type"] isEqualToString:@"ipv4"]) {
+                *stop = YES;
+                [peerIdentity setIP:[pathInfo objectForKey:@"ip"] port:[[pathInfo objectForKey:@"port"] unsignedIntegerValue]];
+            }
+        }];
         [thSwitch openLine:peerIdentity];
     } else {
         NSNumber* seq = [innerPacket.json objectForKey:@"seq"];
-        // Let the channel instance handle it
+        // Let the channel instance han`dle it
         THChannel* channel = [self.channels objectForKey:channelId];
         if (channel) {
             if (seq) {
