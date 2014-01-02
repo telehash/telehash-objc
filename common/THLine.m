@@ -143,7 +143,7 @@
         }
         
         THPacket* connectPacket = [THPacket new];
-        [connectPacket.json setObject:[RNG randomBytesOfLength:16] forKey:@"c"];
+        [connectPacket.json setObject:[[RNG randomBytesOfLength:16] hexString] forKey:@"c"];
         [connectPacket.json setObject:@"connect" forKey:@"type"];
         const struct sockaddr_in* addr = [packet.fromAddress bytes];
         [connectPacket.json setObject:[NSString stringWithUTF8String:inet_ntoa(addr->sin_addr)] forKey:@"ip"];
@@ -196,7 +196,9 @@
             }
             newChannel.channelId = channelId;
             THSwitch* defaultSwitch = [THSwitch defaultSwitch];
-            [defaultSwitch.delegate channelReady:newChannel type:channelType firstPacket:innerPacket];
+            if ([defaultSwitch.delegate respondsToSelector:@selector(channelReady:type:firstPacket:)]) {
+                [defaultSwitch.delegate channelReady:newChannel type:channelType firstPacket:innerPacket];
+            }
             newChannel.channelIsReady = YES;
             NSLog(@"Adding a channel");
             [self.channels setObject:newChannel forKey:channelId];

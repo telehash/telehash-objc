@@ -18,11 +18,15 @@
 #import "THPacketBuffer.h"
 
 @implementation THChannel
+{
+    THChannelState _state;
+}
 
 -(id)initToIdentity:(THIdentity*)identity
 {
     self = [super init];
     if (self) {
+        _state = THChannelOpening;
         self.toIdentity = identity;
         self.channelIsReady = NO;
         self.channelId  = [[RNG randomBytesOfLength:16] hexString]; // We'll just go ahead and make one
@@ -30,6 +34,19 @@
         self.line = [defaultSwitch lineToHashname:self.toIdentity.hashname];
     }
     return self;
+}
+
+-(THChannelState)state
+{
+    return _state;
+}
+
+-(void)setState:(THChannelState)state
+{
+    _state = state;
+    if ([self.delegate respondsToSelector:@selector(channel:didChangeStateTo:)]) {
+        [self.delegate channel:self didChangeStateTo:_state];
+    }
 }
 
 -(void)sendPacket:(THPacket *)packet;

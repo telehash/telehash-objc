@@ -16,9 +16,16 @@
 @class THLine;
 @class THPacketBuffer;
 
+typedef enum {
+    THChannelOpening,
+    THChannelOpen,
+    THChannelEnded,
+    THChannelErrored
+} THChannelState;
+
 @protocol THChannelDelegate <NSObject>
 #pragma mark State Handling
--(void)channelDidFinishOpen:(THChannel*)channel;
+-(void)channel:(THChannel*)channel didChangeStateTo:(THChannelState)channelState;
 #pragma mark Error Handling
 -(void)channel:(THChannel*)channel didFailWithError:(NSError*)error;
 -(BOOL)channel:(THChannel*)channel handlePacket:(THPacket*)packet;
@@ -33,6 +40,7 @@
 @property THIdentity* toIdentity;
 @property THLine* line;
 @property NSString* channelId;
+@property THChannelState state;
 
 -(id)initToIdentity:(THIdentity*)identity;
 // TODO:  init method that allows creation against THSwitch instances other than the shared one

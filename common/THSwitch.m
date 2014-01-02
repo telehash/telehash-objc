@@ -193,16 +193,17 @@ typedef void(^PendingJobBlock)(id result);
     // Check for an already open lines
     THLine* channelLine = [self lineToHashname:channel.toIdentity.hashname];
     if (!channelLine) {
+        [channel sendPacket:packet];
         [self.pendingChannels addObject:channel];
         [self openLine:channel.toIdentity];
-        // TODO:  Check this sendPacket
-        [channel sendPacket:packet];
         return;
+    } else {
+        channel.state = THChannelOpen;
+        channel.channelIsReady = YES;
+        channel.line = channelLine;
+        [channelLine.channels setObject:channel forKey:channel.channelId];
+        [channel sendPacket:packet];
     }
-    channel.channelIsReady = YES;
-    channel.line = channelLine;
-    [channelLine.channels setObject:channel forKey:channel.channelId];
-    [channel sendPacket:packet];
 }
 
 -(void)openLine:(THIdentity *)toIdentity;
@@ -384,10 +385,15 @@ typedef void(^PendingJobBlock)(id result);
         }
         
         [self.pendingChannels enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            THReliableChannel* channel = (THReliableChannel*)obj;
+            THChannel* channel = (THChannel*)obj;
             if ([channel.toIdentity.hashname isEqualToString:newLine.toIdentity.hashname]) {
                 channel.channelIsReady = YES;
-                [channel flushOut];
+                channel.state = THChannelOpen;
+                // Reliable channels can now flush out
+                if ([channel isKindOfClass:[THReliableChannel class]]) {
+                    [(THReliableChannel*)channel flushOut];
+                }
+                [self.pendingChannels removeObjectAtIndex:idx];
             }
         }];
 
