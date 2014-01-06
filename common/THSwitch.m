@@ -188,22 +188,29 @@ typedef void(^PendingJobBlock)(id result);
     return ret;
 }
 
+-(void)channel:(THChannel*)channel line:(THLine*)line firstPacket:(THPacket*)packet
+{
+    channel.line = line;
+    [channel.line.channels setObject:channel forKey:channel.channelId];
+    channel.state = THChannelOpen;
+    channel.channelIsReady = YES;
+    [channel sendPacket:packet];
+}
+
 -(void)openChannel:(THChannel *)channel firstPacket:(THPacket *)packet;
 {
     // Check for an already open lines
     THLine* channelLine = [self lineToHashname:channel.toIdentity.hashname];
     if (!channelLine) {
-        [channel sendPacket:packet];
-        [self.pendingChannels addObject:channel];
+        [self.pendingJobs addObject:[THPendingJob pendingJobFor:channel completion:^(id result) {
+            [channel sendPacket:packet];
+            [self channel:channel line:(THLine*)result firstPacket:packet];
+        }]];
         [self openLine:channel.toIdentity];
-        return;
     } else {
-        channel.state = THChannelOpen;
-        channel.channelIsReady = YES;
-        channel.line = channelLine;
-        [channelLine.channels setObject:channel forKey:channel.channelId];
-        [channel sendPacket:packet];
+        [self channel:channel line:channelLine firstPacket:packet];
     }
+
 }
 
 -(void)openLine:(THIdentity *)toIdentity;
@@ -384,19 +391,18 @@ typedef void(^PendingJobBlock)(id result);
             }
         }
         
-        [self.pendingChannels enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            THChannel* channel = (THChannel*)obj;
-            if ([channel.toIdentity.hashname isEqualToString:newLine.toIdentity.hashname]) {
-                channel.channelIsReady = YES;
-                channel.state = THChannelOpen;
-                // Reliable channels can now flush out
-                if ([channel isKindOfClass:[THReliableChannel class]]) {
-                    [(THReliableChannel*)channel flushOut];
-                }
-                [self.pendingChannels removeObjectAtIndex:idx];
+        // Check the pending jobs for any lines or channels
+        [self.pendingJobs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            THPendingJob* job = (THPendingJob*)obj;
+            if (job.type == PendingChannel) {
+                THChannel* channel = (THChannel*)job.pending;
+                if (![channel.toIdentity.hashname isEqualToString:newLine.toIdentity.hashname]) return;
+                [self.pendingJobs removeObjectAtIndex:idx];
+                job.handler(newLine);
+            } else if (job.type == PendingLine) {
+                // TODO:  What is a pending line job?
             }
         }];
-
     } else if([[incomingPacket.json objectForKey:@"type"] isEqualToString:@"line"]) {
         NSLog(@"Received a line packet for %@", [incomingPacket.json objectForKey:@"line"]);
         // Process a line packet
