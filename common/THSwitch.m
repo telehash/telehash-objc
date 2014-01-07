@@ -17,39 +17,8 @@
 #import "THChannel.h"
 #import "RNG.h"
 #import "NSData+HexString.h"
-
-
-typedef enum {
-    PendingIdentity,
-    PendingLine,
-    PendingChannel,
-    PendingPacket
-} THPendingJobType;
-
-typedef void(^PendingJobBlock)(id result);
-
-@interface THPendingJob : NSObject
-@property THPendingJobType type;
-@property id pending;
-@property (copy) PendingJobBlock handler;
-+(id)pendingJobFor:(id)pendingItem completion:(PendingJobBlock)onCompletion;
-@end
-
-@implementation THPendingJob
-+(id)pendingJobFor:(id)pendingItem completion:(PendingJobBlock)onCompletion;
-{
-    THPendingJob* pendingJob = [THPendingJob new];
-    Class itemClass = [pendingItem class];
-    if (itemClass == [THIdentity class]) pendingJob.type = PendingIdentity;
-    if (itemClass == [THLine class]) pendingJob.type = PendingLine;
-    if ([itemClass superclass] == [THChannel class]) pendingJob.type = PendingChannel;
-    if (itemClass == [THPacket class]) pendingJob.type = PendingPacket;
-    pendingJob.pending = pendingItem;
-    pendingJob.handler = onCompletion;
-    
-    return pendingJob;
-}
-@end
+#import "THMeshBuckets.h"
+#import "THPendingJob.h"
 
 @interface THSwitch()
 
@@ -84,6 +53,7 @@ typedef void(^PendingJobBlock)(id result);
 -(id)init;
 {
     if (self) {
+        self.meshBuckets = [THMeshBuckets new];
         self.openLines = [NSMutableDictionary dictionary];
         self.pendingLines = [NSMutableDictionary dictionary];
         self.pendingJobs = [NSMutableArray array];

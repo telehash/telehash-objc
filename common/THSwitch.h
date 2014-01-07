@@ -13,6 +13,7 @@
 @class THChannel;
 @class THPacket;
 @class THLine;
+@class THMeshBuckets;
 
 typedef enum {
     ReliableChannel,
@@ -30,6 +31,7 @@ typedef enum {
 
 +(id)defaultSwitch;
 
+@property THMeshBuckets* meshBuckets;
 @property NSMutableDictionary* openLines;
 @property THIdentity* identity;
 @property id<THSwitchDelegate> delegate;
