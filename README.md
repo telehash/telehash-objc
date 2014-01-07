@@ -1,14 +1,13 @@
 #Telehash for Objective-C#
 
-This is for both desktop and iOS usage.
+Using with CocoaPods
+--------------------
 
-In order to get going you'll need Crypto++ installed.  For now I would 
-suggest using https://github.com/noloader/cryptopp-5.6.2-ios and putting
-the cryptopp-ios directory at the root of this project.
+To install with CocoaPods, simply add the following to your Podfile:
 
-We're in the process of migrating to using CocoaPods but until then you
-might need to set some of these settings:
+pod 'Telehash', '0.0.1'
 
-https://dl.dropboxusercontent.com/1/view/qnz1dw2lba0u9fd/Captured/X0F7t.png
+Using as a standalone library
+-----------------------------
 
-
+See the sub-project thFieldTest for an example of using the library.
