@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "Telehash"
-  s.version      = "0.0.1"
+  s.version      = "0.0.2"
   s.summary      = "Telehash Switch in Objective-C for iOS and Desktop"
   s.description  = <<-DESC
                    Objective-C library for Telehash - a distributed secure wire protocol.
