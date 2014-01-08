@@ -12,8 +12,11 @@
 @class THLine;
 
 @interface THMeshBuckets : NSObject
+
+@property THIdentity* localIdentity;
 @property NSMutableArray* buckets;
 
 -(void)addLine:(THLine*)line;
--(NSArray*)seek:(THIdentity*)identity;
+-(void)removeLine:(THLine*)line;
+-(NSArray*)seek:(THIdentity*)seekIdentity;
 @end

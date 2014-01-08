@@ -170,7 +170,7 @@
         [thSwitch openLine:peerIdentity];
     } else {
         NSNumber* seq = [innerPacket.json objectForKey:@"seq"];
-        // Let the channel instance han`dle it
+        // Let the channel instance handle it
         THChannel* channel = [self.channels objectForKey:channelId];
         if (channel) {
             if (seq) {
@@ -179,7 +179,9 @@
                 if (seq.unsignedIntegerValue == 0 && [[innerPacket.json objectForKey:@"ack"] unsignedIntegerValue] == 0) {
                     reliableChannel.channelIsReady = YES;
                     THSwitch* defaultSwitch = [THSwitch defaultSwitch];
-                    [defaultSwitch.delegate channelReady:reliableChannel type:ReliableChannel firstPacket:innerPacket];
+                    if ([defaultSwitch.delegate respondsToSelector:@selector(channelReady:type:firstPacket:)]) {
+                        [defaultSwitch.delegate channelReady:reliableChannel type:ReliableChannel firstPacket:innerPacket];
+                    }
                 }
             }
             [channel handlePacket:innerPacket];

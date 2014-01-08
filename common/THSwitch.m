@@ -23,7 +23,6 @@
 @interface THSwitch()
 
 @property NSMutableArray* pendingJobs;
-@property NSMutableDictionary* pendingLines;
 @property NSMutableArray* pendingChannels;
 @property GCDAsyncUdpSocket* udpSocket;
 
@@ -55,7 +54,6 @@
     if (self) {
         self.meshBuckets = [THMeshBuckets new];
         self.openLines = [NSMutableDictionary dictionary];
-        self.pendingLines = [NSMutableDictionary dictionary];
         self.pendingJobs = [NSMutableArray array];
         self.udpSocket = [[GCDAsyncUdpSocket alloc] initWithDelegate:self delegateQueue:dispatch_get_main_queue()];
         self.channelQueue = dispatch_queue_create("channelWorkQueue", NULL);
@@ -70,6 +68,8 @@
 }
 -(void)startOnPort:(unsigned short)port
 {
+    self.meshBuckets.localIdentity = self.identity;
+    
     NSError* bindError;
     [self.udpSocket bindToPort:port error:&bindError];
     if (bindError != nil) {
@@ -117,28 +117,7 @@
 // TODO:  Consider if this arg should be THIdentity
 -(NSArray*)seek:(NSString *)hashname;
 {
-    NSMutableArray* entries = [NSMutableArray array];
-    [self.openLines enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-        THLine* line = (THLine*)obj;
-        [entries addObject:line];
-        /*
-        if ([line.toIdentity.hashname isEqualToString:hashname]) {
-            [entries addObject:line];
-        }
-        */
-    }];
-    [entries sortedArrayUsingComparator:^NSComparisonResult(id obj1, id obj2) {
-        THLine* lh = (THLine*)obj1;
-        THLine* rh = (THLine*)obj2;
-        
-        NSInteger lhDistance = [self.identity distanceFrom:lh.toIdentity];
-        NSInteger rhDistance = [self.identity distanceFrom:rh.toIdentity];
-        
-        if (lhDistance > rhDistance) return (NSComparisonResult)NSOrderedDescending;
-        if (lhDistance < rhDistance) return (NSComparisonResult)NSOrderedAscending;
-        return (NSComparisonResult)NSOrderedSame;
-    }];
-    return entries;
+    return [self.meshBuckets seek:[THIdentity identityFromHashname:hashname]];
 }
 
 -(THLine*)lineToHashname:(NSString*)hashname;
@@ -191,7 +170,9 @@
         channelLine.toIdentity = toIdentity;
         channelLine.address = toIdentity.address;
         
-        [self.pendingLines setObject:channelLine forKey:toIdentity.hashname];
+        [self.pendingJobs addObject:[THPendingJob pendingJobFor:channelLine completion:^(id result) {
+            // TODO ?
+        }]];
         
         [channelLine sendOpen];
         return;
@@ -253,15 +234,6 @@
         
         [nearLine sendPacket:seekPacket];
     }];
-    /*
-    channelLine = [THLine new];
-    channelLine.toIdentity = channel.toIdentity;
-    channelLine.address = channel.toIdentity.address;
-    
-    [self.pendingLines setObject:channelLine forKey:channel.toIdentity.hashname];
-    
-    [channelLine sendOpen];
-    */
 }
 
 -(BOOL)findPendingJob:(THPacket *)packet;
@@ -327,21 +299,35 @@
         THLine* newLine = [self lineToHashname:senderIdentity.hashname];
         // remove any existing lines to this hashname
         if (newLine) {
+            [self.meshBuckets removeLine:newLine];
             [self.openLines removeObjectForKey:newLine.inLineId];
         }
-        newLine = [self.pendingLines objectForKey:senderIdentity.hashname];
-        if (newLine) {
+        __block THPendingJob* pendingLineJob;
+        [self.pendingJobs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            THPendingJob* job = (THPendingJob*)obj;
+            if (job.type != PendingLine) return;
+            
+            THLine* pendingLine = (THLine*)job.pending;
+            if ([pendingLine.toIdentity.hashname isEqualToString:senderIdentity.hashname]) {
+                pendingLineJob = job;
+                *stop = YES;
+                [self.pendingJobs removeObjectAtIndex:idx];
+            }
+        }];
+        if (pendingLineJob) {
             NSLog(@"Finish open on %@", newLine);
+            newLine = (THLine*)pendingLineJob.pending;
             newLine.outLineId = [innerPacket.json objectForKey:@"line"];
             newLine.remoteECCKey = eccKey;
             [newLine openLine];
-            
-            [self.pendingLines removeObjectForKey:senderIdentity.hashname];
+
             [self.openLines setObject:newLine forKey:newLine.inLineId];
             
             if ([self.delegate respondsToSelector:@selector(openedLine:)]) {
                 [self.delegate openedLine:newLine];
             }
+            
+            pendingLineJob.handler(newLine);
         } else {
             
             newLine = [THLine new];
@@ -360,6 +346,7 @@
                 [self.delegate openedLine:newLine];
             }
         }
+        [self.meshBuckets addLine:newLine];
         
         // Check the pending jobs for any lines or channels
         [self.pendingJobs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
