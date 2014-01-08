@@ -32,7 +32,7 @@
     return [[THIdentity alloc] initWithHashname:hashname];
 }
 
-+(id)identityFromPublicKey:(NSString*)publicKeyPath privateKey:(NSString*)privateKeyPath;
++(id)identityFromPublicFile:(NSString*)publicKeyPath privateFile:(NSString*)privateKeyPath;
 {
     if (![[NSFileManager defaultManager] fileExistsAtPath:publicKeyPath]) return nil;
     if (![[NSFileManager defaultManager] fileExistsAtPath:privateKeyPath]) return nil;
@@ -40,9 +40,14 @@
     return [[THIdentity alloc] initWithPublicKeyPath:publicKeyPath privateKey:privateKeyPath];
 }
 
++(id)identityFromPublicKey:(NSData *)publicKey privateKey:(NSData *)privateKey
+{
+    return [[THIdentity alloc] initWithPublicKey:publicKey privateKey:privateKey];
+}
+
 +(id)identityFromPublicKey:(NSData*)key;
 {
-    return [[THIdentity alloc] initWithPublicKey:key];
+    return [[THIdentity alloc] initWithPublicKey:key privateKey:nil];
 }
 
 -(id)initWithHashname:(NSString *)hashname;
@@ -62,11 +67,12 @@
     }
     return self;
 }
--(id)initWithPublicKey:(NSData*)key;
+
+-(id)initWithPublicKey:(NSData*)key privateKey:(NSData *)privateKey
 {
     self = [super init];
     if (self) {
-        self.rsaKeys = [RSA RSAWithPublicKey:key privateKey:nil];
+        self.rsaKeys = [RSA RSAWithPublicKey:key privateKey:privateKey];
     }
     return self;
 }

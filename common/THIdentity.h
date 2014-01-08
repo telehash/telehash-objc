@@ -13,13 +13,14 @@
 
 +(id)generateIdentity;
 +(id)identityFromHashname:(NSString*)hashname;
-+(id)identityFromPublicKey:(NSString*)publicKeyPath privateKey:(NSString*)privateKeyPath;
++(id)identityFromPublicFile:(NSString*)publicKeyPath privateFile:(NSString*)privateKeyPath;
++(id)identityFromPublicKey:(NSData *)publicKey privateKey:(NSData *)privateKey;
 +(id)identityFromPublicKey:(NSData*)key;
 // Keys, hashname, address
 
 -(id)initWithHashname:(NSString*)hashname;
 -(id)initWithPublicKeyPath:(NSString*)publicKeyPath privateKey:(NSString*)privateKeyPath;
--(id)initWithPublicKey:(NSData*)key;
+-(id)initWithPublicKey:(NSData *)publicKey privateKey:(NSData *)privateKey;
 
 @property RSA* rsaKeys;
 @property (readonly) NSString* hashname;

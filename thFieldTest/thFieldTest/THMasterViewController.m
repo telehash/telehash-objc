@@ -49,7 +49,7 @@
     NSString* privPath = [NSString stringWithFormat:@"%@/privkey.der", documentPath];
     
     THIdentity* ourIdentity = nil;
-    ourIdentity = [THIdentity identityFromPublicKey:pubPath privateKey:privPath];
+    ourIdentity = [THIdentity identityFromPublicFile:pubPath privateFile:privPath];
     if (!ourIdentity) {
         ourIdentity = [THIdentity generateIdentity];
 
