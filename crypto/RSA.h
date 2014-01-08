@@ -12,6 +12,7 @@
 
 @property (readonly) unsigned long signatureLength;
 @property (readonly) NSData* DERPublicKey;
+@property (readonly) NSData* DERPrivateKey;
 
 +(id)generateRSAKeysOfLength:(unsigned int)length;
 +(id)RSAFromPublicKeyPath:(NSString*)publicKeyPath privateKeyPath:(NSString*)privateKeyPath;

@@ -74,6 +74,20 @@ using CryptoPP::PKCS1v15;
     return DERData;
 }
 
+-(NSData*)DERPrivateKey
+{
+    CryptoPP::ByteQueue bytes;
+    self->privateKey.DEREncode(bytes);
+    
+    NSMutableData* DERData = [NSMutableData dataWithLength:bytes.MaxRetrievable()];
+    
+    CryptoPP::ArraySink out((byte*)[DERData mutableBytes], [DERData length]);
+    self->privateKey.DEREncode(out);
+    out.MessageEnd();
+    
+    return DERData;
+}
+
 +(id)RSAFromPublicKeyPath:(NSString*)publicKeyPath privateKeyPath:(NSString*)privateKeyPath;
 {
     RSA* newInstance = [RSA new];
