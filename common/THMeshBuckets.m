@@ -16,8 +16,8 @@
 {
     self = [super init];
     if (self) {
-        self.buckets = [NSMutableArray arrayWithCapacity:255];
-        for (int i = 0; i < 255; ++i) {
+        self.buckets = [NSMutableArray arrayWithCapacity:256];
+        for (int i = 0; i < 256; ++i) {
             [self.buckets insertObject:[NSMutableArray array] atIndex:i];
         }
     }
@@ -49,7 +49,7 @@
 {
     NSMutableArray* entries = [NSMutableArray array];
     NSInteger curBucketIndex = [self.localIdentity distanceFrom:seekIdentity];
-    while (curBucketIndex < 255 && [entries count] < 5) {
+    while (curBucketIndex < 256 && [entries count] < 5) {
         NSArray* curBucket = [self.buckets objectAtIndex:curBucketIndex];
         [curBucket enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
             [entries addObject:obj];
