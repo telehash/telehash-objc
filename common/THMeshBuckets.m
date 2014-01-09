@@ -9,8 +9,14 @@
 #import "THMeshBuckets.h"
 #import "THIdentity.h"
 #import "THLine.h"
+#import "THPacket.h"
+#import "RNG.h"
+#import "NSData+HexString.h"
 
 @implementation THMeshBuckets
+{
+    BOOL pendingPings;
+}
 
 -(id)init
 {
@@ -22,6 +28,37 @@
         }
     }
     return self;
+}
+
+-(void)pingLines
+{
+    time_t checkTime = time(NULL);
+    [self.buckets enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        NSArray* bucket = (NSArray*)obj;
+        [bucket enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            THLine* line = (THLine*)obj;
+            
+            // 60s ping based on last activity
+            if (line.lastActitivy + 60 > checkTime) return;
+            
+            THPacket* seekPacket = [THPacket new];
+            [seekPacket.json setObject:[[RNG randomBytesOfLength:16] hexString] forKey:@"c"];
+            [seekPacket.json setObject:@"seek" forKey:@"type"];
+            [seekPacket.json setObject:self.localIdentity.hashname forKey:@"seek"];
+            
+            [line sendPacket:seekPacket];
+        }];
+    }];
+    
+    if (!pendingPings) {
+        double delayInSeconds = 60.0;
+        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
+        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+            pendingPings = NO;
+            [self pingLines];
+        });
+        pendingPings = YES;
+    }
 }
 
 -(void)addLine:(THLine *)line
@@ -36,6 +73,8 @@
     
     // We insert this at position 0 because it is the most recently active
     [bucket insertObject:line atIndex:0];
+
+    [self pingLines];
 }
 
 -(void)removeLine:(THLine *)line

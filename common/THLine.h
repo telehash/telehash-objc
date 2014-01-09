@@ -25,6 +25,7 @@
 @property NSData* remoteECCKey;
 @property BOOL isOpen;
 @property NSMutableDictionary* channels;
+@property NSUInteger lastActitivy;
 
 -(id)init;
 -(void)sendOpen;

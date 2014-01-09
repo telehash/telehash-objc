@@ -110,6 +110,8 @@
 
 -(void)handlePacket:(THPacket *)packet;
 {
+    self.lastActitivy = time(NULL);
+    
     //NSLog(@"Going to handle a packet");
     THPacket* innerPacket = [THPacket packetData:[CTRAES256Decryptor decryptPlaintext:packet.body key:self.decryptorKey iv:[[packet.json objectForKey:@"iv"] dataFromHexString]]];
     //NSLog(@"Packet is type %@", [innerPacket.json objectForKey:@"type"]);
