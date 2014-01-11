@@ -18,6 +18,7 @@
 #import "CTRAES256.h"
 #import "NSString+HexString.h"
 #import "THChannel.h"
+#import "THMeshBuckets.h"
 
 #include <arpa/inet.h>
 
@@ -122,7 +123,7 @@
     THSwitch* thSwitch = [THSwitch defaultSwitch];
     
     // if the switch is handling it bail
-    if ([thSwitch findPendingJob:innerPacket]) return;
+    if ([thSwitch findPendingSeek:innerPacket]) return;
     
     if ([channelType isEqualToString:@"seek"]) {
         // On a seek we send back what we know about
@@ -130,7 +131,7 @@
         [response.json setObject:@(YES) forKey:@"end"];
         [response.json setObject:channelId forKey:@"c"];
         THSwitch* defaultSwitch = [THSwitch defaultSwitch];
-        NSArray* sees = [defaultSwitch seek:[innerPacket.json objectForKey:@"seek"]];
+        NSArray* sees = [defaultSwitch.meshBuckets nearby:[innerPacket.json objectForKey:@"seek"]];
         if (sees == nil) {
             sees = [NSArray array];
         }
@@ -169,7 +170,7 @@
                 [peerIdentity setIP:[pathInfo objectForKey:@"ip"] port:[[pathInfo objectForKey:@"port"] unsignedIntegerValue]];
             }
         }];
-        [thSwitch openLine:peerIdentity];
+        [thSwitch openLine:peerIdentity completion:nil];
     } else {
         NSNumber* seq = [innerPacket.json objectForKey:@"seq"];
         // Let the channel instance handle it

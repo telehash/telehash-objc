@@ -22,7 +22,6 @@
 
 @interface THSwitch()
 
-@property NSMutableArray* pendingJobs;
 @property NSMutableArray* pendingChannels;
 @property GCDAsyncUdpSocket* udpSocket;
 
@@ -96,7 +95,7 @@
             THIdentity* seedIdentity = [THIdentity identityFromPublicKey:pubKeyData];
             [seedIdentity setIP:[entry objectForKey:@"ip"] port:[[entry objectForKey:@"port"] unsignedIntegerValue]];
             
-            [self openLine:seedIdentity];
+            [self openLine:seedIdentity completion:nil];
         }];
     }
 }
@@ -113,12 +112,6 @@
     
 }
 */
-
-// TODO:  Consider if this arg should be THIdentity
--(NSArray*)seek:(NSString *)hashname;
-{
-    return [self.meshBuckets seek:[THIdentity identityFromHashname:hashname]];
-}
 
 -(THLine*)lineToHashname:(NSString*)hashname;
 {
@@ -155,14 +148,14 @@
             [channel sendPacket:packet];
             [self channel:channel line:(THLine*)result firstPacket:packet];
         }]];
-        [self openLine:channel.toIdentity];
+        [self openLine:channel.toIdentity completion:nil];
     } else {
         [self channel:channel line:channelLine firstPacket:packet];
     }
 
 }
 
--(void)openLine:(THIdentity *)toIdentity;
+-(void)openLine:(THIdentity *)toIdentity completion:(LineOpenBlock)lineOpenCompletion
 {
     // We have everything we need to direct request
     if (toIdentity.address && toIdentity.rsaKeys) {
@@ -171,7 +164,7 @@
         channelLine.address = toIdentity.address;
         
         [self.pendingJobs addObject:[THPendingJob pendingJobFor:channelLine completion:^(id result) {
-            // TODO ?
+            if (lineOpenCompletion) lineOpenCompletion(channelLine);
         }]];
         
         [channelLine sendOpen];
@@ -194,63 +187,26 @@
         return;
     }
     
-    NSArray* nearby = [self seek:toIdentity.hashname];
-    
-    // TODO: parallize x3
-    [nearby enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        THLine* nearLine = (THLine*)obj;
-        // Send each nearby a seek packet for toIdentity
-        THPacket* seekPacket = [THPacket new];
-        [seekPacket.json setObject:[[RNG randomBytesOfLength:16] hexString] forKey:@"c"];
-        [seekPacket.json setObject:@"seek" forKey:@"type"];
-        [seekPacket.json setObject:toIdentity.hashname forKey:@"seek"];
-        
-        __block BOOL foundIt = NO;
-        NSInteger curDistance = [self.identity distanceFrom:toIdentity];
-        [self.pendingJobs addObject:[THPendingJob pendingJobFor:seekPacket completion:^(id result) {
-            if (foundIt) return;
-            THPacket* response = (THPacket*)result;
-            NSArray* sees = [response.json objectForKey:@"see"];
-            [sees enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-                NSString* seeString = (NSString*)obj;
-                NSArray* seeParts = [seeString componentsSeparatedByString:@","];
-                if ([[seeParts objectAtIndex:0] isEqualToString:toIdentity.hashname]) {
-                    // this is it!
-                    toIdentity.via = nearLine.toIdentity;
-                    if (seeParts.count > 1) {
-                        [toIdentity setIP:[seeParts objectAtIndex:1] port:[[seeParts objectAtIndex:2] integerValue]];
-                    }
-                    [self openLine:toIdentity];
-                    foundIt = YES;
-                    // Remove pending identity job
-                }
-                
-                // Check that we're moving forward
-                THIdentity* nearIdentity = [THIdentity identityFromHashname:[seeParts objectAtIndex:0]];
-                NSInteger distance = [self.identity distanceFrom:nearIdentity];
-                NSLog(@"Step distance is %d", distance);
-            }];
-        }]];
-        
-        [nearLine sendPacket:seekPacket];
+    // Find a way to it from the mesh
+    [self.meshBuckets seek:toIdentity completion:^(BOOL found) {
+        NSLog(@"Found it: %d", found);
     }];
 }
-
--(BOOL)findPendingJob:(THPacket *)packet;
+ 
+-(BOOL)findPendingSeek:(THPacket *)packet;
 {
     if ([self.pendingJobs count] == 0) return NO;
     __block BOOL handled = NO;
     // We only handle results, seek requests are in the line
     [self.pendingJobs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         THPendingJob* pendingJob = (THPendingJob*)obj;
-        if (pendingJob.type == PendingPacket) {
-            THPacket* pendingPacket = (THPacket*)pendingJob.pending;
-            if ([[pendingPacket.json objectForKey:@"c"] isEqualToString:[packet.json objectForKey:@"c"]]) {
-                pendingJob.handler(packet);
-                *stop = YES;
-                handled = YES;
-                [self.pendingJobs removeObjectAtIndex:idx];
-            }
+        if (pendingJob.type != PendingSeek) return;
+        THPacket* pendingPacket = (THPacket*)pendingJob.pending;
+        if ([[pendingPacket.json objectForKey:@"c"] isEqualToString:[packet.json objectForKey:@"c"]]) {
+            pendingJob.handler(packet);
+            *stop = YES;
+            handled = YES;
+            [self.pendingJobs removeObjectAtIndex:idx];
         }
     }];
     return handled;

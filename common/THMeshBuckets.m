@@ -12,6 +12,8 @@
 #import "THPacket.h"
 #import "RNG.h"
 #import "NSData+HexString.h"
+#import "THSwitch.h"
+#import "THPendingJob.h"
 
 @implementation THMeshBuckets
 {
@@ -30,6 +32,16 @@
     return self;
 }
 
+-(void)pingLine:(THLine*)line
+{
+    THPacket* seekPacket = [THPacket new];
+    [seekPacket.json setObject:[[RNG randomBytesOfLength:16] hexString] forKey:@"c"];
+    [seekPacket.json setObject:@"seek" forKey:@"type"];
+    [seekPacket.json setObject:self.localIdentity.hashname forKey:@"seek"];
+    
+    [line sendPacket:seekPacket];
+}
+
 -(void)pingLines
 {
     time_t checkTime = time(NULL);
@@ -41,12 +53,7 @@
             // 60s ping based on last activity
             if (line.lastActitivy + 60 > checkTime) return;
             
-            THPacket* seekPacket = [THPacket new];
-            [seekPacket.json setObject:[[RNG randomBytesOfLength:16] hexString] forKey:@"c"];
-            [seekPacket.json setObject:@"seek" forKey:@"type"];
-            [seekPacket.json setObject:self.localIdentity.hashname forKey:@"seek"];
-            
-            [line sendPacket:seekPacket];
+            [self pingLine:line];
         }];
     }];
     
@@ -83,8 +90,7 @@
     [[self.buckets objectAtIndex:bucketIndex] removeObject:line];
 }
 
-// TODO:  Consider if this arg should be THIdentity
--(NSArray*)seek:(THIdentity*)seekIdentity;
+-(NSArray*)nearby:(THIdentity*)seekIdentity;
 {
     NSMutableArray* entries = [NSMutableArray array];
     NSInteger curBucketIndex = [self.localIdentity distanceFrom:seekIdentity];
@@ -113,4 +119,65 @@
     return entries;
 }
 
+-(void)seek:(THIdentity*)toIdentity completion:(SeekCompletionBlock)completion
+{
+    NSArray* nearby = [self nearby:[THIdentity identityFromHashname:toIdentity.hashname]];
+    [[nearby subarrayWithRange:NSMakeRange(0, 3)] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        [self seek:(THIdentity*)obj completion:^(BOOL found) {
+            if (completion) completion(found);
+        }];
+    }];
+}
+
+-(void)seek:(THIdentity*)toIdentity via:(THIdentity*)seekIdentity completion:(SeekCompletionBlock)completion
+{
+    THSwitch* defaultSwitch = [THSwitch defaultSwitch];
+    
+    dispatch_queue_t seekQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+    NSInteger curBucketIndex = [self.localIdentity distanceFrom:toIdentity];
+    
+    [defaultSwitch openLine:toIdentity completion:^(THLine *seekLine) {
+        THPacket* seekPacket = [THPacket new];
+        [seekPacket.json setObject:[[RNG randomBytesOfLength:16] hexString] forKey:@"c"];
+        [seekPacket.json setObject:toIdentity.hashname forKey:@"type"];
+        [seekPacket.json setObject:@"seek" forKey:@"type"];
+
+        [defaultSwitch.pendingJobs addObject:[THPendingJob pendingJobFor:seekPacket completion:^(id result) {
+            THPacket* response = (THPacket*)result;
+            NSArray* sees = [response.json objectForKey:@"see"];
+            [sees enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+                NSString* seeString = (NSString*)obj;
+                NSArray* seeParts = [seeString componentsSeparatedByString:@","];
+                if ([[seeParts objectAtIndex:0] isEqualToString:toIdentity.hashname]) {
+                    // this is it!
+                    toIdentity.via = seekLine.toIdentity;
+                    if (seeParts.count > 1) {
+                        [seekIdentity setIP:[seeParts objectAtIndex:1] port:[[seeParts objectAtIndex:2] integerValue]];
+                    }
+                    [defaultSwitch openLine:seekIdentity completion:^(THLine *openedLine) {
+                        if (completion) completion(YES);
+                        *stop = YES;
+                    }];
+                } else {
+                    // If we're moving closer we want to go ahead and start a seek to it
+                    THIdentity* nearIdentity = [THIdentity identityFromHashname:[seeParts objectAtIndex:0]];
+                    nearIdentity.via = seekIdentity;
+                    NSInteger distance = [self.localIdentity distanceFrom:nearIdentity];
+                    NSLog(@"Step distance is %d", distance);
+                    if (distance < curBucketIndex) {
+                        dispatch_async(seekQueue, ^{
+                            [self seek:toIdentity via:nearIdentity completion:^(BOOL found) {
+                                if (found && completion) completion(found);
+                            }];
+                        });
+                    }
+                }
+                
+            }];
+        }]];
+        
+        [seekLine sendPacket:seekPacket];
+    }];
+    
+}
 @end
