@@ -19,6 +19,7 @@
 #import "NSData+HexString.h"
 #import "THMeshBuckets.h"
 #import "THPendingJob.h"
+#include <arpa/inet.h>
 
 @interface THSwitch()
 
@@ -95,7 +96,7 @@
             THIdentity* seedIdentity = [THIdentity identityFromPublicKey:pubKeyData];
             [seedIdentity setIP:[entry objectForKey:@"ip"] port:[[entry objectForKey:@"port"] unsignedIntegerValue]];
             
-            [self openLine:seedIdentity completion:nil];
+            [self openLine:seedIdentity];
         }];
     }
 }
@@ -126,7 +127,7 @@
             *stop = YES;
         }
     }];
-    NSLog(@"We found %@", ret);
+    NSLog(@"We found line to hashname %@ %@", ret.toIdentity.hashname, ret);
     return ret;
 }
 
@@ -148,11 +149,16 @@
             [channel sendPacket:packet];
             [self channel:channel line:(THLine*)result firstPacket:packet];
         }]];
-        [self openLine:channel.toIdentity completion:nil];
+        [self openLine:channel.toIdentity];
     } else {
         [self channel:channel line:channelLine firstPacket:packet];
     }
 
+}
+
+-(void)openLine:(THIdentity *)toIdentity
+{
+    [self openLine:toIdentity completion:nil];
 }
 
 -(void)openLine:(THIdentity *)toIdentity completion:(LineOpenBlock)lineOpenCompletion
@@ -216,10 +222,12 @@
 
 -(void)udpSocket:(GCDAsyncUdpSocket *)sock didReceiveData:(NSData *)data fromAddress:(NSData *)address withFilterContext:(id)filterContext
 {
+    const struct sockaddr_in* addr = [address bytes];
+    NSLog(@"Incoming data from %@", [NSString stringWithUTF8String:inet_ntoa(addr->sin_addr)]);
     THPacket* incomingPacket = [THPacket packetData:data];
     incomingPacket.fromAddress = address;
     if (!incomingPacket) {
-        NSLog(@"Unexpected or unparseable packet form %@", address);
+        NSLog(@"Unexpected or unparseable packet from %@: %@", [NSString stringWithUTF8String:inet_ntoa(addr->sin_addr)], [data base64EncodedStringWithOptions:0]);
         return;
     }
     

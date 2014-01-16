@@ -53,6 +53,7 @@ typedef void(^LineOpenBlock)(THLine*);
 // just a hashname.  The switch will do everything it can to open the line.
 // The completion block is optional.
 -(void)openLine:(THIdentity*)toIdentity completion:(LineOpenBlock)lineOpenCompletion;
+-(void)openLine:(THIdentity*)toIdentity;
 -(void)loadSeeds:(NSData*)seedData;
 
 // This is an internal handling hack

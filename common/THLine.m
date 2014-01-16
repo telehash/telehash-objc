@@ -116,7 +116,7 @@
     //NSLog(@"Going to handle a packet");
     THPacket* innerPacket = [THPacket packetData:[CTRAES256Decryptor decryptPlaintext:packet.body key:self.decryptorKey iv:[[packet.json objectForKey:@"iv"] dataFromHexString]]];
     //NSLog(@"Packet is type %@", [innerPacket.json objectForKey:@"type"]);
-    NSLog(@"Line handling %@", innerPacket.json);
+    NSLog(@"Line %@ handling %@", self.toIdentity.hashname, innerPacket.json);
     NSString* channelId = [innerPacket.json objectForKey:@"c"];
     NSString* channelType = [innerPacket.json objectForKey:@"type"];
     
@@ -131,7 +131,7 @@
         [response.json setObject:@(YES) forKey:@"end"];
         [response.json setObject:channelId forKey:@"c"];
         THSwitch* defaultSwitch = [THSwitch defaultSwitch];
-        NSArray* sees = [defaultSwitch.meshBuckets nearby:[innerPacket.json objectForKey:@"seek"]];
+        NSArray* sees = [defaultSwitch.meshBuckets nearby:[THIdentity identityFromHashname:[innerPacket.json objectForKey:@"seek"]]];
         if (sees == nil) {
             sees = [NSArray array];
         }
@@ -170,7 +170,15 @@
                 [peerIdentity setIP:[pathInfo objectForKey:@"ip"] port:[[pathInfo objectForKey:@"port"] unsignedIntegerValue]];
             }
         }];
-        [thSwitch openLine:peerIdentity completion:nil];
+        
+        // TODO: This is old and DEPRECATED, to be removed
+        if (peerIdentity.address.length == 0) {
+            NSString* ip = [innerPacket.json objectForKey:@"ip"];
+            NSNumber* port = [innerPacket.json objectForKey:@"port"];
+            
+            [peerIdentity setIP:ip port:[port unsignedIntegerValue]];
+        }
+        [thSwitch openLine:peerIdentity];
     } else {
         NSNumber* seq = [innerPacket.json objectForKey:@"seq"];
         // Let the channel instance handle it
@@ -228,7 +236,7 @@
     [linePacket.json setObject:[iv hexString] forKey:@"iv"];
     linePacket.body = [packet encode];
     
-    NSLog(@"Sending %@", packet.json);
+    NSLog(@"Sending to %@: %@", self.toIdentity.hashname, packet.json);
     
     [linePacket encryptWithKey:self.encryptorKey iv:iv];
     
