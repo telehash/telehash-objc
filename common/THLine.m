@@ -13,7 +13,7 @@
 #import "NSData+HexString.h"
 #import "SHA256.h"
 #import "THIdentity.h"
-#import "RSA.h"
+#import "THRSA.h"
 #import "THSwitch.h"
 #import "CTRAES256.h"
 #import "NSString+HexString.h"
