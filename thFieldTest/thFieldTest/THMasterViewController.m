@@ -33,6 +33,7 @@
     [super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
     self.navigationItem.leftBarButtonItem = self.editButtonItem;
+    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Go" style:UIBarButtonItemStylePlain target:self action:@selector(doStuff)];
 
     /*
     UIBarButtonItem *addButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(insertNewObject:)];
@@ -114,6 +115,7 @@
     if (!_objects) {
         _objects = [[NSMutableArray alloc] init];
     }
+    
     [_objects addObject:line.toIdentity.hashname];
     NSIndexPath *indexPath = [NSIndexPath indexPathForRow:(_objects.count - 1) inSection:0];
     [self.tableView insertRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
@@ -187,6 +189,11 @@
         NSDate *object = _objects[indexPath.row];
         [[segue destinationViewController] setDetailItem:object];
     }
+}
+
+-(void)doStuff
+{
+    [thSwitch openLine:[THIdentity identityFromHashname:@"580154007d7c0c925735e62354eb54fd7f12245a1e7755905960478c537c1144"]];
 }
 
 @end

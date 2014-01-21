@@ -12,7 +12,7 @@ typedef enum {
     PendingIdentity,
     PendingLine,
     PendingChannel,
-    PendingPacket
+    PendingSeek
 } THPendingJobType;
 
 typedef void(^PendingJobBlock)(id result);

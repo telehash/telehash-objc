@@ -6,7 +6,7 @@
 //  Copyright (c) 2013 Telehash Foundation. All rights reserved.
 //
 
-#import "RSA.h"
+#import "THRSA.h"
 
 #include <cryptopp/rsa.h>
 using CryptoPP::RSAES;

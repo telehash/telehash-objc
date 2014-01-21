@@ -24,7 +24,7 @@
 		8218D1B017FA6EA60053AFAC /* libtelehash-ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8218D19B17FA6EA50053AFAC /* libtelehash-ios.a */; };
 		8218D1B617FA6EA60053AFAC /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 8218D1B417FA6EA60053AFAC /* InfoPlist.strings */; };
 		8218D1B817FA6EA60053AFAC /* telehash_iosTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 8218D1B717FA6EA60053AFAC /* telehash_iosTests.m */; };
-		8218D1C217FA6F410053AFAC /* RSA.h in Headers */ = {isa = PBXBuildFile; fileRef = 8218D1C017FA6F410053AFAC /* RSA.h */; };
+		8218D1C217FA6F410053AFAC /* THRSA.h in Headers */ = {isa = PBXBuildFile; fileRef = 8218D1C017FA6F410053AFAC /* THRSA.h */; };
 		8218D1C317FA6F410053AFAC /* RSA.mm in Sources */ = {isa = PBXBuildFile; fileRef = 8218D1C117FA6F410053AFAC /* RSA.mm */; };
 		8218D1C417FA6F410053AFAC /* RSA.mm in Sources */ = {isa = PBXBuildFile; fileRef = 8218D1C117FA6F410053AFAC /* RSA.mm */; };
 		822C6D2F17FCCD0C008C04BA /* ECDH.h in Headers */ = {isa = PBXBuildFile; fileRef = 822C6D2D17FCCD0C008C04BA /* ECDH.h */; };
@@ -167,7 +167,7 @@
 		8218D1B317FA6EA60053AFAC /* telehash-iosTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "telehash-iosTests-Info.plist"; sourceTree = "<group>"; };
 		8218D1B517FA6EA60053AFAC /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		8218D1B717FA6EA60053AFAC /* telehash_iosTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = telehash_iosTests.m; sourceTree = "<group>"; };
-		8218D1C017FA6F410053AFAC /* RSA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RSA.h; sourceTree = "<group>"; };
+		8218D1C017FA6F410053AFAC /* THRSA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THRSA.h; sourceTree = "<group>"; };
 		8218D1C117FA6F410053AFAC /* RSA.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = RSA.mm; sourceTree = "<group>"; };
 		822C6D2D17FCCD0C008C04BA /* ECDH.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ECDH.h; sourceTree = "<group>"; };
 		822C6D2E17FCCD0C008C04BA /* ECDH.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ECDH.mm; sourceTree = "<group>"; };
@@ -382,7 +382,7 @@
 		8218D1BF17FA6EF50053AFAC /* cryptopp */ = {
 			isa = PBXGroup;
 			children = (
-				8218D1C017FA6F410053AFAC /* RSA.h */,
+				8218D1C017FA6F410053AFAC /* THRSA.h */,
 				8218D1C117FA6F410053AFAC /* RSA.mm */,
 				822C6D2D17FCCD0C008C04BA /* ECDH.h */,
 				822C6D2E17FCCD0C008C04BA /* ECDH.mm */,
@@ -454,7 +454,7 @@
 				82B70ACE18404D4900E819F3 /* THPacketBuffer.h in Headers */,
 				82DB236B187C8343002C74C9 /* THMeshBuckets.h in Headers */,
 				822C6D2F17FCCD0C008C04BA /* ECDH.h in Headers */,
-				8218D1C217FA6F410053AFAC /* RSA.h in Headers */,
+				8218D1C217FA6F410053AFAC /* THRSA.h in Headers */,
 				822C6D3417FCD3F6008C04BA /* CTRAES256.h in Headers */,
 				822C6D3E17FCD8C5008C04BA /* RNG.h in Headers */,
 				82B1721018009A6C00C29EAF /* GCDAsyncUdpSocket.h in Headers */,

@@ -11,6 +11,8 @@
 @class THIdentity;
 @class THLine;
 
+typedef void(^SeekCompletionBlock)(BOOL found);
+
 @interface THMeshBuckets : NSObject
 
 @property THIdentity* localIdentity;
@@ -18,5 +20,6 @@
 
 -(void)addLine:(THLine*)line;
 -(void)removeLine:(THLine*)line;
--(NSArray*)seek:(THIdentity*)seekIdentity;
+-(NSArray*)nearby:(THIdentity*)seekIdentity;
+-(void)seek:(THIdentity*)seekIdentity completion:(SeekCompletionBlock)completion;
 @end

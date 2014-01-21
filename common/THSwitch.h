@@ -20,6 +20,8 @@ typedef enum {
     UnreliableChannel
 } THChannelType;
 
+typedef void(^LineOpenBlock)(THLine*);
+
 @protocol THSwitchDelegate <NSObject>
 
 -(void)openedLine:(THLine*)line;
@@ -33,6 +35,7 @@ typedef enum {
 
 @property THMeshBuckets* meshBuckets;
 @property NSMutableDictionary* openLines;
+@property NSMutableArray* pendingJobs;
 @property THIdentity* identity;
 @property id<THSwitchDelegate> delegate;
 @property dispatch_queue_t channelQueue;
@@ -43,14 +46,18 @@ typedef enum {
 -(void)start;
 -(void)startOnPort:(unsigned short)port;
 -(void)sendPacket:(THPacket*)packet toAddress:(NSData*)address;
--(NSArray*)seek:(NSString*)hashname;
 -(THLine*)lineToHashname:(NSString*)hashname;
 -(void)openChannel:(THChannel*)channel firstPacket:(THPacket*)packet;
+/// Open a line to the given identity
+// The identity can be either a complete identity (RSA keys and address filled in) or
+// just a hashname.  The switch will do everything it can to open the line.
+// The completion block is optional.
+-(void)openLine:(THIdentity*)toIdentity completion:(LineOpenBlock)lineOpenCompletion;
 -(void)openLine:(THIdentity*)toIdentity;
 -(void)loadSeeds:(NSData*)seedData;
 
 // This is an internal handling hack
--(BOOL)findPendingJob:(THPacket*)packet;
+-(BOOL)findPendingSeek:(THPacket*)packet;
 
 #pragma mark UDP Handlers
 -(void)udpSocket:(GCDAsyncUdpSocket *)sock didReceiveData:(NSData *)data fromAddress:(NSData *)address withFilterContext:(id)filterContext;

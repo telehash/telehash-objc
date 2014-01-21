@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "RSA.h"
+#import "THRSA.h"
 
 @interface THIdentity : NSObject
 
