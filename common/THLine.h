@@ -24,14 +24,12 @@
 @property NSData* encryptorKey;
 @property NSData* remoteECCKey;
 @property BOOL isOpen;
-@property NSMutableDictionary* channels;
 @property NSUInteger lastActitivy;
 
 -(id)init;
 -(void)sendOpen;
 -(void)openLine;
 -(void)handlePacket:(THPacket*)packet;
--(NSString*)seekString;
 -(void)sendPacket:(THPacket*)packet;
 
 @end

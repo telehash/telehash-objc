@@ -14,23 +14,21 @@
 #import "NSData+HexString.h"
 #import "THSwitch.h"
 #import "THPendingJob.h"
+#import "THChannel.h"
 
-#define DEFAULT_KMAX 64
-#define DEFAULT_KMIN 4
+#define K_BUCKET_SIZE 8
+#define MAX_LINKS 256
 
 @implementation THMeshBuckets
 {
     BOOL pendingPings;
-    NSUInteger KMax;
-    NSUInteger KMin;
+    NSUInteger linkTotal;
 }
 
 -(id)init
 {
     self = [super init];
     if (self) {
-        KMax = DEFAULT_KMAX;
-        KMin = DEFAULT_KMIN;
         self.buckets = [NSMutableArray arrayWithCapacity:256];
         for (int i = 0; i < 256; ++i) {
             [self.buckets insertObject:[NSMutableArray array] atIndex:i];
@@ -39,33 +37,30 @@
     return self;
 }
 
--(void)pingLine:(THLine*)line
-{
-    THPacket* seekPacket = [THPacket new];
-    [seekPacket.json setObject:[[RNG randomBytesOfLength:16] hexString] forKey:@"c"];
-    [seekPacket.json setObject:@"seek" forKey:@"type"];
-    [seekPacket.json setObject:self.localIdentity.hashname forKey:@"seek"];
-    
-    THSwitch* defaultSwitch = [THSwitch defaultSwitch];
-    [defaultSwitch.pendingJobs addObject:[THPendingJob pendingJobFor:seekPacket completion:^(id result) {
-        // TODO:  pull out our IP?
-    }]];
-    
-    [line sendPacket:seekPacket];
-}
-
 -(void)pingLines
 {
     time_t checkTime = time(NULL);
-    [self.buckets enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        NSArray* bucket = (NSArray*)obj;
+    [self.buckets enumerateObjectsUsingBlock:^(id obj, NSUInteger bucketIdx, BOOL *stop) {
+        NSMutableArray* bucket = (NSMutableArray*)obj;
         [bucket enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            THLine* line = (THLine*)obj;
+            THIdentity* identity = (THIdentity*)obj;
+            
+            // Check for dead channels at 2m
+            if (identity.currentLine.lastActitivy + 120 > checkTime) {
+                [bucket removeObjectAtIndex:idx];
+                THChannel* channel = [identity channelForType:@"link"];
+                [identity.channels removeObjectForKey:channel.channelId];
+                // TODO:  Is the channel auto cleaned up properly now?  We dont' send an end:true because we assume it's dead
+                return;
+            }
             
             // 60s ping based on last activity
-            if (line.lastActitivy + 60 > checkTime) return;
+            if (identity.currentLine.lastActitivy + 55 > checkTime) return;
             
-            [self pingLine:line];
+            THPacket* pingPacket = [THPacket new];
+            [pingPacket.json setObject:@YES forKey:@"seed"];
+            
+            [identity sendPacket:pingPacket];
         }];
     }];
     
@@ -80,20 +75,59 @@
     }
 }
 
--(void)addLine:(THLine *)line
+-(void)addIdentity:(THIdentity *)identity
 {
-    NSInteger bucketIndex = [self.localIdentity distanceFrom:line.toIdentity];
+    [self pingLines];
+    
+    NSInteger bucketIndex = [self.localIdentity distanceFrom:identity];
     NSMutableArray* bucket = [self.buckets objectAtIndex:bucketIndex];
     if (bucket == nil) {
         bucket = [NSMutableArray array];
     }
     
-    // TODO:  Bucket depth?
-    
-    // We insert this at position 0 because it is the most recently active
-    [bucket insertObject:line atIndex:0];
+    THChannel* linkChannel = [identity channelForType:@"link"];
+    // TODO:  Check for a previous link channel and decide how to handle it
+    // TODO:  Check our hints for age on this entry, if it's older we should bump the newest from the bucket if it's full
+    if (linkTotal >= MAX_LINKS && bucket.count >= K_BUCKET_SIZE) {
+        // TODO:  Evict the oldest
+        
+        if (linkChannel) {
+            // TODO:  If we can not evict, we bail on it
+            THPacket* endLinkPacket = [THPacket new];
+            [endLinkPacket.json setObject:@YES forKey:@"end"];
+            [endLinkPacket.json setObject:@NO forKey:@"seed"];
+            [linkChannel sendPacket:endLinkPacket];
+        }
+        
+        // TODO:  Check the cleanup on the channel and up the chain?
+        return;
+    }
 
-    [self pingLines];
+    for (NSUInteger i = 0; i < bucket.count; ++i) {
+        THIdentity* curIdentity = (THIdentity*)[bucket objectAtIndex:i];
+        if ([curIdentity.hashname isEqualToString:identity.hashname]) {
+            return;
+        }
+    }
+    
+    [bucket addObject:identity];
+    
+    THPacket* linkPacket = [THPacket new];
+    [linkPacket.json setObject:@YES forKey:@"seed"]; // TODO:  Allow for opting out of seeding?
+    NSArray* sees = [self nearby:identity];
+    if (sees == nil) {
+        sees = [NSArray array];
+    }
+    [linkPacket.json setObject:[sees valueForKey:@"seekString"] forKey:@"see"];
+    
+    if (!linkChannel) {
+        linkChannel = [[THUnreliableChannel alloc] initToIdentity:identity];
+        [linkPacket.json setObject:@"link" forKey:@"type"];
+        [[THSwitch defaultSwitch] openChannel:linkChannel firstPacket:linkPacket];
+    } else {
+        [linkChannel sendPacket:linkPacket];
+    }
+    linkChannel.delegate = self;
 }
 
 -(void)removeLine:(THLine *)line
@@ -102,46 +136,54 @@
     [[self.buckets objectAtIndex:bucketIndex] removeObject:line];
 }
 
+-(NSArray*)closeInBucket:(THIdentity*)seekIdentity
+{
+    NSInteger bucketIndex = [self.localIdentity distanceFrom:seekIdentity];
+    NSArray* bucket = [self.buckets objectAtIndex:bucketIndex];
+    NSArray* results = [bucket sortedArrayUsingComparator:^NSComparisonResult(id obj1, id obj2) {
+        NSInteger hash1 = [seekIdentity distanceFrom:obj1];
+        NSInteger hash2 = [seekIdentity distanceFrom:obj2];
+        
+        if (hash1 < hash2) {
+            return NSOrderedDescending;
+        } else if (hash2 > hash1) {
+            return NSOrderedAscending;
+        }
+        
+        return NSOrderedSame;
+    }];
+    return [results subarrayWithRange:NSMakeRange(0, MIN(5, results.count))];
+}
+
 -(NSArray*)nearby:(THIdentity*)seekIdentity;
 {
-    NSLog(@"Nearby for %@", seekIdentity.hashname);
+    //NSLog(@"Nearby for %@", seekIdentity.hashname);
     NSMutableArray* entries = [NSMutableArray array];
     NSInteger initialBucketIndex = [self.localIdentity distanceFrom:seekIdentity];
-    // First descend to get closers
-    NSInteger curBucketIndex = initialBucketIndex;
+    // First get the closest
+    [entries addObjectsFromArray:[self closeInBucket:seekIdentity]];
+    // Go downwards for better matches
+    NSInteger curBucketIndex = initialBucketIndex - 1;
     while (curBucketIndex >= 0 && [entries count] < 5) {
         NSArray* curBucket = [self.buckets objectAtIndex:curBucketIndex];
-        [curBucket enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            if ([seekIdentity.hashname isEqualToString:((THLine*)obj).toIdentity.hashname]) return;
-            [entries addObject:obj];
-            if (entries.count > 5) *stop = YES;
-        }];
+        if (curBucket.count == 0) {
+            --curBucketIndex;
+            continue;
+        }
+        [entries addObjectsFromArray:[curBucket subarrayWithRange:NSMakeRange(0, MIN(5 - entries.count, curBucket.count))]];
         --curBucketIndex;
     }
     // Now just make sure we're full with general entries
-    curBucketIndex = initialBucketIndex;
+    curBucketIndex = initialBucketIndex + 1;
     while (curBucketIndex < 256) {
         NSArray* curBucket = [self.buckets objectAtIndex:curBucketIndex];
-        [curBucket enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            [entries addObject:obj];
-            if (entries.count > 5) *stop = YES;
-        }];
+        if (curBucket.count == 0) {
+            ++curBucketIndex;
+            continue;
+        }
+        [entries addObjectsFromArray:[curBucket subarrayWithRange:NSMakeRange(0, MIN(5 - entries.count, curBucket.count))]];
         ++curBucketIndex;
     }
-#if 0 // Old code for sorting the entries, this should happen naturally now
-    [entries sortedArrayUsingComparator:^NSComparisonResult(id obj1, id obj2) {
-        THLine* lh = (THLine*)obj1;
-        THLine* rh = (THLine*)obj2;
-        
-        NSInteger lhDistance = [self.identity distanceFrom:lh.toIdentity];
-        NSInteger rhDistance = [self.identity distanceFrom:rh.toIdentity];
-        
-        if (lhDistance > rhDistance) return (NSComparisonResult)NSOrderedDescending;
-        if (lhDistance < rhDistance) return (NSComparisonResult)NSOrderedAscending;
-        return (NSComparisonResult)NSOrderedSame;
-    }];
-#endif
-    NSLog(@"Seek entries: %@", entries);
     return entries;
 }
 
@@ -151,9 +193,8 @@
     NSArray* nearby = [self nearby:[THIdentity identityFromHashname:toIdentity.hashname]];
     NSUInteger length = nearby.count > 3 ? 3 : nearby.count;
     [[nearby subarrayWithRange:NSMakeRange(0, length)] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        THLine* curLine = (THLine*)obj;
-        NSLog(@"Starting seek for nearby %@", curLine.toIdentity.hashname);
-        [self seek:toIdentity via:curLine.toIdentity completion:^(BOOL found) {
+        THIdentity* identity = (THIdentity*)obj;
+        [self seek:toIdentity via:identity completion:^(BOOL found) {
             if (completion) completion(found);
         }];
     }];
@@ -197,8 +238,8 @@
                     // If we're moving closer we want to go ahead and start a seek to it
                     THIdentity* nearIdentity = [THIdentity identityFromHashname:[seeParts objectAtIndex:0]];
                     nearIdentity.via = viaIdentity;
-                    NSInteger distance = [self.localIdentity distanceFrom:nearIdentity];
-                    NSLog(@"Step distance is %d", distance);
+                    NSInteger distance = [self.localIdentity distanceFrom:nearIdentity];	
+                    NSLog(@"Step distance is %ld", distance);
                     if (distance < curBucketIndex) {
                         dispatch_async(seekQueue, ^{
                             [self seek:toIdentity via:nearIdentity completion:^(BOOL found) {
@@ -214,5 +255,27 @@
         [seekLine sendPacket:seekPacket];
     }];
     
+}
+
+// Channel delegate methods
+
+-(BOOL)channel:(THChannel *)channel handlePacket:(THPacket *)packet
+{
+    // TODO:  Handle a channel ping
+    return YES;
+}
+
+-(void)channel:(THChannel *)channel didChangeStateTo:(THChannelState)channelState
+{
+    if (channelState == THChannelEnded || channelState == THChannelErrored) {
+        NSMutableArray* bucket = [self.buckets objectAtIndex:[self.localIdentity distanceFrom:channel.toIdentity]];
+        [bucket removeObject:channel];
+    }
+}
+
+-(void)channel:(THChannel *)channel didFailWithError:(NSError *)error
+{
+    NSMutableArray* bucket = [self.buckets objectAtIndex:[self.localIdentity distanceFrom:channel.toIdentity]];
+    [bucket removeObject:channel];
 }
 @end

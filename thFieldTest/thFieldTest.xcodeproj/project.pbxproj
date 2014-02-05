@@ -26,8 +26,9 @@
 		8207A0C818566C69009EF845 /* libtelehash-ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8207A0C718566C69009EF845 /* libtelehash-ios.a */; };
 		82835BD91857962800168C3B /* libc++.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 82835BD81857962800168C3B /* libc++.dylib */; };
 		82835BDF185798BB00168C3B /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 82835BDE185798BB00168C3B /* Security.framework */; };
-		82835BE118579A0800168C3B /* seeds.json in Resources */ = {isa = PBXBuildFile; fileRef = 82835BE018579A0800168C3B /* seeds.json */; };
+		82835BE118579A0800168C3B /* seeds-real.json in Resources */ = {isa = PBXBuildFile; fileRef = 82835BE018579A0800168C3B /* seeds-real.json */; };
 		82D222CB1871E0F70015E7EA /* libcryptopp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 82D222CA1871E0F70015E7EA /* libcryptopp.a */; };
+		82E44855188E0AEE00B3AAEB /* seeds.json in Resources */ = {isa = PBXBuildFile; fileRef = 82E44854188E0AEE00B3AAEB /* seeds.json */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -66,8 +67,9 @@
 		8207A0C718566C69009EF845 /* libtelehash-ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libtelehash-ios.a"; path = "../build/Debug-iphoneos/libtelehash-ios.a"; sourceTree = "<group>"; };
 		82835BD81857962800168C3B /* libc++.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libc++.dylib"; path = "usr/lib/libc++.dylib"; sourceTree = SDKROOT; };
 		82835BDE185798BB00168C3B /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
-		82835BE018579A0800168C3B /* seeds.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = seeds.json; sourceTree = "<group>"; };
+		82835BE018579A0800168C3B /* seeds-real.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "seeds-real.json"; sourceTree = "<group>"; };
 		82D222CA1871E0F70015E7EA /* libcryptopp.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcryptopp.a; path = "../../../../../Library/Developer/Xcode/DerivedData/telehash-hdsfxjzmsvyqtyccnkdyjwfyzarx/Build/Products/Debug-iphoneos/libcryptopp.a"; sourceTree = "<group>"; };
+		82E44854188E0AEE00B3AAEB /* seeds.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = seeds.json; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -152,11 +154,12 @@
 		8207A08418562A5E009EF845 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
-				82835BE018579A0800168C3B /* seeds.json */,
+				82835BE018579A0800168C3B /* seeds-real.json */,
 				8207A08518562A5E009EF845 /* thFieldTest-Info.plist */,
 				8207A08618562A5E009EF845 /* InfoPlist.strings */,
 				8207A08918562A5E009EF845 /* main.m */,
 				8207A08B18562A5E009EF845 /* thFieldTest-Prefix.pch */,
+				82E44854188E0AEE00B3AAEB /* seeds.json */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -258,9 +261,10 @@
 			files = (
 				8207A09418562A5E009EF845 /* Main_iPad.storyboard in Resources */,
 				8207A09C18562A5E009EF845 /* Images.xcassets in Resources */,
+				82E44855188E0AEE00B3AAEB /* seeds.json in Resources */,
 				8207A09118562A5E009EF845 /* Main_iPhone.storyboard in Resources */,
 				8207A08818562A5E009EF845 /* InfoPlist.strings in Resources */,
-				82835BE118579A0800168C3B /* seeds.json in Resources */,
+				82835BE118579A0800168C3B /* seeds-real.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

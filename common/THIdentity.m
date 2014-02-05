@@ -10,8 +10,14 @@
 #import "SHA256.h"
 #import "NSData+HexString.h"
 #import "NSString+HexString.h"
+#import "THPacket.h"
+#import "THLine.h"
+#import "THSwitch.h"
+#import "THChannel.h"
 
 #include <arpa/inet.h>
+
+static NSMutableDictionary* identityCache;
 
 @interface THIdentity() {
     NSString* _hashnameCache;
@@ -29,7 +35,12 @@
 
 +(id)identityFromHashname:(NSString *)hashname;
 {
-    return [[THIdentity alloc] initWithHashname:hashname];
+    THIdentity* identity = [identityCache objectForKey:hashname];
+    if (!identity) {
+        identity = [[THIdentity alloc] initWithHashname:hashname];
+        [identityCache setObject:identity forKey:hashname];
+    }
+    return identity;
 }
 
 +(id)identityFromPublicFile:(NSString*)publicKeyPath privateFile:(NSString*)privateKeyPath;
@@ -37,23 +48,43 @@
     if (![[NSFileManager defaultManager] fileExistsAtPath:publicKeyPath]) return nil;
     if (![[NSFileManager defaultManager] fileExistsAtPath:privateKeyPath]) return nil;
     
+    // TODO:  Deal with cacheing this?
     return [[THIdentity alloc] initWithPublicKeyPath:publicKeyPath privateKey:privateKeyPath];
 }
 
 +(id)identityFromPublicKey:(NSData *)publicKey privateKey:(NSData *)privateKey
 {
-    return [[THIdentity alloc] initWithPublicKey:publicKey privateKey:privateKey];
+    SHA256* sha = [SHA256 new];
+    [sha updateWithData:publicKey];
+    NSString* hashname = [[sha finalize] hexString];
+
+    THIdentity* identity = [identityCache objectForKey:hashname];
+    if (!identity) {
+        identity = [[THIdentity alloc] initWithPublicKey:publicKey privateKey:privateKey];
+        [identityCache setObject:identity forKey:identity.hashname];
+    }
+    return identity;
 }
 
 +(id)identityFromPublicKey:(NSData*)key;
 {
-    return [[THIdentity alloc] initWithPublicKey:key privateKey:nil];
+    SHA256* sha = [SHA256 new];
+    [sha updateWithData:key];
+    NSString* hashname = [[sha finalize] hexString];
+
+    THIdentity* identity = [identityCache objectForKey:hashname];
+    if (!identity) {
+        identity = [[THIdentity alloc] initWithPublicKey:key privateKey:nil];
+        [identityCache setObject:identity forKey:identity.hashname];
+    }
+    return identity;
 }
 
 -(id)initWithHashname:(NSString *)hashname;
 {
     self = [super init];
     if (self) {
+        [self commonInit];
         _hashnameCache = hashname;
     }
     return self;
@@ -63,6 +94,7 @@
 {
     self = [super init];
     if (self) {
+        [self commonInit];
         self.rsaKeys = [RSA RSAFromPublicKeyPath:publicKeyPath privateKeyPath:privateKeyPath];
     }
     return self;
@@ -72,9 +104,15 @@
 {
     self = [super init];
     if (self) {
+        [self commonInit];
         self.rsaKeys = [RSA RSAWithPublicKey:key privateKey:privateKey];
     }
     return self;
+}
+
+-(void)commonInit
+{
+    self.channels = [NSMutableDictionary dictionary];
 }
 
 -(void)setIP:(NSString*)ip port:(NSUInteger)port;
@@ -130,4 +168,37 @@ int nlz(unsigned long x) {
     return 0;
 }
 
+-(void)sendPacket:(THPacket *)packet
+{
+    if (!self.currentLine) {
+        [[THSwitch defaultSwitch] openLine:self completion:^(THLine *newLine) {
+            self.currentLine = newLine;
+            [self.currentLine sendPacket:packet];
+        }];
+    } else {
+        [self.currentLine sendPacket:packet];
+    }
+}
+
+-(THChannel*)channelForType:(NSString *)type
+{
+    __block THChannel* foundChannel = nil;
+    [self.channels enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+        THChannel* channel = (THChannel*)obj;
+        if ([channel.type isEqualToString:type]) {
+            foundChannel = channel;
+            *stop = YES;
+        }
+    }];
+    
+    return foundChannel;
+}
+
+-(NSString*)seekString
+{
+    if (!self.address) return self.hashname;
+    const struct sockaddr_in* addr = [self.address bytes];
+    return [NSString stringWithFormat:@"%@,%s,%d", self.hashname, inet_ntoa(addr->sin_addr),addr->sin_port];
+
+}
 @end

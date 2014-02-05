@@ -9,6 +9,10 @@
 #import <Foundation/Foundation.h>
 #import "THRSA.h"
 
+@class THPacket;
+@class THLine;
+@class THChannel;
+
 @interface THIdentity : NSObject
 
 +(id)generateIdentity;
@@ -26,11 +30,18 @@
 @property (readonly) NSString* hashname;
 @property NSData* address;
 @property THIdentity* via;
+@property NSMutableDictionary* channels;
+@property THLine* currentLine;
 
 // TODO:  Method to create a channel for a type
 
 -(NSInteger)distanceFrom:(THIdentity*)identity;
 -(void)setIP:(NSString*)ip port:(NSUInteger)port;
+
+-(void)sendPacket:(THPacket*)packet;
+-(NSString*)seekString;
+
+-(THChannel*)channelForType:(NSString*)type;
 
 @end
 

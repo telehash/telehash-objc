@@ -7,19 +7,21 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "THChannel.h"
 
 @class THIdentity;
 @class THLine;
 
 typedef void(^SeekCompletionBlock)(BOOL found);
 
-@interface THMeshBuckets : NSObject
+@interface THMeshBuckets : NSObject<THChannelDelegate>
 
 @property THIdentity* localIdentity;
 @property NSMutableArray* buckets;
 
--(void)addLine:(THLine*)line;
+-(void)addIdentity:(THIdentity*)identity;
 -(void)removeLine:(THLine*)line;
+-(NSArray*)closeInBucket:(THIdentity*)seekIdentity;
 -(NSArray*)nearby:(THIdentity*)seekIdentity;
 -(void)seek:(THIdentity*)seekIdentity completion:(SeekCompletionBlock)completion;
 @end

@@ -41,6 +41,7 @@ typedef enum {
 @property THLine* line;
 @property NSString* channelId;
 @property THChannelState state;
+@property NSString* type;
 
 -(id)initToIdentity:(THIdentity*)identity;
 // TODO:  init method that allows creation against THSwitch instances other than the shared one

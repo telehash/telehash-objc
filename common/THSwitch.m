@@ -23,7 +23,6 @@
 
 @interface THSwitch()
 
-@property NSMutableArray* pendingChannels;
 @property GCDAsyncUdpSocket* udpSocket;
 
 @end
@@ -134,7 +133,7 @@
 -(void)channel:(THChannel*)channel line:(THLine*)line firstPacket:(THPacket*)packet
 {
     channel.line = line;
-    [channel.line.channels setObject:channel forKey:channel.channelId];
+    [channel.toIdentity.channels setObject:channel forKey:channel.channelId];
     channel.state = THChannelOpen;
     channel.channelIsReady = YES;
     [channel sendPacket:packet];
@@ -143,10 +142,9 @@
 -(void)openChannel:(THChannel *)channel firstPacket:(THPacket *)packet;
 {
     // Check for an already open lines
-    THLine* channelLine = [self lineToHashname:channel.toIdentity.hashname];
+    THLine* channelLine = channel.toIdentity.currentLine;
     if (!channelLine) {
         [self.pendingJobs addObject:[THPendingJob pendingJobFor:channel completion:^(id result) {
-            [channel sendPacket:packet];
             [self channel:channel line:(THLine*)result firstPacket:packet];
         }]];
         [self openLine:channel.toIdentity];
@@ -163,11 +161,17 @@
 
 -(void)openLine:(THIdentity *)toIdentity completion:(LineOpenBlock)lineOpenCompletion
 {
+    if (toIdentity.currentLine) {
+        if (lineOpenCompletion) lineOpenCompletion(toIdentity.currentLine);
+        return;
+    }
+    
     // We have everything we need to direct request
     if (toIdentity.address && toIdentity.rsaKeys) {
         THLine* channelLine = [THLine new];
         channelLine.toIdentity = toIdentity;
         channelLine.address = toIdentity.address;
+        toIdentity.currentLine = channelLine;
         
         [self.pendingJobs addObject:[THPendingJob pendingJobFor:channelLine completion:^(id result) {
             if (lineOpenCompletion) lineOpenCompletion(channelLine);
@@ -188,8 +192,8 @@
         [self.udpSocket sendData:[NSData data] toAddress:toIdentity.address withTimeout:-1 tag:0];
         
         // We blind send this and hope for the best!
-        THLine* viaLine = [self lineToHashname:toIdentity.via.hashname];
-        [viaLine sendPacket:peerPacket];
+        THIdentity* viaIdentity = [THIdentity identityFromHashname:toIdentity.via.hashname];
+        [viaIdentity sendPacket:peerPacket];
         return;
     }
     
@@ -223,7 +227,7 @@
 -(void)udpSocket:(GCDAsyncUdpSocket *)sock didReceiveData:(NSData *)data fromAddress:(NSData *)address withFilterContext:(id)filterContext
 {
     const struct sockaddr_in* addr = [address bytes];
-    NSLog(@"Incoming data from %@", [NSString stringWithUTF8String:inet_ntoa(addr->sin_addr)]);
+    //NSLog(@"Incoming data from %@", [NSString stringWithUTF8String:inet_ntoa(addr->sin_addr)]);
     THPacket* incomingPacket = [THPacket packetData:data];
     incomingPacket.fromAddress = address;
     if (!incomingPacket) {
@@ -258,15 +262,15 @@
             NSLog(@"Invalid signature, dumping.");
             return;
         }
-
-        NSLog(@"Finding line for  %@ in %@", senderIdentity.hashname, self.openLines);
-        THLine* newLine = [self lineToHashname:senderIdentity.hashname];
+        
+        THLine* newLine = senderIdentity.currentLine;
+        
         // remove any existing lines to this hashname
         if (newLine) {
             [self.meshBuckets removeLine:newLine];
             [self.openLines removeObjectForKey:newLine.inLineId];
         }
-        __block THPendingJob* pendingLineJob;
+        __block THPendingJob* pendingLineJob = nil;
         [self.pendingJobs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
             THPendingJob* job = (THPendingJob*)obj;
             if (job.type != PendingLine) return;
@@ -279,8 +283,8 @@
             }
         }];
         if (pendingLineJob) {
-            NSLog(@"Finish open on %@", newLine);
             newLine = (THLine*)pendingLineJob.pending;
+            NSLog(@"Finish open on %@", newLine);
             newLine.outLineId = [innerPacket.json objectForKey:@"line"];
             newLine.remoteECCKey = eccKey;
             [newLine openLine];
@@ -300,6 +304,8 @@
             newLine.outLineId = [innerPacket.json objectForKey:@"line"];
             newLine.remoteECCKey = eccKey;
             
+            senderIdentity.currentLine = newLine;
+            
             [newLine sendOpen];
             [newLine openLine];
             
@@ -310,7 +316,8 @@
                 [self.delegate openedLine:newLine];
             }
         }
-        [self.meshBuckets addLine:newLine];
+        
+        [self.meshBuckets addIdentity:newLine.toIdentity];
         
         // Check the pending jobs for any lines or channels
         [self.pendingJobs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {

@@ -74,25 +74,32 @@
 
 -(void)handlePacket:(THPacket *)packet;
 {
+    // Save the type
+    NSString* packetType = [packet.json objectForKey:@"type"];
+    if (!self.type && packetType) self.type = packetType;
+    
     [self.delegate channel:self handlePacket:packet];
     if ([[packet.json objectForKey:@"end"] boolValue] == YES) {
-        [self.line.channels removeObjectForKey:self.channelId];
+        [self.toIdentity.channels removeObjectForKey:self.channelId];
     }
 }
 
 -(void)sendPacket:(THPacket *)packet;
 {
+    // Save the type
+    NSString* packetType = [packet.json objectForKey:@"type"];
+    if (!self.type && packetType) self.type = packetType;
+    
     [packet.json setObject:self.channelId forKey:@"c"];
-    [self.line sendPacket:packet];
+    [self.toIdentity sendPacket:packet];
     if ([[packet.json objectForKey:@"end"] boolValue] == YES) {
-        [self.line.channels removeObjectForKey:self.channelId];
+        [self.toIdentity.channels removeObjectForKey:self.channelId];
     }
 }
 @end
 
 @interface THReliableChannel() {
     dispatch_queue_t channelQueue;
-    dispatch_semaphore_t channelSemaphore;
     NSArray* missing;
 }
 -(void)checkAckPing:(NSUInteger)packetTime;
@@ -133,6 +140,9 @@
         [inPacketBuffer push:packet];
     }
     
+    NSString* packetType = [packet.json objectForKey:@"type"];
+    if (!self.type && packetType) self.type = packetType;
+    
     missing = [inPacketBuffer missingSeq];
     [self delegateHandlePackets];
 }
@@ -150,6 +160,10 @@
 }
 -(void)sendPacket:(THPacket *)packet;
 {
+    // Save the type
+    NSString* packetType = [packet.json objectForKey:@"type"];
+    if (!self.type && packetType) self.type = packetType;
+    
     // If the packet has a body or other json we increment the seq
     if ([packet.json count] > 0 || packet.body != nil) {
         // Append seq
@@ -168,24 +182,18 @@
     
     [outPacketBuffer push:packet];
     
-    if (self.channelIsReady) [self.line sendPacket:packet];
+    if (self.channelIsReady) [self.toIdentity sendPacket:packet];
 }
 
 -(void)delegateHandlePackets;
 {
-#if 0
-    if (channelSemaphore != NULL) {
-        dispatch_semaphore_signal(channelSemaphore);
-        return;
-    };
-#endif
     if (!channelQueue) {
         channelQueue = dispatch_queue_create([[NSString stringWithFormat:@"telehash.channel.%@", self.channelId] UTF8String], NULL);
         //channelSemaphore = dispatch_semaphore_create(0);
     }
 
     while (inPacketBuffer.length > 0) {
-        if (inPacketBuffer.frontSeq != (maxProcessed + 1)) {
+        if (inPacketBuffer.frontSeq != maxProcessed) {
             // XXX dispatch a missing queue?
             return;
         }
@@ -198,28 +206,6 @@
             maxProcessed = [[curPacket.json objectForKey:@"seq"] unsignedIntegerValue];
         });
     }
-
-#if 0
-    dispatch_async(channelQueue, ^{
-        while (self.channelIsReady) {
-            BOOL inOrder = YES;
-            while (inPacketBuffer.length > 0 && inOrder) {
-                if (inPacketBuffer.frontSeq != (maxProcessed + 1)) {
-                    inOrder = NO;
-                    // XXX dispatch a missing queue?
-                    continue;
-                }
-                THPacket* curPacket = [inPacketBuffer pop];
-                [self.delegate channel:self handlePacket:curPacket];
-                if ([curPacket.json objectForKey:@"end"] == @YES) {
-                    // TODO: Shut it down!
-                }
-                maxProcessed = [[curPacket.json objectForKey:@"seq"] unsignedIntegerValue];
-            }
-            dispatch_semaphore_wait(channelSemaphore, DISPATCH_TIME_FOREVER);
-        }
-    });
-#endif
 }
 
 // Flush our out buffer
@@ -227,7 +213,7 @@
 {
     [outPacketBuffer forEach:^(THPacket *packet) {
         NSLog(@"Sending packet on %@ %@", self.line, packet.json);
-        [self.line sendPacket:packet];
+        [self.toIdentity sendPacket:packet];
     }];
 }
 @end

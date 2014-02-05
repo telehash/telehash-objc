@@ -29,7 +29,6 @@
     self = [super init];
     if (self) {
         self.isOpen = NO;
-        self.channels = [NSMutableDictionary dictionary];
     }
     return self;
 }
@@ -94,7 +93,7 @@
     //NSLog(@"Encryptor key: %@", self.encryptorKey);
     //NSLog(@"Decryptor key: %@", self.decryptorKey);
     
-    [self.channels enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+    [self.toIdentity.channels enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
         NSLog(@"Checking %@ as %@", obj, [obj class]);
         // Get all our pending reliable channels spun out
         if ([obj class] != [THReliableChannel class]) return;
@@ -131,14 +130,19 @@
         [response.json setObject:@(YES) forKey:@"end"];
         [response.json setObject:channelId forKey:@"c"];
         THSwitch* defaultSwitch = [THSwitch defaultSwitch];
-        NSArray* sees = [defaultSwitch.meshBuckets nearby:[THIdentity identityFromHashname:[innerPacket.json objectForKey:@"seek"]]];
+        NSArray* sees = [defaultSwitch.meshBuckets closeInBucket:[THIdentity identityFromHashname:[innerPacket.json objectForKey:@"seek"]]];
         if (sees == nil) {
             sees = [NSArray array];
         }
         [response.json setObject:[sees valueForKey:@"seekString"] forKey:@"see"];
         
         [self sendPacket:response];
+    } else if ([channelType isEqualToString:@"link"]) {
+        THSwitch* defaultSwitch = [THSwitch defaultSwitch];
+        
+        [defaultSwitch.meshBuckets addIdentity:self.toIdentity];
     } else if ([channelType isEqualToString:@"peer"]) {
+        // TODO:  Check this logic in association with the move to channels on identity
         THLine* peerLine = [thSwitch lineToHashname:[innerPacket.json objectForKey:@"peer"]];
         if (!peerLine) {
             // What? We don't know about this person, bye bye
@@ -153,7 +157,7 @@
         [connectPacket.json setObject:[NSNumber numberWithUnsignedInt:addr->sin_port] forKey:@"port"];
         connectPacket.body = [peerLine.toIdentity.rsaKeys DERPublicKey];
         
-        [peerLine sendPacket:connectPacket];
+        [self.toIdentity sendPacket:connectPacket];
     } else if ([channelType isEqualToString:@"connect"]) {
         THIdentity* peerIdentity = [THIdentity identityFromPublicKey:innerPacket.body];
         THLine* curLine = [thSwitch lineToHashname:peerIdentity.hashname];
@@ -182,7 +186,7 @@
     } else {
         NSNumber* seq = [innerPacket.json objectForKey:@"seq"];
         // Let the channel instance handle it
-        THChannel* channel = [self.channels objectForKey:channelId];
+        THChannel* channel = [self.toIdentity.channels objectForKey:channelId];
         if (channel) {
             if (seq) {
                 // This is a reliable channel, let's make sure we're in a good state
@@ -199,32 +203,27 @@
         } else {
             // See if it's a reliable or unreliable channel
             THChannel* newChannel;
-            THChannelType channelType;
+            THChannelType newChannelType;
             if (seq && [seq unsignedIntegerValue] == 0) {
                 newChannel = [[THReliableChannel alloc] initToIdentity:self.toIdentity];
-                channelType = ReliableChannel;
+                newChannelType = ReliableChannel;
             } else {
                 newChannel = [[THUnreliableChannel alloc] initToIdentity:self.toIdentity];
-                channelType = UnreliableChannel;
+                newChannelType = UnreliableChannel;
             }
             newChannel.channelId = channelId;
             THSwitch* defaultSwitch = [THSwitch defaultSwitch];
             if ([defaultSwitch.delegate respondsToSelector:@selector(channelReady:type:firstPacket:)]) {
-                [defaultSwitch.delegate channelReady:newChannel type:channelType firstPacket:innerPacket];
+                [defaultSwitch.delegate channelReady:newChannel type:newChannelType firstPacket:innerPacket];
             }
             newChannel.channelIsReady = YES;
+            newChannel.type = channelType;
             NSLog(@"Adding a channel");
-            [self.channels setObject:newChannel forKey:channelId];
+            [self.toIdentity.channels setObject:newChannel forKey:channelId];
             //[newChannel handlePacket:innerPacket];
         }
         
     }
-}
-
--(NSString*)seekString;
-{
-    const struct sockaddr_in* addr = [self.address bytes];
-    return [NSString stringWithFormat:@"%@,%s,%d", self.toIdentity.hashname, inet_ntoa(addr->sin_addr),addr->sin_port];
 }
 
 -(void)sendPacket:(THPacket *)packet;
