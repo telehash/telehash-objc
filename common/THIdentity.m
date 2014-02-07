@@ -26,6 +26,12 @@ static NSMutableDictionary* identityCache;
 
 @implementation THIdentity
 
++ (void)initialize {
+    if (self == [THIdentity self]) {
+        identityCache = [NSMutableDictionary dictionary];
+    }
+}
+
 +(id)generateIdentity;
 {
     THIdentity* identity = [THIdentity new];

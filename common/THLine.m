@@ -29,6 +29,7 @@
     self = [super init];
     if (self) {
         self.isOpen = NO;
+        self.lastActitivy = time(NULL);
     }
     return self;
 }
