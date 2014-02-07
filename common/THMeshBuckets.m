@@ -60,7 +60,8 @@
             THPacket* pingPacket = [THPacket new];
             [pingPacket.json setObject:@YES forKey:@"seed"];
             
-            [identity sendPacket:pingPacket];
+            THChannel* linkChannel = [identity channelForType:@"link"];
+            if (linkChannel) [linkChannel sendPacket:pingPacket];
         }];
     }];
     
