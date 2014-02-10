@@ -55,7 +55,7 @@
             }
             
             // 60s ping based on last activity
-            if (checkTime > identity.currentLine.lastActitivy + 55) return;
+            if (checkTime < identity.currentLine.lastActitivy + 55) return;
             
             THPacket* pingPacket = [THPacket new];
             [pingPacket.json setObject:@YES forKey:@"seed"];
@@ -262,7 +262,12 @@
 
 -(BOOL)channel:(THChannel *)channel handlePacket:(THPacket *)packet
 {
-    // TODO:  Handle a channel ping
+    if (channel.toIdentity.currentLine.lastActitivy + 30 > time(NULL)) {
+        THPacket* pingPacket = [THPacket new];
+        [pingPacket.json setObject:@YES forKey:@"seed"];
+        [channel sendPacket:pingPacket];
+    }
+    
     return YES;
 }
 

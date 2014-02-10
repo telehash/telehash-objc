@@ -25,6 +25,8 @@
 @property NSData* remoteECCKey;
 @property BOOL isOpen;
 @property NSUInteger lastActitivy;
+@property NSUInteger lastInActivity;
+@property NSUInteger lastOutActivity;
 
 -(id)init;
 -(void)sendOpen;

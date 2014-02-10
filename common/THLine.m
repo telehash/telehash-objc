@@ -111,6 +111,7 @@
 
 -(void)handlePacket:(THPacket *)packet;
 {
+    self.lastInActivity = time(NULL);
     self.lastActitivy = time(NULL);
     
     //NSLog(@"Going to handle a packet");
@@ -161,6 +162,7 @@
         [self.toIdentity sendPacket:connectPacket];
     } else if ([channelType isEqualToString:@"connect"]) {
         THIdentity* peerIdentity = [THIdentity identityFromPublicKey:innerPacket.body];
+        NSLog(@"Going to connect to %@", peerIdentity.hashname);
         THLine* curLine = [thSwitch lineToHashname:peerIdentity.hashname];
         if (curLine) {
             // We don't need to do anything?
@@ -203,6 +205,14 @@
             [channel handlePacket:innerPacket];
         } else {
             // See if it's a reliable or unreliable channel
+            if (!channelType) {
+                THPacket* errPacket = [THPacket new];
+                [errPacket.json setObject:@"Unknown channel packet type." forKey:@"err"];
+                [errPacket.json setObject:channelId forKey:@"c"];
+                
+                [self.toIdentity sendPacket:errPacket];
+                return;
+            }
             THChannel* newChannel;
             THChannelType newChannelType;
             if (seq && [seq unsignedIntegerValue] == 0) {
@@ -229,6 +239,7 @@
 
 -(void)sendPacket:(THPacket *)packet;
 {
+    self.lastOutActivity = time(NULL);
     THPacket* linePacket = [THPacket new];
     [linePacket.json setObject:self.outLineId forKey:@"line"];
     [linePacket.json setObject:@"line" forKey:@"type"];
