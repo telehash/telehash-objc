@@ -143,6 +143,20 @@
         THSwitch* defaultSwitch = [THSwitch defaultSwitch];
         
         [defaultSwitch.meshBuckets addIdentity:self.toIdentity];
+        
+        THUnreliableChannel* linkChannel = [THUnreliableChannel new];
+        linkChannel.toIdentity = self.toIdentity;
+        linkChannel.channelId = [innerPacket.json objectForKey:@"c"];
+        linkChannel.channelIsReady = YES;
+        [linkChannel setState:THChannelOpen];
+        
+        THUnreliableChannel* curChannel = (THUnreliableChannel*)[self.toIdentity channelForType:@"link"];
+        if (curChannel) {
+            [self.toIdentity.channels removeObjectForKey:curChannel.channelId];
+        }
+        [self.toIdentity.channels setObject:linkChannel forKey:linkChannel.channelId];
+        linkChannel.delegate = defaultSwitch.meshBuckets;
+        [defaultSwitch.meshBuckets channel:linkChannel handlePacket:innerPacket];
     } else if ([channelType isEqualToString:@"peer"]) {
         // TODO:  Check this logic in association with the move to channels on identity
         THLine* peerLine = [thSwitch lineToHashname:[innerPacket.json objectForKey:@"peer"]];

@@ -134,7 +134,6 @@
     }
     
     [bucket addObject:identity];
-    
 }
 
 -(void)removeLine:(THLine *)line
@@ -268,7 +267,8 @@
 
 -(BOOL)channel:(THChannel *)channel handlePacket:(THPacket *)packet
 {
-    if (channel.toIdentity.currentLine.lastActitivy + 30 > time(NULL)) {
+    NSUInteger now = time(NULL);
+    if (channel.lastOutActivity + 30 < now) {
         THPacket* pingPacket = [THPacket new];
         [pingPacket.json setObject:@YES forKey:@"seed"];
         [channel sendPacket:pingPacket];

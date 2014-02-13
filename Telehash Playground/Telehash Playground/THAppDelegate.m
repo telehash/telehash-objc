@@ -38,7 +38,7 @@
         [thSwitch.identity.rsaKeys savePublicKey:@"/tmp/telehash/server.pder" privateKey:@"/tmp/telehash/server.der"];
     }
     NSLog(@"Hashname: %@", [thSwitch.identity hashname]);
-    [thSwitch start];
+    [thSwitch startOnPort:42424];
     
     //[thSwitch loadSeeds:[NSData dataWithContentsOfFile:@"/tmp/telehash/seeds.json"]];
 }

@@ -30,6 +30,8 @@
         self.toIdentity = identity;
         self.channelIsReady = NO;
         self.channelId  = [[RNG randomBytesOfLength:16] hexString]; // We'll just go ahead and make one
+        self.lastInActivity = 0;
+        self.lastOutActivity = 0;
         THSwitch* defaultSwitch = [THSwitch defaultSwitch];
         self.line = [defaultSwitch lineToHashname:self.toIdentity.hashname];
     }
@@ -51,12 +53,12 @@
 
 -(void)sendPacket:(THPacket *)packet;
 {
-    NSAssert(YES, @"This is a base method that should be implemented in concrete channel types.");
+    self.lastOutActivity = time(NULL);
 }
 
 -(void)handlePacket:(THPacket *)packet;
 {
-    NSAssert(YES, @"This is a base method that should be implemented in concrete channel types.");
+    self.lastInActivity = time(NULL);
 }
 @end
 
@@ -74,6 +76,8 @@
 
 -(void)handlePacket:(THPacket *)packet;
 {
+    [super handlePacket:packet];
+    
     // Save the type
     NSString* packetType = [packet.json objectForKey:@"type"];
     if (!self.type && packetType) self.type = packetType;
@@ -86,6 +90,8 @@
 
 -(void)sendPacket:(THPacket *)packet;
 {
+    [super sendPacket:packet];
+    
     // Save the type
     NSString* packetType = [packet.json objectForKey:@"type"];
     if (!self.type && packetType) self.type = packetType;
@@ -121,6 +127,8 @@
 }
 -(void)handlePacket:(THPacket *)packet;
 {
+    [super handlePacket:packet];
+    
     NSNumber* curSeq = [packet.json objectForKey:@"seq"];
     if (curSeq.unsignedIntegerValue > self.maxSeen.unsignedIntegerValue) {
         self.maxSeen = curSeq;
@@ -160,6 +168,8 @@
 }
 -(void)sendPacket:(THPacket *)packet;
 {
+    [super sendPacket:packet];
+    
     // Save the type
     NSString* packetType = [packet.json objectForKey:@"type"];
     if (!self.type && packetType) self.type = packetType;

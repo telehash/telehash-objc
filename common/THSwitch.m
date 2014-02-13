@@ -304,7 +304,7 @@
             
             pendingLineJob.handler(newLine);
             
-            [self.meshBuckets addIdentity:newLine.toIdentity];
+            [self.meshBuckets linkToIdentity:newLine.toIdentity];
         } else {
             
             newLine = [THLine new];
@@ -326,7 +326,7 @@
                 [self.delegate openedLine:newLine];
             }
             
-            [self.meshBuckets linkToIdentity:newLine.toIdentity];
+            [self.meshBuckets addIdentity:newLine.toIdentity];
         }
         
         // Check the pending jobs for any lines or channels
