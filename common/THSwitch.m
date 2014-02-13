@@ -227,7 +227,7 @@
 -(void)udpSocket:(GCDAsyncUdpSocket *)sock didReceiveData:(NSData *)data fromAddress:(NSData *)address withFilterContext:(id)filterContext
 {
     const struct sockaddr_in* addr = [address bytes];
-    //NSLog(@"Incoming data from %@", [NSString stringWithUTF8String:inet_ntoa(addr->sin_addr)]);
+    NSLog(@"Incoming data from %@", [NSString stringWithUTF8String:inet_ntoa(addr->sin_addr)]);
     THPacket* incomingPacket = [THPacket packetData:data];
     incomingPacket.fromAddress = address;
     if (!incomingPacket) {
@@ -256,6 +256,13 @@
         // If the new line is older than the current one bail
         if (senderIdentity.currentLine && senderIdentity.currentLine.createdAt > [[innerPacket.json objectForKey:@"at"] unsignedIntegerValue]) {
             NSLog(@"Dumped a line that is older than current");
+            return;
+        }
+        
+        // If this is an attempt to reopen the original, just dump it and keep using it
+        if ([senderIdentity.currentLine.outLineId isEqualToString:[innerPacket.json objectForKey:@"line"]] &&
+            senderIdentity.currentLine.createdAt == [[innerPacket.json objectForKey:@"at"] unsignedIntegerValue]) {
+            NSLog(@"Attempted to reopen the line for %@ line id: %@", senderIdentity.hashname, senderIdentity.currentLine.outLineId);
             return;
         }
         
@@ -294,6 +301,8 @@
             NSLog(@"Finish open on %@", newLine);
             newLine.outLineId = [innerPacket.json objectForKey:@"line"];
             newLine.remoteECCKey = eccKey;
+            newLine.createdAt = [[innerPacket.json objectForKey:@"at"] unsignedIntegerValue];
+            newLine.lastInActivity = time(NULL);
             [newLine openLine];
 
             [self.openLines setObject:newLine forKey:newLine.inLineId];
@@ -308,6 +317,7 @@
         } else {
             
             newLine = [THLine new];
+            newLine.lastInActivity = time(NULL);
             newLine.toIdentity = senderIdentity;
             newLine.address = address;
             newLine.outLineId = [innerPacket.json objectForKey:@"line"];

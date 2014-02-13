@@ -12,6 +12,7 @@
 
 @interface THAppDelegate : NSObject <THSwitchDelegate, THChannelDelegate, NSTableViewDataSource> {
     IBOutlet NSTableView* tableView;
+    IBOutlet NSTextField* hashnameField;
     THSwitch* thSwitch;
 }
 
@@ -23,4 +24,5 @@
 -(NSInteger)numberOfRowsInTableView:(NSTableView *)tableView;
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex;
 
+-(IBAction)connectToHashname:(id)sender;
 @end

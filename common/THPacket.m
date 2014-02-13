@@ -21,6 +21,11 @@
         return nil;
     }
     
+    if (packetData.length == 0 || (packetData.length == 2 && jsonLength == 0)) {
+        NSLog(@"ignoring a poke packet");
+        return nil;
+    }
+    
     NSError* parserError;
     id parsedJson = [NSJSONSerialization JSONObjectWithData:[packetData subdataWithRange:NSMakeRange(2, jsonLength)] options:0 error:&parserError];
     

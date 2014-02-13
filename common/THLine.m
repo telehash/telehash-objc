@@ -47,9 +47,9 @@
     THPacket* innerPacket = [THPacket new];
     [innerPacket.json setObject:self.toIdentity.hashname forKey:@"to"];
     NSDate* now = [NSDate date];
-    self.createdAt = (NSInteger)([now timeIntervalSince1970]) * 1000;
+    NSUInteger at = (NSInteger)([now timeIntervalSince1970]) * 1000;
     NSLog(@"Open timestamp is %ld", self.createdAt);
-    [innerPacket.json setObject:[NSNumber numberWithInteger:self.createdAt] forKey:@"at"];
+    [innerPacket.json setObject:[NSNumber numberWithInteger:at] forKey:@"at"];
     
     // Generate a new line id if we weren't given one
     if (!self.inLineId) {
@@ -74,6 +74,8 @@
     [sha updateWithData:[self.inLineId dataFromHexString]];
     NSData* encryptedSig = [CTRAES256Encryptor encryptPlaintext:bodySig key:[sha finalize] iv:packetIV];
     [openPacket.json setObject:[encryptedSig base64EncodedStringWithOptions:0] forKey:@"sig"];
+    
+    self.lastOutActivity = time(NULL);
     
     [defaultSwitch sendPacket:openPacket toAddress:self.address];
 }
@@ -117,7 +119,7 @@
     //NSLog(@"Going to handle a packet");
     THPacket* innerPacket = [THPacket packetData:[CTRAES256Decryptor decryptPlaintext:packet.body key:self.decryptorKey iv:[[packet.json objectForKey:@"iv"] dataFromHexString]]];
     //NSLog(@"Packet is type %@", [innerPacket.json objectForKey:@"type"]);
-    NSLog(@"Line %@ handling %@", self.toIdentity.hashname, innerPacket.json);
+    NSLog(@"Line %@ line id %@ handling %@", self.toIdentity.hashname, self.outLineId, innerPacket.json);
     NSString* channelId = [innerPacket.json objectForKey:@"c"];
     NSString* channelType = [innerPacket.json objectForKey:@"type"];
     
@@ -200,6 +202,12 @@
             [peerIdentity setIP:ip port:[port unsignedIntegerValue]];
         }
         [thSwitch openLine:peerIdentity];
+    } else if ([channelType isEqualToString:@"path"]) {
+        THPacket* errPacket = [THPacket new];
+        [errPacket.json setObject:@"Path not yet supported." forKey:@"err"];
+        [errPacket.json setObject:channelId forKey:@"c"];
+        
+        [self.toIdentity sendPacket:errPacket];
     } else {
         NSNumber* seq = [innerPacket.json objectForKey:@"seq"];
         // Let the channel instance handle it
@@ -261,7 +269,7 @@
     [linePacket.json setObject:[iv hexString] forKey:@"iv"];
     linePacket.body = [packet encode];
     
-    NSLog(@"Sending to %@: %@", self.toIdentity.hashname, packet.json);
+    NSLog(@"Sending to %@ on line %@: %@", self.toIdentity.hashname, self.outLineId, packet.json);
     
     [linePacket encryptWithKey:self.encryptorKey iv:iv];
     

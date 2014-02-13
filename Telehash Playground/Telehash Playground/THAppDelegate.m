@@ -125,4 +125,14 @@
     [channel sendPacket:msgPacket];
     return YES;
 }
+
+-(IBAction)connectToHashname:(id)sender
+{
+    THIdentity* connectToIdentity = [THIdentity identityFromHashname:[hashnameField stringValue]];
+    if (connectToIdentity) {
+        [thSwitch openLine:connectToIdentity completion:^(THLine *openedLine) {
+            NSLog(@"We're in the app and connected to %@", connectToIdentity.hashname);
+        }];
+    }
+}
 @end

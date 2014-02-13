@@ -46,7 +46,7 @@
             THIdentity* identity = (THIdentity*)obj;
             
             // Check for dead channels at 2m
-            if (checkTime > identity.currentLine.lastActitivy + 120) {
+            if (checkTime > identity.currentLine.lastInActivity + 120) {
                 [bucket removeObjectAtIndex:idx];
                 THChannel* channel = [identity channelForType:@"link"];
                 [identity.channels removeObjectForKey:channel.channelId];
@@ -55,7 +55,7 @@
             }
             
             // 60s ping based on last activity
-            if (checkTime < identity.currentLine.lastActitivy + 55) return;
+            if (checkTime < identity.currentLine.lastOutActivity + 55) return;
             
             THPacket* pingPacket = [THPacket new];
             [pingPacket.json setObject:@YES forKey:@"seed"];
