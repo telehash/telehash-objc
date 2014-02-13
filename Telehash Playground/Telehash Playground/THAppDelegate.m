@@ -29,11 +29,18 @@
     // Insert code here to initialize your application
     thSwitch = [THSwitch defaultSwitch];
     thSwitch.delegate = self;
-    thSwitch.identity = [THIdentity identityFromPublicKey:@"/tmp/telehash/server.pder" privateKey:@"/tmp/telehash/server.der"];
+    thSwitch.identity = [THIdentity identityFromPublicFile:@"/tmp/telehash/server.pder" privateFile:@"/tmp/telehash/server.der"];
+    if (!thSwitch.identity) {
+        thSwitch.identity = [THIdentity generateIdentity];
+        NSFileManager* fm = [NSFileManager defaultManager];
+        NSError* err;
+        [fm createDirectoryAtPath:@"/tmp/telehash" withIntermediateDirectories:NO attributes:nil error:&err];
+        [thSwitch.identity.rsaKeys savePublicKey:@"/tmp/telehash/server.pder" privateKey:@"/tmp/telehash/server.der"];
+    }
     NSLog(@"Hashname: %@", [thSwitch.identity hashname]);
     [thSwitch start];
     
-    [thSwitch loadSeeds:[NSData dataWithContentsOfFile:@"/tmp/telehash/seeds.json"]];
+    //[thSwitch loadSeeds:[NSData dataWithContentsOfFile:@"/tmp/telehash/seeds.json"]];
 }
 
 -(NSInteger)numberOfRowsInTableView:(NSTableView *)tableView;
@@ -52,6 +59,8 @@
 -(void)openedLine:(THLine *)line;
 {
     [tableView reloadData];
+    
+    return;
     
 #if SERVER_TEST == 0
     THIdentity* identity = [THIdentity identityFromPublicKey:[NSData dataWithContentsOfFile:@"/tmp/telehash/chat.pder"]];
@@ -74,6 +83,7 @@
 {
     NSLog(@"Channel is ready");
     NSLog(@"First packet is %@", packet.json);
+    return;
     
 #if SERVER_TEST
     NSString* packetType = [packet.json objectForKey:@"type"];

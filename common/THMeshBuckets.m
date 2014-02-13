@@ -76,6 +76,28 @@
     }
 }
 
+-(void)linkToIdentity:(THIdentity*)identity
+{
+    [self addIdentity:identity];
+    THChannel* linkChannel = [identity channelForType:@"link"];
+    THPacket* linkPacket = [THPacket new];
+    [linkPacket.json setObject:@YES forKey:@"seed"]; // TODO:  Allow for opting out of seeding?
+    NSArray* sees = [self nearby:identity];
+    if (sees == nil) {
+        sees = [NSArray array];
+    }
+    [linkPacket.json setObject:[sees valueForKey:@"seekString"] forKey:@"see"];
+    
+    if (!linkChannel) {
+        linkChannel = [[THUnreliableChannel alloc] initToIdentity:identity];
+        [linkPacket.json setObject:@"link" forKey:@"type"];
+        [[THSwitch defaultSwitch] openChannel:linkChannel firstPacket:linkPacket];
+    } else {
+        [linkChannel sendPacket:linkPacket];
+    }
+    linkChannel.delegate = self;
+}
+
 -(void)addIdentity:(THIdentity *)identity
 {
     [self pingLines];
@@ -113,22 +135,6 @@
     
     [bucket addObject:identity];
     
-    THPacket* linkPacket = [THPacket new];
-    [linkPacket.json setObject:@YES forKey:@"seed"]; // TODO:  Allow for opting out of seeding?
-    NSArray* sees = [self nearby:identity];
-    if (sees == nil) {
-        sees = [NSArray array];
-    }
-    [linkPacket.json setObject:[sees valueForKey:@"seekString"] forKey:@"see"];
-    
-    if (!linkChannel) {
-        linkChannel = [[THUnreliableChannel alloc] initToIdentity:identity];
-        [linkPacket.json setObject:@"link" forKey:@"type"];
-        [[THSwitch defaultSwitch] openChannel:linkChannel firstPacket:linkPacket];
-    } else {
-        [linkChannel sendPacket:linkPacket];
-    }
-    linkChannel.delegate = self;
 }
 
 -(void)removeLine:(THLine *)line

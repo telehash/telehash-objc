@@ -27,6 +27,7 @@
 @property NSUInteger lastActitivy;
 @property NSUInteger lastInActivity;
 @property NSUInteger lastOutActivity;
+@property NSUInteger createdAt;
 
 -(id)init;
 -(void)sendOpen;

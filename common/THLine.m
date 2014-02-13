@@ -47,9 +47,9 @@
     THPacket* innerPacket = [THPacket new];
     [innerPacket.json setObject:self.toIdentity.hashname forKey:@"to"];
     NSDate* now = [NSDate date];
-    NSInteger timestamp = (NSInteger)([now timeIntervalSince1970]);
-    NSLog(@"Open timestamp is %ld", timestamp);
-    [innerPacket.json setObject:[NSNumber numberWithInteger:timestamp] forKey:@"at"];
+    self.createdAt = (NSInteger)([now timeIntervalSince1970]) * 1000;
+    NSLog(@"Open timestamp is %ld", self.createdAt);
+    [innerPacket.json setObject:[NSNumber numberWithInteger:self.createdAt] forKey:@"at"];
     
     // Generate a new line id if we weren't given one
     if (!self.inLineId) {

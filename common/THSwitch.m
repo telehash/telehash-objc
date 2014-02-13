@@ -252,6 +252,13 @@
         }
         
         THIdentity* senderIdentity = [THIdentity identityFromPublicKey:innerPacket.body];
+        
+        // If the new line is older than the current one bail
+        if (senderIdentity.currentLine && senderIdentity.currentLine.createdAt > [[innerPacket.json objectForKey:@"at"] unsignedIntegerValue]) {
+            NSLog(@"Dumped a line that is older than current");
+            return;
+        }
+        
         NSData* rawSigEncrypted = [[NSData alloc] initWithBase64EncodedString:[incomingPacket.json objectForKey:@"sig"] options:0];
         SHA256* sigKeySha = [SHA256 new];
         [sigKeySha updateWithData:eccKey];
@@ -296,6 +303,8 @@
             }
             
             pendingLineJob.handler(newLine);
+            
+            [self.meshBuckets addIdentity:newLine.toIdentity];
         } else {
             
             newLine = [THLine new];
@@ -303,6 +312,7 @@
             newLine.address = address;
             newLine.outLineId = [innerPacket.json objectForKey:@"line"];
             newLine.remoteECCKey = eccKey;
+            newLine.createdAt = [[innerPacket.json objectForKey:@"at"] unsignedIntegerValue];
             
             senderIdentity.currentLine = newLine;
             
@@ -315,9 +325,9 @@
             if ([self.delegate respondsToSelector:@selector(openedLine:)]) {
                 [self.delegate openedLine:newLine];
             }
+            
+            [self.meshBuckets linkToIdentity:newLine.toIdentity];
         }
-        
-        [self.meshBuckets addIdentity:newLine.toIdentity];
         
         // Check the pending jobs for any lines or channels
         [self.pendingJobs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
