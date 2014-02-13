@@ -36,6 +36,7 @@ static NSMutableDictionary* identityCache;
 {
     THIdentity* identity = [THIdentity new];
     identity.rsaKeys = [RSA generateRSAKeysOfLength:2048];
+    [identityCache setObject:identity forKey:identity.hashname];
     return identity;
 }
 
@@ -55,7 +56,16 @@ static NSMutableDictionary* identityCache;
     if (![[NSFileManager defaultManager] fileExistsAtPath:privateKeyPath]) return nil;
     
     // TODO:  Deal with cacheing this?
-    return [[THIdentity alloc] initWithPublicKeyPath:publicKeyPath privateKey:privateKeyPath];
+    THIdentity* identity = [[THIdentity alloc] initWithPublicKeyPath:publicKeyPath privateKey:privateKeyPath];
+    THIdentity* cachedIdentity = [identityCache objectForKey:identity.hashname];
+    if (!cachedIdentity) {
+        [identityCache setObject:identity forKey:identity.hashname];
+        return identity;
+    } else {
+        // XXX Does this keep the parent identity around or only the variable?
+        cachedIdentity.rsaKeys = identity.rsaKeys;
+        return cachedIdentity;
+    }
 }
 
 +(id)identityFromPublicKey:(NSData *)publicKey privateKey:(NSData *)privateKey
@@ -68,6 +78,10 @@ static NSMutableDictionary* identityCache;
     if (!identity) {
         identity = [[THIdentity alloc] initWithPublicKey:publicKey privateKey:privateKey];
         [identityCache setObject:identity forKey:identity.hashname];
+    } else {
+        if (!identity.rsaKeys) {
+            identity.rsaKeys = [RSA RSAWithPublicKey:publicKey privateKey:privateKey];
+        }
     }
     return identity;
 }
@@ -82,6 +96,10 @@ static NSMutableDictionary* identityCache;
     if (!identity) {
         identity = [[THIdentity alloc] initWithPublicKey:key privateKey:nil];
         [identityCache setObject:identity forKey:identity.hashname];
+    } else {
+        if (!identity.rsaKeys) {
+            identity.rsaKeys = [RSA RSAWithPublicKey:key privateKey:nil];
+        }
     }
     return identity;
 }
