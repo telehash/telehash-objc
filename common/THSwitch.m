@@ -162,20 +162,21 @@
 -(void)openLine:(THIdentity *)toIdentity completion:(LineOpenBlock)lineOpenCompletion
 {
     if (toIdentity.currentLine) {
-        if (lineOpenCompletion) lineOpenCompletion(toIdentity.currentLine);
+        if (lineOpenCompletion) lineOpenCompletion(toIdentity);
         return;
     }
+
+    [self.pendingJobs addObject:[THPendingJob pendingJobFor:toIdentity completion:^(id result) {
+        if (lineOpenCompletion) lineOpenCompletion(toIdentity);
+    }]];
     
+
     // We have everything we need to direct request
     if (toIdentity.address && toIdentity.rsaKeys) {
         THLine* channelLine = [THLine new];
         channelLine.toIdentity = toIdentity;
         channelLine.address = toIdentity.address;
         toIdentity.currentLine = channelLine;
-        
-        [self.pendingJobs addObject:[THPendingJob pendingJobFor:channelLine completion:^(id result) {
-            if (lineOpenCompletion) lineOpenCompletion(channelLine);
-        }]];
         
         [channelLine sendOpen];
         return;
@@ -194,12 +195,17 @@
         // We blind send this and hope for the best!
         THIdentity* viaIdentity = [THIdentity identityFromHashname:toIdentity.via.hashname];
         [viaIdentity sendPacket:peerPacket];
+        
         return;
     }
     
     // Find a way to it from the mesh
     [self.meshBuckets seek:toIdentity completion:^(BOOL found) {
-        NSLog(@"Found it: %d", found);
+        if (found) {
+            [self openLine:toIdentity completion:lineOpenCompletion];
+        } else {
+            if (lineOpenCompletion) lineOpenCompletion(nil);
+        }
     }];
 }
  
@@ -222,6 +228,128 @@
     return handled;
 }
 
+-(void)processOpen:(THPacket*)incomingPacket from:(NSData*)address
+{
+    // TODO:  Check the open lines for this address?
+    
+    // Process an open packet
+    NSData* decodedKey = [[NSData alloc] initWithBase64EncodedData:[incomingPacket.json objectForKey:@"open"] options:0];
+    NSData* eccKey =  [self.identity.rsaKeys decrypt:decodedKey];
+    
+    NSData* innerPacketKey = [SHA256 hashWithData:eccKey];
+    NSData* iv = [[incomingPacket.json objectForKey:@"iv"] dataFromHexString];
+    THPacket* innerPacket = [THPacket packetData:[CTRAES256Decryptor decryptPlaintext:incomingPacket.body key:innerPacketKey iv:iv]];
+    
+    if (!innerPacket) {
+        NSLog(@"Invalid inner packet");
+        return;
+    }
+    
+    THIdentity* senderIdentity = [THIdentity identityFromPublicKey:innerPacket.body];
+    
+    // If the new line is older than the current one bail
+    if (senderIdentity.currentLine && senderIdentity.currentLine.createdAt > [[innerPacket.json objectForKey:@"at"] unsignedIntegerValue]) {
+        NSLog(@"Dumped a line that is older than current");
+        return;
+    }
+    
+    // If this is an attempt to reopen the original, just dump it and keep using it
+    if ([senderIdentity.currentLine.outLineId isEqualToString:[innerPacket.json objectForKey:@"line"]] &&
+        senderIdentity.currentLine.createdAt == [[innerPacket.json objectForKey:@"at"] unsignedIntegerValue]) {
+        NSLog(@"Attempted to reopen the line for %@ line id: %@", senderIdentity.hashname, senderIdentity.currentLine.outLineId);
+        return;
+    }
+    
+    NSData* rawSigEncrypted = [[NSData alloc] initWithBase64EncodedString:[incomingPacket.json objectForKey:@"sig"] options:0];
+    SHA256* sigKeySha = [SHA256 new];
+    [sigKeySha updateWithData:eccKey];
+    [sigKeySha updateWithData:[[innerPacket.json objectForKey:@"line" ] dataFromHexString]];
+    NSData* sigKey = [sigKeySha finalize];
+    NSData* rawSig = [CTRAES256Decryptor decryptPlaintext:rawSigEncrypted key:sigKey iv:iv];
+    if (![senderIdentity.rsaKeys verify:incomingPacket.body withSignature:rawSig]) {
+        NSLog(@"Invalid signature, dumping.");
+        return;
+    }
+    
+    THLine* newLine = senderIdentity.currentLine;
+    
+    // remove any existing lines to this hashname
+    if (newLine) {
+        [self.meshBuckets removeLine:newLine];
+        [self.openLines removeObjectForKey:newLine.inLineId];
+    }
+    __block THPendingJob* pendingLineJob = nil;
+    [self.pendingJobs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        THPendingJob* job = (THPendingJob*)obj;
+        if (job.type != PendingIdentity) return;
+        
+        THIdentity* pendingIdentity = (THIdentity*)job.pending;
+        if ([pendingIdentity.hashname isEqualToString:senderIdentity.hashname]) {
+            pendingLineJob = job;
+            *stop = YES;
+            [self.pendingJobs removeObjectAtIndex:idx];
+        }
+    }];
+    if (newLine) {
+        THIdentity* pendingIdentity = (THIdentity*)pendingLineJob.pending;
+        newLine = pendingIdentity.currentLine;
+        NSLog(@"Finish open on %@", newLine);
+        newLine.outLineId = [innerPacket.json objectForKey:@"line"];
+        newLine.remoteECCKey = eccKey;
+        newLine.createdAt = [[innerPacket.json objectForKey:@"at"] unsignedIntegerValue];
+        newLine.lastInActivity = time(NULL);
+        [newLine openLine];
+        
+        [self.openLines setObject:newLine forKey:newLine.inLineId];
+        
+        if ([self.delegate respondsToSelector:@selector(openedLine:)]) {
+            [self.delegate openedLine:newLine];
+        }
+        
+        if (pendingLineJob) pendingLineJob.handler(newLine);
+        
+        [self.meshBuckets linkToIdentity:newLine.toIdentity];
+    } else {
+        
+        newLine = [THLine new];
+        newLine.lastInActivity = time(NULL);
+        newLine.toIdentity = senderIdentity;
+        newLine.address = address;
+        newLine.outLineId = [innerPacket.json objectForKey:@"line"];
+        newLine.remoteECCKey = eccKey;
+        newLine.createdAt = [[innerPacket.json objectForKey:@"at"] unsignedIntegerValue];
+        
+        senderIdentity.currentLine = newLine;
+        
+        [newLine sendOpen];
+        [newLine openLine];
+        
+        NSLog(@"Line setup for %@", newLine.inLineId);
+        
+        [self.openLines setObject:newLine forKey:newLine.inLineId];
+        if ([self.delegate respondsToSelector:@selector(openedLine:)]) {
+            [self.delegate openedLine:newLine];
+        }
+        
+        if (pendingLineJob) pendingLineJob.handler(newLine);
+        
+        [self.meshBuckets addIdentity:newLine.toIdentity];
+    }
+    
+    // Check the pending jobs for any lines or channels
+    [self.pendingJobs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        THPendingJob* job = (THPendingJob*)obj;
+        if (job.type == PendingChannel) {
+            THChannel* channel = (THChannel*)job.pending;
+            if (![channel.toIdentity.hashname isEqualToString:newLine.toIdentity.hashname]) return;
+            [self.pendingJobs removeObjectAtIndex:idx];
+            job.handler(newLine);
+        } else if (job.type == PendingLine) {
+            // TODO:  What is a pending line job?
+        }
+    }];
+}
+
 #pragma region -- UDP Handlers
 
 -(void)udpSocket:(GCDAsyncUdpSocket *)sock didReceiveData:(NSData *)data fromAddress:(NSData *)address withFilterContext:(id)filterContext
@@ -236,121 +364,7 @@
     }
     
     if ([[incomingPacket.json objectForKey:@"type"] isEqualToString:@"open"]) {
-        // TODO:  Check the open lines for this address?
-        
-        // Process an open packet
-        NSData* decodedKey = [[NSData alloc] initWithBase64EncodedData:[incomingPacket.json objectForKey:@"open"] options:0];
-        NSData* eccKey =  [self.identity.rsaKeys decrypt:decodedKey];
-        
-        NSData* innerPacketKey = [SHA256 hashWithData:eccKey];
-        NSData* iv = [[incomingPacket.json objectForKey:@"iv"] dataFromHexString];
-        THPacket* innerPacket = [THPacket packetData:[CTRAES256Decryptor decryptPlaintext:incomingPacket.body key:innerPacketKey iv:iv]];
-        
-        if (!innerPacket) {
-            NSLog(@"Invalid inner packet");
-            return;
-        }
-        
-        THIdentity* senderIdentity = [THIdentity identityFromPublicKey:innerPacket.body];
-        
-        // If the new line is older than the current one bail
-        if (senderIdentity.currentLine && senderIdentity.currentLine.createdAt > [[innerPacket.json objectForKey:@"at"] unsignedIntegerValue]) {
-            NSLog(@"Dumped a line that is older than current");
-            return;
-        }
-        
-        // If this is an attempt to reopen the original, just dump it and keep using it
-        if ([senderIdentity.currentLine.outLineId isEqualToString:[innerPacket.json objectForKey:@"line"]] &&
-            senderIdentity.currentLine.createdAt == [[innerPacket.json objectForKey:@"at"] unsignedIntegerValue]) {
-            NSLog(@"Attempted to reopen the line for %@ line id: %@", senderIdentity.hashname, senderIdentity.currentLine.outLineId);
-            return;
-        }
-        
-        NSData* rawSigEncrypted = [[NSData alloc] initWithBase64EncodedString:[incomingPacket.json objectForKey:@"sig"] options:0];
-        SHA256* sigKeySha = [SHA256 new];
-        [sigKeySha updateWithData:eccKey];
-        [sigKeySha updateWithData:[[innerPacket.json objectForKey:@"line" ] dataFromHexString]];
-        NSData* sigKey = [sigKeySha finalize];
-        NSData* rawSig = [CTRAES256Decryptor decryptPlaintext:rawSigEncrypted key:sigKey iv:iv];
-        if (![senderIdentity.rsaKeys verify:incomingPacket.body withSignature:rawSig]) {
-            NSLog(@"Invalid signature, dumping.");
-            return;
-        }
-        
-        THLine* newLine = senderIdentity.currentLine;
-        
-        // remove any existing lines to this hashname
-        if (newLine) {
-            [self.meshBuckets removeLine:newLine];
-            [self.openLines removeObjectForKey:newLine.inLineId];
-        }
-        __block THPendingJob* pendingLineJob = nil;
-        [self.pendingJobs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            THPendingJob* job = (THPendingJob*)obj;
-            if (job.type != PendingLine) return;
-            
-            THLine* pendingLine = (THLine*)job.pending;
-            if ([pendingLine.toIdentity.hashname isEqualToString:senderIdentity.hashname]) {
-                pendingLineJob = job;
-                *stop = YES;
-                [self.pendingJobs removeObjectAtIndex:idx];
-            }
-        }];
-        if (pendingLineJob) {
-            newLine = (THLine*)pendingLineJob.pending;
-            NSLog(@"Finish open on %@", newLine);
-            newLine.outLineId = [innerPacket.json objectForKey:@"line"];
-            newLine.remoteECCKey = eccKey;
-            newLine.createdAt = [[innerPacket.json objectForKey:@"at"] unsignedIntegerValue];
-            newLine.lastInActivity = time(NULL);
-            [newLine openLine];
-
-            [self.openLines setObject:newLine forKey:newLine.inLineId];
-            
-            if ([self.delegate respondsToSelector:@selector(openedLine:)]) {
-                [self.delegate openedLine:newLine];
-            }
-            
-            pendingLineJob.handler(newLine);
-            
-            [self.meshBuckets linkToIdentity:newLine.toIdentity];
-        } else {
-            
-            newLine = [THLine new];
-            newLine.lastInActivity = time(NULL);
-            newLine.toIdentity = senderIdentity;
-            newLine.address = address;
-            newLine.outLineId = [innerPacket.json objectForKey:@"line"];
-            newLine.remoteECCKey = eccKey;
-            newLine.createdAt = [[innerPacket.json objectForKey:@"at"] unsignedIntegerValue];
-            
-            senderIdentity.currentLine = newLine;
-            
-            [newLine sendOpen];
-            [newLine openLine];
-            
-            NSLog(@"Line setup for %@", newLine.inLineId);
-            
-            [self.openLines setObject:newLine forKey:newLine.inLineId];
-            if ([self.delegate respondsToSelector:@selector(openedLine:)]) {
-                [self.delegate openedLine:newLine];
-            }
-            
-            [self.meshBuckets addIdentity:newLine.toIdentity];
-        }
-        
-        // Check the pending jobs for any lines or channels
-        [self.pendingJobs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            THPendingJob* job = (THPendingJob*)obj;
-            if (job.type == PendingChannel) {
-                THChannel* channel = (THChannel*)job.pending;
-                if (![channel.toIdentity.hashname isEqualToString:newLine.toIdentity.hashname]) return;
-                [self.pendingJobs removeObjectAtIndex:idx];
-                job.handler(newLine);
-            } else if (job.type == PendingLine) {
-                // TODO:  What is a pending line job?
-            }
-        }];
+        [self processOpen:incomingPacket from:address];
     } else if([[incomingPacket.json objectForKey:@"type"] isEqualToString:@"line"]) {
         NSLog(@"Received a line packet for %@", [incomingPacket.json objectForKey:@"line"]);
         // Process a line packet

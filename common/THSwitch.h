@@ -20,7 +20,7 @@ typedef enum {
     UnreliableChannel
 } THChannelType;
 
-typedef void(^LineOpenBlock)(THLine*);
+typedef void(^LineOpenBlock)(THIdentity*);
 
 @protocol THSwitchDelegate <NSObject>
 

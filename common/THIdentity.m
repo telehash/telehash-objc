@@ -14,6 +14,7 @@
 #import "THLine.h"
 #import "THSwitch.h"
 #import "THChannel.h"
+#import "CTRAES256.h"
 
 #include <arpa/inet.h>
 
@@ -195,8 +196,7 @@ int nlz(unsigned long x) {
 -(void)sendPacket:(THPacket *)packet
 {
     if (!self.currentLine) {
-        [[THSwitch defaultSwitch] openLine:self completion:^(THLine *newLine) {
-            self.currentLine = newLine;
+        [[THSwitch defaultSwitch] openLine:self completion:^(THIdentity* lineIdentity) {
             [self.currentLine sendPacket:packet];
         }];
     } else {
@@ -224,5 +224,10 @@ int nlz(unsigned long x) {
     const struct sockaddr_in* addr = [self.address bytes];
     return [NSString stringWithFormat:@"%@,%s,%d", self.hashname, inet_ntoa(addr->sin_addr),addr->sin_port];
 
+}
+
+-(void)processOpenPacket:(THPacket*)openPacket innerPacket:(THPacket *)innerPacket
+{
+    
 }
 @end

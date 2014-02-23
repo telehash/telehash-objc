@@ -35,6 +35,7 @@
 
 // TODO:  Method to create a channel for a type
 
+-(void)processOpenPacket:(THPacket*)openPacket innerPacket:(THPacket *)innerPacket;
 -(NSInteger)distanceFrom:(THIdentity*)identity;
 -(void)setIP:(NSString*)ip port:(NSUInteger)port;
 

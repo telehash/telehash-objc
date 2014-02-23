@@ -13,10 +13,10 @@
 
 +(id)packetData:(NSData *)packetData;
 {
-    short jsonLength;
+    unsigned short jsonLength;
     [packetData getBytes:&jsonLength length:sizeof(short)];
     jsonLength = ntohs(jsonLength);
-    if (jsonLength < 0) {
+    if (jsonLength > packetData.length) {
         NSLog(@"Invalid JSON header length");
         return nil;
     }

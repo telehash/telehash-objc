@@ -18,6 +18,7 @@ typedef void(^SeekCompletionBlock)(BOOL found);
 
 @property THIdentity* localIdentity;
 @property NSMutableArray* buckets;
+@property NSMutableArray* pendingSeeks;
 
 -(void)linkToIdentity:(THIdentity*)identity;
 -(void)addIdentity:(THIdentity*)identity;

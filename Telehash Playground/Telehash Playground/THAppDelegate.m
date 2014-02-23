@@ -130,7 +130,7 @@
 {
     THIdentity* connectToIdentity = [THIdentity identityFromHashname:[hashnameField stringValue]];
     if (connectToIdentity) {
-        [thSwitch openLine:connectToIdentity completion:^(THLine *openedLine) {
+        [thSwitch openLine:connectToIdentity completion:^(THIdentity* openIdentity) {
             NSLog(@"We're in the app and connected to %@", connectToIdentity.hashname);
         }];
     }
