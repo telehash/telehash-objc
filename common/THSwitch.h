@@ -54,6 +54,7 @@ typedef void(^LineOpenBlock)(THIdentity*);
 // The completion block is optional.
 -(void)openLine:(THIdentity*)toIdentity completion:(LineOpenBlock)lineOpenCompletion;
 -(void)openLine:(THIdentity*)toIdentity;
+-(void)closeLine:(THLine*)line;
 -(void)loadSeeds:(NSData*)seedData;
 
 // This is an internal handling hack

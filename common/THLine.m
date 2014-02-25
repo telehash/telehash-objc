@@ -178,12 +178,10 @@
         [self.toIdentity sendPacket:connectPacket];
     } else if ([channelType isEqualToString:@"connect"]) {
         THIdentity* peerIdentity = [THIdentity identityFromPublicKey:innerPacket.body];
-        NSLog(@"Going to connect to %@", peerIdentity.hashname);
-        THLine* curLine = [thSwitch lineToHashname:peerIdentity.hashname];
-        if (curLine) {
-            // We don't need to do anything?
-            return;
+        if (peerIdentity.currentLine) {
+            [[THSwitch defaultSwitch] closeLine:peerIdentity.currentLine];
         }
+        NSLog(@"Going to connect to %@", peerIdentity.hashname);
         
         // Iterate over the paths and find the ipv4
         [[innerPacket.json objectForKey:@"paths"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {

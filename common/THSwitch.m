@@ -208,7 +208,17 @@
         }
     }];
 }
- 
+
+-(void)closeLine:(THLine *)line
+{
+    if (line.toIdentity.currentLine == line) {
+        line.toIdentity.currentLine = nil;
+        [line.toIdentity.channels removeAllObjects];
+    }
+    if (line.inLineId) [self.openLines removeObjectForKey:line.inLineId];
+    [self.meshBuckets removeLine:line];
+}
+
 -(BOOL)findPendingSeek:(THPacket *)packet;
 {
     if ([self.pendingJobs count] == 0) return NO;
@@ -258,6 +268,9 @@
         senderIdentity.currentLine.createdAt == [[innerPacket.json objectForKey:@"at"] unsignedIntegerValue]) {
         NSLog(@"Attempted to reopen the line for %@ line id: %@", senderIdentity.hashname, senderIdentity.currentLine.outLineId);
         return;
+    } else if (senderIdentity.currentLine.createdAt > 0 && senderIdentity.currentLine.createdAt < [[innerPacket.json objectForKey:@"at"] unsignedIntegerValue]) {
+        [senderIdentity.channels removeAllObjects];
+        senderIdentity.currentLine = nil;
     }
     
     NSData* rawSigEncrypted = [[NSData alloc] initWithBase64EncodedString:[incomingPacket.json objectForKey:@"sig"] options:0];
@@ -276,7 +289,7 @@
     // remove any existing lines to this hashname
     if (newLine) {
         [self.meshBuckets removeLine:newLine];
-        [self.openLines removeObjectForKey:newLine.inLineId];
+        if (newLine.inLineId) [self.openLines removeObjectForKey:newLine.inLineId];
     }
     __block THPendingJob* pendingLineJob = nil;
     [self.pendingJobs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
@@ -290,7 +303,7 @@
             [self.pendingJobs removeObjectAtIndex:idx];
         }
     }];
-    if (newLine) {
+    if (pendingLineJob) {
         THIdentity* pendingIdentity = (THIdentity*)pendingLineJob.pending;
         newLine = pendingIdentity.currentLine;
         NSLog(@"Finish open on %@", newLine);

@@ -13,6 +13,9 @@
 @interface THAppDelegate : NSObject <THSwitchDelegate, THChannelDelegate, NSTableViewDataSource> {
     IBOutlet NSTableView* tableView;
     IBOutlet NSTextField* hashnameField;
+    IBOutlet NSTextField* addressField;
+    IBOutlet NSTextField* portField;
+    IBOutlet NSTextField* keyField;
     THSwitch* thSwitch;
 }
 

@@ -34,5 +34,6 @@
 -(void)openLine;
 -(void)handlePacket:(THPacket*)packet;
 -(void)sendPacket:(THPacket*)packet;
+-(void)close;
 
 @end

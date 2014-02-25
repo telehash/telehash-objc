@@ -117,18 +117,21 @@
 #endif
 }
 
--(BOOL)channel:(THChannel*)channel handlePacket:(THPacket *)packet;
-{
-    NSLog(@"We're in the app: %@", packet.json);
-    THPacket* msgPacket = [THPacket new];
-    [msgPacket.json setObject:@{ @"message" : @"test", @"id" : @123123123123123 } forKey:@"_"];
-    [channel sendPacket:msgPacket];
-    return YES;
-}
-
 -(IBAction)connectToHashname:(id)sender
 {
-    THIdentity* connectToIdentity = [THIdentity identityFromHashname:[hashnameField stringValue]];
+    THIdentity* connectToIdentity;
+    NSString* key = [keyField stringValue];
+    if (key) {
+        NSData* keyData = [[NSData alloc] initWithBase64EncodedString:key options:0];
+        connectToIdentity = [THIdentity identityFromPublicKey:keyData];
+        NSString* address = [addressField stringValue];
+        NSInteger port = [portField integerValue];
+        if (address && port > 0) {
+            [connectToIdentity setIP:address port:port];
+        }
+    } else {
+        connectToIdentity = [THIdentity identityFromHashname:[hashnameField stringValue]];
+    }
     if (connectToIdentity) {
         [thSwitch openLine:connectToIdentity completion:^(THIdentity* openIdentity) {
             NSLog(@"We're in the app and connected to %@", connectToIdentity.hashname);
