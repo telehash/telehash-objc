@@ -121,7 +121,7 @@
 {
     THIdentity* connectToIdentity;
     NSString* key = [keyField stringValue];
-    if (key) {
+    if (key.length > 0) {
         NSData* keyData = [[NSData alloc] initWithBase64EncodedString:key options:0];
         connectToIdentity = [THIdentity identityFromPublicKey:keyData];
         NSString* address = [addressField stringValue];

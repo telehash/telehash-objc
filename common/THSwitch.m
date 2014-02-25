@@ -303,7 +303,7 @@
             [self.pendingJobs removeObjectAtIndex:idx];
         }
     }];
-    if (pendingLineJob) {
+    if (pendingLineJob && newLine.inLineId) {
         THIdentity* pendingIdentity = (THIdentity*)pendingLineJob.pending;
         newLine = pendingIdentity.currentLine;
         NSLog(@"Finish open on %@", newLine);
