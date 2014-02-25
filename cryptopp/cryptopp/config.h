@@ -245,7 +245,7 @@ NAMESPACE_END
 
 // For cross-compiles, just ignore host settings that bleed through for Xcode/iOS
 // We will accidentally catch some device builds that use x86 on Android.
-#if defined(__ANDROID__) || defined(TARGET_OS_IPHONE) || defined(TARGET_IPHONE_SIMULATOR)
+#if defined(__ANDROID__) || TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
 # define CRYPTOPP_DISABLE_ASM 1
 # define CRYPTOPP_DISABLE_SSE2 1
 # define CRYPTOPP_DISABLE_SSE3 1
@@ -358,7 +358,7 @@ NAMESPACE_END
 
 // For cross-compiles, just ignore host settings that bleed through for Xcode/iOS
 // We will accidentally catch some device builds that use x86 on Android.
-#if defined(__ANDROID__) || defined(TARGET_OS_IPHONE) || defined(TARGET_IPHONE_SIMULATOR)
+#if defined(__ANDROID__) || TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
 # undef CRYPTOPP_ALLOW_UNALIGNED_DATA_ACCESS
 
 # undef CRYPTOPP_BOOL_X86

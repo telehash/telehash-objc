@@ -277,7 +277,7 @@
     SHA256* sigKeySha = [SHA256 new];
     [sigKeySha updateWithData:eccKey];
     [sigKeySha updateWithData:[[innerPacket.json objectForKey:@"line" ] dataFromHexString]];
-    NSData* sigKey = [sigKeySha finalize];
+    NSData* sigKey = [sigKeySha finish];
     NSData* rawSig = [CTRAES256Decryptor decryptPlaintext:rawSigEncrypted key:sigKey iv:iv];
     if (![senderIdentity.rsaKeys verify:incomingPacket.body withSignature:rawSig]) {
         NSLog(@"Invalid signature, dumping.");

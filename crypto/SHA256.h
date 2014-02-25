@@ -11,5 +11,5 @@
 @interface SHA256 : NSObject
 +(NSData*)hashWithData:(NSData*)data;
 -(void)updateWithData:(NSData*)data;
--(NSData*)finalize;
+-(NSData*)finish;
 @end

@@ -73,7 +73,7 @@ static NSMutableDictionary* identityCache;
 {
     SHA256* sha = [SHA256 new];
     [sha updateWithData:publicKey];
-    NSString* hashname = [[sha finalize] hexString];
+    NSString* hashname = [[sha finish] hexString];
 
     THIdentity* identity = [identityCache objectForKey:hashname];
     if (!identity) {
@@ -91,7 +91,7 @@ static NSMutableDictionary* identityCache;
 {
     SHA256* sha = [SHA256 new];
     [sha updateWithData:key];
-    NSString* hashname = [[sha finalize] hexString];
+    NSString* hashname = [[sha finish] hexString];
 
     THIdentity* identity = [identityCache objectForKey:hashname];
     if (!identity) {
@@ -158,7 +158,7 @@ static NSMutableDictionary* identityCache;
     if (!_hashnameCache) {
         SHA256* sha = [SHA256 new];
         [sha updateWithData:self.rsaKeys.DERPublicKey];
-        _hashnameCache = [[sha finalize] hexString];
+        _hashnameCache = [[sha finish] hexString];
     }
     return _hashnameCache;
 }

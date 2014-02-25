@@ -65,14 +65,14 @@
     
     SHA256* sha = [SHA256 new];
     [sha updateWithData:self.ecdh.publicKey];
-    NSData* dhKeyHash = [sha finalize];
+    NSData* dhKeyHash = [sha finish];
     
     [openPacket encryptWithKey:dhKeyHash iv:packetIV];
     NSData* bodySig = [defaultSwitch.identity.rsaKeys sign:openPacket.body];
     sha = [SHA256 new];
     [sha updateWithData:self.ecdh.publicKey];
     [sha updateWithData:[self.inLineId dataFromHexString]];
-    NSData* encryptedSig = [CTRAES256Encryptor encryptPlaintext:bodySig key:[sha finalize] iv:packetIV];
+    NSData* encryptedSig = [CTRAES256Encryptor encryptPlaintext:bodySig key:[sha finish] iv:packetIV];
     [openPacket.json setObject:[encryptedSig base64EncodedStringWithOptions:0] forKey:@"sig"];
     
     self.lastOutActivity = time(NULL);
@@ -243,12 +243,12 @@
                 newChannelType = UnreliableChannel;
             }
             newChannel.channelId = channelId;
+            newChannel.channelIsReady = YES;
+            newChannel.type = channelType;
             THSwitch* defaultSwitch = [THSwitch defaultSwitch];
             if ([defaultSwitch.delegate respondsToSelector:@selector(channelReady:type:firstPacket:)]) {
                 [defaultSwitch.delegate channelReady:newChannel type:newChannelType firstPacket:innerPacket];
             }
-            newChannel.channelIsReady = YES;
-            newChannel.type = channelType;
             NSLog(@"Adding a channel");
             [self.toIdentity.channels setObject:newChannel forKey:channelId];
             //[newChannel handlePacket:innerPacket];

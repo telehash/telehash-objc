@@ -118,6 +118,27 @@
 			remoteGlobalIDString = 8231EBF21836C60D00BC41C1;
 			remoteInfo = "Telehash PlaygroundTests";
 		};
+		8263D95A18BD16F000DED8E5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 82D221361871D3630015E7EA /* cryptopp.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 8263D95418BD0FD700DED8E5;
+			remoteInfo = "cryptopp-osx";
+		};
+		8263D96418BD274C00DED8E5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 82D221361871D3630015E7EA /* cryptopp.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 8263D8D218BD0FD700DED8E5;
+			remoteInfo = "cryptopp-osx";
+		};
+		8263D96618BD275000DED8E5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 82D221361871D3630015E7EA /* cryptopp.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 82D2210C1871D3620015E7EA;
+			remoteInfo = "cryptopp-ios";
+		};
 		82D2213B1871D3630015E7EA /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 82D221361871D3630015E7EA /* cryptopp.xcodeproj */;
@@ -439,6 +460,7 @@
 			isa = PBXGroup;
 			children = (
 				82D2213C1871D3630015E7EA /* libcryptopp.a */,
+				8263D95B18BD16F000DED8E5 /* libcryptopp.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -483,6 +505,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				8263D96518BD274C00DED8E5 /* PBXTargetDependency */,
 			);
 			name = telehash;
 			productName = telehash;
@@ -518,6 +541,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				8263D96718BD275000DED8E5 /* PBXTargetDependency */,
 			);
 			name = "telehash-ios";
 			productName = "telehash-ios";
@@ -617,6 +641,13 @@
 			fileType = wrapper.cfbundle;
 			path = "Telehash PlaygroundTests.xctest";
 			remoteRef = 8231EC0F1836C60E00BC41C1 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		8263D95B18BD16F000DED8E5 /* libcryptopp.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libcryptopp.a;
+			remoteRef = 8263D95A18BD16F000DED8E5 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		82D2213C1871D3630015E7EA /* libcryptopp.a */ = {
@@ -726,6 +757,16 @@
 			target = 8218D19A17FA6EA50053AFAC /* telehash-ios */;
 			targetProxy = 8218D1AE17FA6EA60053AFAC /* PBXContainerItemProxy */;
 		};
+		8263D96518BD274C00DED8E5 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "cryptopp-osx";
+			targetProxy = 8263D96418BD274C00DED8E5 /* PBXContainerItemProxy */;
+		};
+		8263D96718BD275000DED8E5 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "cryptopp-ios";
+			targetProxy = 8263D96618BD275000DED8E5 /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
@@ -823,11 +864,13 @@
 			buildSettings = {
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "telehash/telehash-Prefix.pch";
-				HEADER_SEARCH_PATHS = /usr/local/include;
-				OTHER_LDFLAGS = (
-					"-L/usr/local/lib",
-					"-lcryptopp",
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+					"CRYPTOPP_DISABLE_ASM=1",
 				);
+				HEADER_SEARCH_PATHS = /usr/local/include;
+				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -838,10 +881,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "telehash/telehash-Prefix.pch";
 				HEADER_SEARCH_PATHS = /usr/local/include;
-				OTHER_LDFLAGS = (
-					"-L/usr/local/lib",
-					"-lcryptopp",
-				);
+				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

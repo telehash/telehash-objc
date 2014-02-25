@@ -24,7 +24,7 @@ using CryptoPP::SHA256;
 {
     SHA256* sha = [SHA256 new];
     [sha updateWithData:data];
-    return [sha finalize];
+    return [sha finish];
 }
 
 -(void)updateWithData:(NSData *)data;
@@ -32,7 +32,7 @@ using CryptoPP::SHA256;
     sha.Update((const byte*)[data bytes], [data length]);
 }
 
--(NSData*)finalize;
+-(NSData*)finish;
 {
     NSMutableData* hash = [NSMutableData dataWithLength:32];
     sha.Final((byte*)[hash mutableBytes]);
