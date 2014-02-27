@@ -138,4 +138,9 @@
         }];
     }
 }
+
+-(void)thSwitch:(THSwitch *)thSwitch status:(THSwitchStatus)status
+{
+    NSLog(@"Switch status is now %d", status);
+}
 @end

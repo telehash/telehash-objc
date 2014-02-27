@@ -57,6 +57,7 @@
         self.udpSocket = [[GCDAsyncUdpSocket alloc] initWithDelegate:self delegateQueue:dispatch_get_main_queue()];
         self.channelQueue = dispatch_queue_create("channelWorkQueue", NULL);
         self.dhtQueue = dispatch_queue_create("dhtWorkQueue", NULL);
+        self.status = THSWitchOffline;
     }
     return self;
 }
@@ -80,6 +81,8 @@
     NSError* recvError;
     [self.udpSocket beginReceiving:&recvError];
     // TODO: Needs more error handling
+    
+    [self updateStatus:THSwitchListening];
 }
 
 -(void)loadSeeds:(NSData *)seedData;
@@ -361,6 +364,16 @@
             // TODO:  What is a pending line job?
         }
     }];
+}
+
+-(void)updateStatus:(THSwitchStatus)status
+{
+    if (status != self.status) {
+        self.status = status;
+        if ([self.delegate respondsToSelector:@selector(thSwitch:status:)]) {
+            [self.delegate thSwitch:self status:self.status];
+        }
+    }
 }
 
 #pragma region -- UDP Handlers

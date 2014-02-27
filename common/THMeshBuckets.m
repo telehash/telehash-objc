@@ -226,6 +226,10 @@
 
 -(BOOL)channel:(THChannel *)channel handlePacket:(THPacket *)packet
 {
+    THSwitch* defaultSwitch = [THSwitch defaultSwitch];
+    if (defaultSwitch.status != THSwitchOnline) {
+        [defaultSwitch updateStatus:THSwitchOnline];
+    }
     NSUInteger now = time(NULL);
     if (channel.lastOutActivity + 30 < now) {
         THPacket* pingPacket = [THPacket new];

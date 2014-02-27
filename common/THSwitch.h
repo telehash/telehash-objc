@@ -20,12 +20,21 @@ typedef enum {
     UnreliableChannel
 } THChannelType;
 
+typedef enum {
+    THSWitchOffline,
+    THSwitchListening,
+    THSwitchOnline
+} THSwitchStatus;
+
 typedef void(^LineOpenBlock)(THIdentity*);
+
+@class THSwitch;
 
 @protocol THSwitchDelegate <NSObject>
 
 -(void)openedLine:(THLine*)line;
 -(void)channelReady:(THChannel*)channel type:(THChannelType)type firstPacket:(THPacket*)packet;
+-(void)thSwitch:(THSwitch*)thSwitch status:(THSwitchStatus)status;
 
 @end
 
@@ -40,6 +49,7 @@ typedef void(^LineOpenBlock)(THIdentity*);
 @property id<THSwitchDelegate> delegate;
 @property dispatch_queue_t channelQueue;
 @property dispatch_queue_t dhtQueue;
+@property THSwitchStatus status;
 
 +(id)THSWitchWithIdentity:(THIdentity*)identity;
 
@@ -56,6 +66,7 @@ typedef void(^LineOpenBlock)(THIdentity*);
 -(void)openLine:(THIdentity*)toIdentity;
 -(void)closeLine:(THLine*)line;
 -(void)loadSeeds:(NSData*)seedData;
+-(void)updateStatus:(THSwitchStatus)status;
 
 // This is an internal handling hack
 -(BOOL)findPendingSeek:(THPacket*)packet;
