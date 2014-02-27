@@ -60,7 +60,9 @@
             if (checkTime > identity.currentLine.lastInActivity + 120) {
                 [bucket removeObjectAtIndex:idx];
                 THChannel* channel = [identity channelForType:@"link"];
-                [identity.channels removeObjectForKey:channel.channelId];
+                if (channel) {
+                    [identity.channels removeObjectForKey:channel.channelId];
+                }
                 // TODO:  Is the channel auto cleaned up properly now?  We dont' send an end:true because we assume it's dead
                 return;
             }
