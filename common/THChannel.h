@@ -63,7 +63,7 @@ typedef enum {
     THPacketBuffer* inPacketBuffer;
     THPacketBuffer* outPacketBuffer;
     NSUInteger lastAck;
-    NSUInteger maxProcessed;
+    NSUInteger nextExpectedSequence;
 }
 @property dispatch_queue_t dispatchQueue;
 -(id)initToIdentity:(THIdentity*)identity;

@@ -27,16 +27,19 @@
     }
     
     NSError* parserError;
-    id parsedJson = [NSJSONSerialization JSONObjectWithData:[packetData subdataWithRange:NSMakeRange(2, jsonLength)] options:0 error:&parserError];
-    
-    THPacket* packet;
-    if (parsedJson == nil || ![parsedJson isKindOfClass:[NSDictionary class]]) {
-        // TODO:  Something went wrong, deal with it
-        NSLog(@"Something went wrong parsing: %@", parserError);
-        return nil;
-    } else {
-        packet = [[THPacket alloc] initWithJson:parsedJson];
+    id parsedJson;
+    if (jsonLength >= 2) {
+        parsedJson = [NSJSONSerialization JSONObjectWithData:[packetData subdataWithRange:NSMakeRange(2, jsonLength)] options:0 error:&parserError];
+        if (parsedJson == nil || ![parsedJson isKindOfClass:[NSDictionary class]]) {
+            // TODO:  Something went wrong, deal with it
+            NSLog(@"Something went wrong parsing: %@", parserError);
+            return nil;
+        }
     }
+    
+    THPacket* packet = [[THPacket alloc] initWithJson:parsedJson];
+    packet.jsonLength = jsonLength;
+    if (jsonLength == 1) --jsonLength;
     packet.body = [packetData subdataWithRange:NSMakeRange(2 + jsonLength, packetData.length - jsonLength - 2)];
 
     return packet;

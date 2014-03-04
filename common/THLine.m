@@ -19,6 +19,7 @@
 #import "NSString+HexString.h"
 #import "THChannel.h"
 #import "THMeshBuckets.h"
+#import "THCipherSet.h"
 
 #include <arpa/inet.h>
 
@@ -273,5 +274,10 @@
     
     THSwitch* defaultSwitch = [THSwitch defaultSwitch];
     [defaultSwitch sendPacket:linePacket toAddress:self.address];
+}
+
+-(void)close
+{
+    [[THSwitch defaultSwitch] closeLine:self];
 }
 @end

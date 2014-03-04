@@ -14,6 +14,7 @@
 @property (atomic) NSMutableDictionary* json;
 @property (atomic) NSData* body;
 @property (atomic) NSData* fromAddress;
+@property (atomic, assign) unsigned short jsonLength;
 
 -(id)init;
 -(id)initWithJson:(NSMutableDictionary*)json;

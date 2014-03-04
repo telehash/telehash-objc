@@ -41,6 +41,16 @@
     XCTAssertEqualObjects(pkt.body, [NSData dataWithBytes:"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f" length:16], @"body was incorrect");
 }
 
+-(void)testOpenPacketParsing
+{
+    // Ensure we can process open packets which have a length of 1 and a leading bye of the body
+    NSURL* fileURL = [[NSURL alloc] initFileURLWithPath:@"telehashTests/open.pkt"];
+    THPacket* openPkt = [THPacket packetData:[NSData dataWithContentsOfURL:fileURL]];
+    
+    XCTAssert(openPkt.jsonLength == 1, @"JSON length was not 1");
+    XCTAssertEqualObjects(openPkt.body, [NSData dataWithBytes:"\xff\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f" length:17], @"body was incorrect");
+}
+
 #if 0
 -(void)testSwitch
 {

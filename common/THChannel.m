@@ -161,7 +161,7 @@
     double delayInSeconds = 1.0;
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
     dispatch_after(popTime, defaultSwitch.channelQueue, ^(void){
-        if (lastAck < maxProcessed) {
+        if (lastAck < (nextExpectedSequence - 1)) {
             [self sendPacket:[THPacket new]];
         }
     });
@@ -187,7 +187,7 @@
     // Append channel id
     [packet.json setObject:self.channelId forKey:@"c"];
     // Append ack
-    [packet.json setObject:[NSNumber numberWithUnsignedLong:maxProcessed] forKey:@"ack"];
+    [packet.json setObject:[NSNumber numberWithUnsignedLong:(nextExpectedSequence - 1)] forKey:@"ack"];
     lastAck = time(NULL);
     
     [outPacketBuffer push:packet];
@@ -203,7 +203,7 @@
     }
 
     while (inPacketBuffer.length > 0) {
-        if (inPacketBuffer.frontSeq != maxProcessed) {
+        if (inPacketBuffer.frontSeq != nextExpectedSequence) {
             // XXX dispatch a missing queue?
             return;
         }
@@ -213,7 +213,7 @@
             if ([[curPacket.json objectForKey:@"end"] boolValue] == YES) {
                 // TODO: Shut it down!
             }
-            maxProcessed = [[curPacket.json objectForKey:@"seq"] unsignedIntegerValue];
+            nextExpectedSequence = [[curPacket.json objectForKey:@"seq"] unsignedIntegerValue] + 1;
         });
     }
 }

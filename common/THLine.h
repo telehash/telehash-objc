@@ -12,11 +12,12 @@
 
 @class THPacket;
 @class THChannel;
+@class THCipherSet;
 
 @interface THLine : NSObject
 
 @property THIdentity* toIdentity;
-@property ECDH* ecdh;
+@property THCipherSet* cipherSet;
 @property NSString* outLineId;
 @property NSString* inLineId;
 @property NSData* address;

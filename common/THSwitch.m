@@ -243,56 +243,11 @@
 
 -(void)processOpen:(THPacket*)incomingPacket from:(NSData*)address
 {
-    // TODO:  Check the open lines for this address?
-    
-    // Process an open packet
-    NSData* decodedKey = [[NSData alloc] initWithBase64EncodedData:[incomingPacket.json objectForKey:@"open"] options:0];
-    NSData* eccKey =  [self.identity.rsaKeys decrypt:decodedKey];
-    
-    NSData* innerPacketKey = [SHA256 hashWithData:eccKey];
-    NSData* iv = [[incomingPacket.json objectForKey:@"iv"] dataFromHexString];
-    THPacket* innerPacket = [THPacket packetData:[CTRAES256Decryptor decryptPlaintext:incomingPacket.body key:innerPacketKey iv:iv]];
-    
-    if (!innerPacket) {
-        NSLog(@"Invalid inner packet");
-        return;
-    }
-    
-    THIdentity* senderIdentity = [THIdentity identityFromPublicKey:innerPacket.body];
-    
-    // If the new line is older than the current one bail
-    if (senderIdentity.currentLine && senderIdentity.currentLine.createdAt > [[innerPacket.json objectForKey:@"at"] unsignedIntegerValue]) {
-        NSLog(@"Dumped a line that is older than current");
-        return;
-    }
-    
-    // If this is an attempt to reopen the original, just dump it and keep using it
-    if ([senderIdentity.currentLine.outLineId isEqualToString:[innerPacket.json objectForKey:@"line"]] &&
-        senderIdentity.currentLine.createdAt == [[innerPacket.json objectForKey:@"at"] unsignedIntegerValue]) {
-        NSLog(@"Attempted to reopen the line for %@ line id: %@", senderIdentity.hashname, senderIdentity.currentLine.outLineId);
-        return;
-    } else if (senderIdentity.currentLine.createdAt > 0 && senderIdentity.currentLine.createdAt < [[innerPacket.json objectForKey:@"at"] unsignedIntegerValue]) {
-        [senderIdentity.channels removeAllObjects];
-        senderIdentity.currentLine = nil;
-    }
-    
-    NSData* rawSigEncrypted = [[NSData alloc] initWithBase64EncodedString:[incomingPacket.json objectForKey:@"sig"] options:0];
-    SHA256* sigKeySha = [SHA256 new];
-    [sigKeySha updateWithData:eccKey];
-    [sigKeySha updateWithData:[[innerPacket.json objectForKey:@"line" ] dataFromHexString]];
-    NSData* sigKey = [sigKeySha finish];
-    NSData* rawSig = [CTRAES256Decryptor decryptPlaintext:rawSigEncrypted key:sigKey iv:iv];
-    if (![senderIdentity.rsaKeys verify:incomingPacket.body withSignature:rawSig]) {
-        NSLog(@"Invalid signature, dumping.");
-        return;
-    }
-    
-    THLine* newLine = senderIdentity.currentLine;
-    
+    THCipherSet* cset = [THCipherSet ci]
     // remove any existing lines to this hashname
     if (newLine) {
-        [self.meshBuckets removeLine:newLine];
-        if (newLine.inLineId) [self.openLines removeObjectForKey:newLine.inLineId];
+        [thSwitch.meshBuckets removeLine:newLine];
+        if (newLine.inLineId) [thSwitch.openLines removeObjectForKey:newLine.inLineId];
     }
     __block THPendingJob* pendingLineJob = nil;
     [self.pendingJobs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
@@ -389,20 +344,23 @@
         return;
     }
     
-    if ([[incomingPacket.json objectForKey:@"type"] isEqualToString:@"open"]) {
+    incomingPacket.fromAddress = address;
+    
+    if (incomingPacket.jsonLength == 1) {
         [self processOpen:incomingPacket from:address];
-    } else if([[incomingPacket.json objectForKey:@"type"] isEqualToString:@"line"]) {
-        NSLog(@"Received a line packet for %@", [incomingPacket.json objectForKey:@"line"]);
+    } else if(incomingPacket.jsonLength == 0) {
+        // Validate the line id then process it
+        NSString* lineId = [[incomingPacket.body subdataWithRange:NSMakeRange(1, 16)] hexString];
+        NSLog(@"Received a line packet for %@", lineId);
         // Process a line packet
-        THLine* line = [self.openLines objectForKey:[incomingPacket.json objectForKey:@"line"]];
+        THLine* line = [self.openLines objectForKey:lineId];
         // If there is no line to handle this dump it
         if (line == nil) {
             return;
         }
         [line handlePacket:incomingPacket];
     } else {
-        NSLog(@"We received an unknown packet type: %@", [incomingPacket.json objectForKey:@"type"]);
-        return;
+        NSLog(@"Dropping an unknown packet from %@", [NSString stringWithUTF8String:inet_ntoa(addr->sin_addr)]);
     }
 }
 
