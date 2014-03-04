@@ -8,7 +8,6 @@
 
 #import <Foundation/Foundation.h>
 #import "THIdentity.h"
-#import "ECDH.h"
 
 @class THPacket;
 @class THChannel;

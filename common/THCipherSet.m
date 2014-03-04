@@ -11,11 +11,14 @@
 #import "THIdentity.h"
 #import "THSwitch.h"
 #import "SHA256.h"
-#import "CTRAES256.h"
+#import "GCMAES256.h"
 #import "NSString+HexString.h"
 #import "THLine.h"
 #import "THMeshBuckets.h"
 #import "THPendingJob.h"
+#import "ECDH.h"
+
+static unsigned char iv2a[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
 
 @implementation THCipherSet
 +(THCipherSet*)cipherSetForOpen:(THPacket *)openPacket
@@ -28,24 +31,36 @@
         return nil;
     }
 }
+
+-(THLine*)processOpen:(THPacket*)openPacket switch:(THSwitch*)thSwitch
+{
+    NSLog(@"Not implemented");
+    return nil;
+}
 @end
 
 @implementation THCipherSet2a
+{
+    ECDH* ecdh;
+    NSData* remoteECCKey;
+}
 
--(void)processOpen:(THPacket *)openPacket switch:(THSwitch *)thSwitch
+-(THLine*)processOpen:(THPacket *)openPacket switch:(THSwitch *)thSwitch
 {
     // TODO:  Check the open lines for this address?
     
     // Process an open packet
-    NSData* eccKey =  [thSwitch.identity.rsaKeys decrypt:[openPacket.body subdataWithRange:NSMakeRange(1, 256)]];
+    remoteECCKey =  [thSwitch.identity.rsaKeys decrypt:[openPacket.body subdataWithRange:NSMakeRange(1, 256)]];
     
-    NSData* innerPacketKey = [SHA256 hashWithData:eccKey];
-    NSData* iv = [[openPacket.json objectForKey:@"iv"] dataFromHexString];
-    THPacket* innerPacket = [THPacket packetData:[CTRAES256Decryptor decryptPlaintext:openPacket.body key:innerPacketKey iv:iv]];
+    NSData* innerPacketKey = [SHA256 hashWithData:remoteECCKey];
+    NSData* iv = [NSData dataWithBytes:iv2a length:16];
+    NSData* sigData = [openPacket.body subdataWithRange:NSMakeRange(257, 260)];
+    NSData* encryptedInner = [openPacket.body subdataWithRange:NSMakeRange(517, openPacket.body.length - 517)];
+    THPacket* innerPacket = [THPacket packetData:[GCMAES256Decryptor decryptPlaintext:encryptedInner key:innerPacketKey iv:iv]];
     
     if (!innerPacket) {
         NSLog(@"Invalid inner packet");
-        return;
+        return nil;
     }
     
     THIdentity* senderIdentity = [THIdentity identityFromPublicKey:innerPacket.body];
@@ -53,20 +68,19 @@
     // If the new line is older than the current one bail
     if (senderIdentity.currentLine && senderIdentity.currentLine.createdAt > [[innerPacket.json objectForKey:@"at"] unsignedIntegerValue]) {
         NSLog(@"Dumped a line that is older than current");
-        return;
+        return nil;
     }
     
     // If this is an attempt to reopen the original, just dump it and keep using it
     if ([senderIdentity.currentLine.outLineId isEqualToString:[innerPacket.json objectForKey:@"line"]] &&
         senderIdentity.currentLine.createdAt == [[innerPacket.json objectForKey:@"at"] unsignedIntegerValue]) {
         NSLog(@"Attempted to reopen the line for %@ line id: %@", senderIdentity.hashname, senderIdentity.currentLine.outLineId);
-        return;
+        return nil;
     } else if (senderIdentity.currentLine.createdAt > 0 && senderIdentity.currentLine.createdAt < [[innerPacket.json objectForKey:@"at"] unsignedIntegerValue]) {
         [senderIdentity.channels removeAllObjects];
         senderIdentity.currentLine = nil;
     }
     
-    NSData* rawSigEncrypted = [[NSData alloc] initWithBase64EncodedString:[openPacket.json objectForKey:@"sig"] options:0];
     SHA256* sigKeySha = [SHA256 new];
     [sigKeySha updateWithData:eccKey];
     [sigKeySha updateWithData:[[innerPacket.json objectForKey:@"line" ] dataFromHexString]];
@@ -74,11 +88,11 @@
     NSData* rawSig = [CTRAES256Decryptor decryptPlaintext:rawSigEncrypted key:sigKey iv:iv];
     if (![senderIdentity.rsaKeys verify:openPacket.body withSignature:rawSig]) {
         NSLog(@"Invalid signature, dumping.");
-        return;
+        return nil;
     }
     
     THLine* newLine = senderIdentity.currentLine;
     
-    }
+}
 
 @end

@@ -53,6 +53,9 @@
 		8251ADBD18C05A26005CB9E2 /* THCipherSet.h in Headers */ = {isa = PBXBuildFile; fileRef = 8251ADBB18C05A26005CB9E2 /* THCipherSet.h */; };
 		8251ADBE18C05A26005CB9E2 /* THCipherSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 8251ADBC18C05A26005CB9E2 /* THCipherSet.m */; };
 		8251ADBF18C05A26005CB9E2 /* THCipherSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 8251ADBC18C05A26005CB9E2 /* THCipherSet.m */; };
+		8298FF4918C5B5B0009CD379 /* GCMAES256.mm in Sources */ = {isa = PBXBuildFile; fileRef = 8298FF4718C5B5B0009CD379 /* GCMAES256.mm */; };
+		8298FF4A18C5B5B0009CD379 /* GCMAES256.h in Headers */ = {isa = PBXBuildFile; fileRef = 8298FF4818C5B5B0009CD379 /* GCMAES256.h */; };
+		8298FF4F18C5B5B4009CD379 /* GCMAES256.mm in Sources */ = {isa = PBXBuildFile; fileRef = 8298FF4718C5B5B0009CD379 /* GCMAES256.mm */; };
 		82A31BA3183457EB005077AD /* NSData+HexString.h in Headers */ = {isa = PBXBuildFile; fileRef = 82A31BA1183457EB005077AD /* NSData+HexString.h */; };
 		82A31BA4183457EB005077AD /* NSData+HexString.m in Sources */ = {isa = PBXBuildFile; fileRef = 82A31BA2183457EB005077AD /* NSData+HexString.m */; };
 		82A31BA5183457EB005077AD /* NSData+HexString.m in Sources */ = {isa = PBXBuildFile; fileRef = 82A31BA2183457EB005077AD /* NSData+HexString.m */; };
@@ -213,6 +216,8 @@
 		8251ADB918C023DC005CB9E2 /* open.pkt */ = {isa = PBXFileReference; lastKnownFileType = file; path = open.pkt; sourceTree = "<group>"; };
 		8251ADBB18C05A26005CB9E2 /* THCipherSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THCipherSet.h; sourceTree = "<group>"; };
 		8251ADBC18C05A26005CB9E2 /* THCipherSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THCipherSet.m; sourceTree = "<group>"; };
+		8298FF4718C5B5B0009CD379 /* GCMAES256.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = GCMAES256.mm; sourceTree = "<group>"; };
+		8298FF4818C5B5B0009CD379 /* GCMAES256.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCMAES256.h; sourceTree = "<group>"; };
 		82A31BA1183457EB005077AD /* NSData+HexString.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+HexString.h"; sourceTree = "<group>"; };
 		82A31BA2183457EB005077AD /* NSData+HexString.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData+HexString.m"; sourceTree = "<group>"; };
 		82B1720217FDE18F00C29EAF /* test.pkt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file; path = test.pkt; sourceTree = "<group>"; };
@@ -413,6 +418,8 @@
 		8218D1BF17FA6EF50053AFAC /* cryptopp */ = {
 			isa = PBXGroup;
 			children = (
+				8298FF4718C5B5B0009CD379 /* GCMAES256.mm */,
+				8298FF4818C5B5B0009CD379 /* GCMAES256.h */,
 				8218D1C017FA6F410053AFAC /* THRSA.h */,
 				8218D1C117FA6F410053AFAC /* RSA.mm */,
 				822C6D2D17FCCD0C008C04BA /* ECDH.h */,
@@ -494,6 +501,7 @@
 				822C6D3E17FCD8C5008C04BA /* RNG.h in Headers */,
 				82B1721018009A6C00C29EAF /* GCDAsyncUdpSocket.h in Headers */,
 				8231EC1B1836F37F00BC41C1 /* THLine.h in Headers */,
+				8298FF4A18C5B5B0009CD379 /* GCMAES256.h in Headers */,
 				822C6D4417FCDB31008C04BA /* THPacket.h in Headers */,
 				822C6D3917FCD754008C04BA /* SHA256.h in Headers */,
 				82B1720B180095B100C29EAF /* THChannel.h in Headers */,
@@ -716,6 +724,7 @@
 				822C6D3017FCCD0C008C04BA /* ECDH.mm in Sources */,
 				8218D17B17FA6E8A0053AFAC /* telehash.m in Sources */,
 				82B172161800A51B00C29EAF /* THIdentity.m in Sources */,
+				8298FF4918C5B5B0009CD379 /* GCMAES256.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -749,6 +758,7 @@
 				822C6D3117FCCD0C008C04BA /* ECDH.mm in Sources */,
 				8218D1A417FA6EA50053AFAC /* telehash_ios.m in Sources */,
 				82B172171800A51B00C29EAF /* THIdentity.m in Sources */,
+				8298FF4F18C5B5B4009CD379 /* GCMAES256.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

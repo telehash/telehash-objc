@@ -19,6 +19,7 @@
 #import "NSData+HexString.h"
 #import "THMeshBuckets.h"
 #import "THPendingJob.h"
+#import "THCipherSet.h"
 #include <arpa/inet.h>
 
 @interface THSwitch()
@@ -243,11 +244,14 @@
 
 -(void)processOpen:(THPacket*)incomingPacket from:(NSData*)address
 {
-    THCipherSet* cset = [THCipherSet ci]
+    THCipherSet* cset = [THCipherSet cipherSetForOpen:incomingPacket];
+    
+    THLine* newLine = [cset processOpen:incomingPacket switch:self];
+    
     // remove any existing lines to this hashname
     if (newLine) {
-        [thSwitch.meshBuckets removeLine:newLine];
-        if (newLine.inLineId) [thSwitch.openLines removeObjectForKey:newLine.inLineId];
+        [self.meshBuckets removeLine:newLine];
+        if (newLine.inLineId) [self.openLines removeObjectForKey:newLine.inLineId];
     }
     __block THPendingJob* pendingLineJob = nil;
     [self.pendingJobs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
@@ -255,7 +259,7 @@
         if (job.type != PendingIdentity) return;
         
         THIdentity* pendingIdentity = (THIdentity*)job.pending;
-        if ([pendingIdentity.hashname isEqualToString:senderIdentity.hashname]) {
+        if ([pendingIdentity.hashname isEqualToString:newLine.toIdentity.hashname]) {
             pendingLineJob = job;
             *stop = YES;
             [self.pendingJobs removeObjectAtIndex:idx];
