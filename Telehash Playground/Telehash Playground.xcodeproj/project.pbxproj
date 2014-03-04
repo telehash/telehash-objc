@@ -21,6 +21,7 @@
 		8231EC141836C76500BC41C1 /* libc++.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8231EC131836C76500BC41C1 /* libc++.dylib */; };
 		8263D96118BD257700DED8E5 /* libtelehash.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8263D96018BD257700DED8E5 /* libtelehash.a */; };
 		8263D99318BD294200DED8E5 /* libcryptopp-osx.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8263D99218BD294100DED8E5 /* libcryptopp-osx.a */; };
+		8298FF4318C5A816009CD379 /* seeds.json in Resources */ = {isa = PBXBuildFile; fileRef = 8298FF4218C5A816009CD379 /* seeds.json */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -55,7 +56,8 @@
 		8231EBFE1836C60D00BC41C1 /* Telehash_PlaygroundTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Telehash_PlaygroundTests.m; sourceTree = "<group>"; };
 		8231EC131836C76500BC41C1 /* libc++.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libc++.dylib"; path = "usr/lib/libc++.dylib"; sourceTree = SDKROOT; };
 		8263D96018BD257700DED8E5 /* libtelehash.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtelehash.a; path = "../../../../../Library/Developer/Xcode/DerivedData/telehash-hdsfxjzmsvyqtyccnkdyjwfyzarx/Build/Products/Debug/libtelehash.a"; sourceTree = "<group>"; };
-		8263D99218BD294100DED8E5 /* libcryptopp-osx.a */ = {isa = PBXFileReference; lastKnownFileType = file; name = "libcryptopp-osx.a"; path = "../cryptopp/cryptopp/build/Debug/libcryptopp-osx.a"; sourceTree = "<group>"; };
+		8263D99218BD294100DED8E5 /* libcryptopp-osx.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libcryptopp-osx.a"; path = "../cryptopp/cryptopp/build/Debug/libcryptopp-osx.a"; sourceTree = "<group>"; };
+		8298FF4218C5A816009CD379 /* seeds.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = seeds.json; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -139,6 +141,7 @@
 		8231EBDB1836C60D00BC41C1 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				8298FF4218C5A816009CD379 /* seeds.json */,
 				8231EBDC1836C60D00BC41C1 /* Telehash Playground-Info.plist */,
 				8231EBDD1836C60D00BC41C1 /* InfoPlist.strings */,
 				8231EBE01836C60D00BC41C1 /* main.m */,
@@ -245,6 +248,7 @@
 			files = (
 				8231EBDF1836C60D00BC41C1 /* InfoPlist.strings in Resources */,
 				8231EBED1836C60D00BC41C1 /* Images.xcassets in Resources */,
+				8298FF4318C5A816009CD379 /* seeds.json in Resources */,
 				8231EBE51836C60D00BC41C1 /* Credits.rtf in Resources */,
 				8231EBEB1836C60D00BC41C1 /* MainMenu.xib in Resources */,
 			);

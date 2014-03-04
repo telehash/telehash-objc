@@ -40,6 +40,10 @@
     NSLog(@"Hashname: %@", [thSwitch.identity hashname]);
     [thSwitch startOnPort:42424];
     
+    NSString* filePath = [[NSBundle mainBundle] pathForResource:@"seeds" ofType:@"json"];
+    NSData* seedData = [NSData dataWithContentsOfFile:filePath];
+    if (seedData) [thSwitch loadSeeds:seedData];
+
     //[thSwitch loadSeeds:[NSData dataWithContentsOfFile:@"/tmp/telehash/seeds.json"]];
 }
 
