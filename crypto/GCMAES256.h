@@ -9,19 +9,15 @@
 #import <Foundation/Foundation.h>
 
 @interface GCMAES256Encryptor : NSObject
-{
-    NSMutableData* cipherText;
-    NSMutableData* mac;
-}
+@property (readonly) NSMutableData* cipherText;
+@property (readonly) NSMutableData* mac;
 +(GCMAES256Encryptor*)encryptPlaintext:(NSData*)data key:(NSData*)key iv:(NSData*)iv;
 -(id)initWithKey:(NSData*)key iv:(NSData*)iv;
 @end
 
 @interface GCMAES256Decryptor : NSObject
-{
-    NSMutableData* plainText;
-    BOOL verified;
-}
+@property (readonly) NSMutableData* plainText;
+@property (readonly) BOOL verified;
 +(GCMAES256Decryptor*)decryptPlaintext:(NSData*)data mac:(NSData*)mac key:(NSData*)key iv:(NSData*)iv;
 -(id)initWithKey:(NSData*)key iv:(NSData*)iv;
 @end

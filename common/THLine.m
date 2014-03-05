@@ -37,66 +37,29 @@
 
 -(void)sendOpen;
 {
-    THPacket* openPacket = [THPacket new];
-    [openPacket.json setObject:@"open" forKey:@"type"];
-    if (!self.ecdh) {
-        self.ecdh = [ECDH new];
-    }
-    NSString* encodedKey = [[self.toIdentity.rsaKeys encrypt:self.ecdh.publicKey] base64EncodedStringWithOptions:0];
-    [openPacket.json setObject:encodedKey forKey:@"open"];
     
-    THPacket* innerPacket = [THPacket new];
-    [innerPacket.json setObject:self.toIdentity.hashname forKey:@"to"];
-    NSDate* now = [NSDate date];
-    NSUInteger at = (NSInteger)([now timeIntervalSince1970]) * 1000;
-    NSLog(@"Open timestamp is %ld", self.createdAt);
-    [innerPacket.json setObject:[NSNumber numberWithInteger:at] forKey:@"at"];
-    
-    // Generate a new line id if we weren't given one
-    if (!self.inLineId) {
-        self.inLineId =  [[RNG randomBytesOfLength:16] hexString];
-    }
-    [innerPacket.json setObject:self.inLineId forKey:@"line"];
-    THSwitch* defaultSwitch = [THSwitch defaultSwitch];
-    innerPacket.body = defaultSwitch.identity.rsaKeys.DERPublicKey;
-    
-    openPacket.body = [innerPacket encode];
-    NSData* packetIV = [RNG randomBytesOfLength:16];
-    [openPacket.json setObject:[packetIV hexString] forKey:@"iv"];
-    
-    SHA256* sha = [SHA256 new];
-    [sha updateWithData:self.ecdh.publicKey];
-    NSData* dhKeyHash = [sha finish];
-    
-    [openPacket encryptWithKey:dhKeyHash iv:packetIV];
-    NSData* bodySig = [defaultSwitch.identity.rsaKeys sign:openPacket.body];
-    sha = [SHA256 new];
-    [sha updateWithData:self.ecdh.publicKey];
-    [sha updateWithData:[self.inLineId dataFromHexString]];
-    NSData* encryptedSig = [CTRAES256Encryptor encryptPlaintext:bodySig key:[sha finish] iv:packetIV];
-    [openPacket.json setObject:[encryptedSig base64EncodedStringWithOptions:0] forKey:@"sig"];
-    
-    self.lastOutActivity = time(NULL);
     
     [defaultSwitch sendPacket:openPacket toAddress:self.address];
 }
 
++(THLine*)processOpen:(THPacket *)packet
+{
+    THCipherSet* cset = [THCipherSet cipherSetForOpen:packet];
+    if (!cset) return nil;
+    return [cset processOpen:packet switch:[THSwitch defaultSwitch]];
+}
+
+-(void)handleOpen:(THPacket *)openPacket
+{
+    self.outLineId = [openPacket.json objectForKey:@"line"];
+    self.createdAt = [[openPacket.json objectForKey:@"at"] unsignedIntegerValue];
+    self.lastInActivity = time(NULL);
+    self.address = openPacket.fromAddress;
+}
+
 -(void)openLine;
 {
-    
-    NSData* sharedSecret = [self.ecdh agreeWithRemotePublicKey:self.remoteECCKey];
-    NSMutableData* keyingMaterial = [NSMutableData dataWithLength:32 + sharedSecret.length];
-    [keyingMaterial replaceBytesInRange:NSMakeRange(0, sharedSecret.length) withBytes:[sharedSecret bytes] length:sharedSecret.length];
-    [keyingMaterial replaceBytesInRange:NSMakeRange(sharedSecret.length, 16) withBytes:[[self.outLineId dataFromHexString] bytes] length:16];
-    [keyingMaterial replaceBytesInRange:NSMakeRange(keyingMaterial.length - 16, 16) withBytes:[[self.inLineId dataFromHexString] bytes] length:16];
-    self.decryptorKey = [SHA256 hashWithData:keyingMaterial];
-    
-    [keyingMaterial replaceBytesInRange:NSMakeRange(sharedSecret.length, 16) withBytes:[[self.inLineId dataFromHexString] bytes] length:16];
-    [keyingMaterial replaceBytesInRange:NSMakeRange(keyingMaterial.length - 16, 16) withBytes:[[self.outLineId dataFromHexString] bytes] length:16];
-    self.encryptorKey = [SHA256 hashWithData:keyingMaterial];
-    //NSLog(@"Encryptor key: %@", self.encryptorKey);
-    //NSLog(@"Decryptor key: %@", self.decryptorKey);
-    
+    [self.cipherSet finalizeLineKeys:self];
     [self.toIdentity.channels enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
         NSLog(@"Checking %@ as %@", obj, [obj class]);
         // Get all our pending reliable channels spun out

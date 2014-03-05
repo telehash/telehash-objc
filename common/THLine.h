@@ -35,5 +35,8 @@
 -(void)handlePacket:(THPacket*)packet;
 -(void)sendPacket:(THPacket*)packet;
 -(void)close;
+-(void)handleOpen:(THPacket*)openPacket;
+
++(THLine*)processOpen:(THPacket*)packet;
 
 @end

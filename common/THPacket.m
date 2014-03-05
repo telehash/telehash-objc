@@ -7,7 +7,6 @@
 //
 
 #import "THPacket.h"
-#import "CTRAES256.h"
 
 @implementation THPacket
 
@@ -79,13 +78,4 @@
     return packetData;
 }
 
--(void)encryptWithKey:(NSData*)key iv:(NSData*)iv;
-{
-    self.body = [CTRAES256Encryptor encryptPlaintext:self.body key:key iv:iv];
-}
-
--(void)decryptWithKey:(NSData *)key iv:(NSData *)iv;
-{
-    self.body = [CTRAES256Decryptor decryptPlaintext:self.body key:key iv:iv];
-}
 @end

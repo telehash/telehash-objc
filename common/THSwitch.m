@@ -244,9 +244,7 @@
 
 -(void)processOpen:(THPacket*)incomingPacket from:(NSData*)address
 {
-    THCipherSet* cset = [THCipherSet cipherSetForOpen:incomingPacket];
-    
-    THLine* newLine = [cset processOpen:incomingPacket switch:self];
+    THLine* newLine = [THLine processOpen:incomingPacket];
     
     // remove any existing lines to this hashname
     if (newLine) {
@@ -269,10 +267,6 @@
         THIdentity* pendingIdentity = (THIdentity*)pendingLineJob.pending;
         newLine = pendingIdentity.currentLine;
         NSLog(@"Finish open on %@", newLine);
-        newLine.outLineId = [innerPacket.json objectForKey:@"line"];
-        newLine.remoteECCKey = eccKey;
-        newLine.createdAt = [[innerPacket.json objectForKey:@"at"] unsignedIntegerValue];
-        newLine.lastInActivity = time(NULL);
         [newLine openLine];
         
         [self.openLines setObject:newLine forKey:newLine.inLineId];
@@ -285,17 +279,6 @@
         
         [self.meshBuckets linkToIdentity:newLine.toIdentity];
     } else {
-        
-        newLine = [THLine new];
-        newLine.lastInActivity = time(NULL);
-        newLine.toIdentity = senderIdentity;
-        newLine.address = address;
-        newLine.outLineId = [innerPacket.json objectForKey:@"line"];
-        newLine.remoteECCKey = eccKey;
-        newLine.createdAt = [[innerPacket.json objectForKey:@"at"] unsignedIntegerValue];
-        
-        senderIdentity.currentLine = newLine;
-        
         [newLine sendOpen];
         [newLine openLine];
         
