@@ -261,6 +261,8 @@
 @implementation PendingSeekJob
 -(void)runSeek
 {
+    if (self.nearby.count == 0) return;
+    
     // Resort and run the seek
     THIdentity* identity = [self.nearby objectAtIndex:0];
     [self.nearby removeObjectAtIndex:0];
@@ -336,8 +338,8 @@
         return NSOrderedSame;
     }];
 
+    --self.runningSearches;
     if (self.nearby.count > 0) {
-        [self runSeek];
         for (NSUInteger i = self.runningSearches; i < MIN(3, self.nearby.count - 1); ++i) {
             [self runSeek];
         }
