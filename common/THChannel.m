@@ -203,7 +203,7 @@
     }
 
     while (inPacketBuffer.length > 0) {
-        if (inPacketBuffer.frontSeq != maxProcessed) {
+        if (inPacketBuffer.frontSeq < maxProcessed) {
             // XXX dispatch a missing queue?
             return;
         }

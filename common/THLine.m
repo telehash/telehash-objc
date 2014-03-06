@@ -125,6 +125,10 @@
     
     THSwitch* thSwitch = [THSwitch defaultSwitch];
     
+	if ([self.delegate respondsToSelector:@selector(debugInboundPacket:)]) {
+		[self.delegate debugInboundPacket:innerPacket];
+	}
+	
     // if the switch is handling it bail
     if ([thSwitch findPendingSeek:innerPacket]) return;
     
@@ -260,13 +264,18 @@
 -(void)sendPacket:(THPacket *)packet;
 {
     self.lastOutActivity = time(NULL);
+	
+	if ([self.delegate respondsToSelector:@selector(debugOutboundPacket:)]) {
+		[self.delegate debugOutboundPacket:packet];
+	}
+	
     THPacket* linePacket = [THPacket new];
     [linePacket.json setObject:self.outLineId forKey:@"line"];
     [linePacket.json setObject:@"line" forKey:@"type"];
     NSData* iv = [RNG randomBytesOfLength:16];
     [linePacket.json setObject:[iv hexString] forKey:@"iv"];
     linePacket.body = [packet encode];
-    
+	
     NSLog(@"Sending to %@ on line %@: %@", self.toIdentity.hashname, self.outLineId, packet.json);
     
     [linePacket encryptWithKey:self.encryptorKey iv:iv];

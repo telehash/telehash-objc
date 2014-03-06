@@ -13,10 +13,18 @@
 @class THPacket;
 @class THChannel;
 
+@protocol THLineDelegate <NSObject>
+
+-(void)debugInboundPacket:(THPacket*)packet;
+-(void)debugOutboundPacket:(THPacket*)packet;
+
+@end
+
 @interface THLine : NSObject
 
 @property THIdentity* toIdentity;
 @property ECDH* ecdh;
+@property id<THLineDelegate> delegate;
 @property NSString* outLineId;
 @property NSString* inLineId;
 @property NSData* address;

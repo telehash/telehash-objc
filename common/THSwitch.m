@@ -388,7 +388,7 @@
         NSLog(@"Unexpected or unparseable packet from %@: %@", [NSString stringWithUTF8String:inet_ntoa(addr->sin_addr)], [data base64EncodedStringWithOptions:0]);
         return;
     }
-    
+	
     if ([[incomingPacket.json objectForKey:@"type"] isEqualToString:@"open"]) {
         [self processOpen:incomingPacket from:address];
     } else if([[incomingPacket.json objectForKey:@"type"] isEqualToString:@"line"]) {

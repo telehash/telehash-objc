@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6522195D18BD2F89003C077B /* libcryptopp-osx.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8263D95B18BD16F000DED8E5 /* libcryptopp-osx.a */; };
 		821874161836957400256DA3 /* libc++.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 821874151836957400256DA3 /* libc++.dylib */; };
 		8218D17117FA6E8A0053AFAC /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8218D17017FA6E8A0053AFAC /* Cocoa.framework */; };
 		8218D17B17FA6E8A0053AFAC /* telehash.m in Sources */ = {isa = PBXBuildFile; fileRef = 8218D17A17FA6E8A0053AFAC /* telehash.m */; };
@@ -129,7 +130,7 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 82D221361871D3630015E7EA /* cryptopp.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 8263D8D218BD0FD700DED8E5;
+			remoteGlobalIDString = 8263D99418BD298500DED8E5;
 			remoteInfo = "cryptopp-osx";
 		};
 		8263D96618BD275000DED8E5 /* PBXContainerItemProxy */ = {
@@ -230,6 +231,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6522195D18BD2F89003C077B /* libcryptopp-osx.a in Frameworks */,
 				8218D17117FA6E8A0053AFAC /* Cocoa.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -459,8 +461,8 @@
 		82D221371871D3630015E7EA /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				82D2213C1871D3630015E7EA /* libcryptopp.a */,
-				8263D95B18BD16F000DED8E5 /* libcryptopp.a */,
+				82D2213C1871D3630015E7EA /* libcryptopp-ios.a */,
+				8263D95B18BD16F000DED8E5 /* libcryptopp-osx.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -643,17 +645,17 @@
 			remoteRef = 8231EC0F1836C60E00BC41C1 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		8263D95B18BD16F000DED8E5 /* libcryptopp.a */ = {
+		8263D95B18BD16F000DED8E5 /* libcryptopp-osx.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
-			path = libcryptopp.a;
+			path = "libcryptopp-osx.a";
 			remoteRef = 8263D95A18BD16F000DED8E5 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		82D2213C1871D3630015E7EA /* libcryptopp.a */ = {
+		82D2213C1871D3630015E7EA /* libcryptopp-ios.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
-			path = libcryptopp.a;
+			path = "libcryptopp-ios.a";
 			remoteRef = 82D2213B1871D3630015E7EA /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
@@ -869,7 +871,7 @@
 					"$(inherited)",
 					"CRYPTOPP_DISABLE_ASM=1",
 				);
-				HEADER_SEARCH_PATHS = /usr/local/include;
+				HEADER_SEARCH_PATHS = /Users/daniel/Projects/Cocoa/telehash/objc/cryptopp;
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -880,7 +882,7 @@
 			buildSettings = {
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "telehash/telehash-Prefix.pch";
-				HEADER_SEARCH_PATHS = /usr/local/include;
+				HEADER_SEARCH_PATHS = /Users/daniel/Projects/Cocoa/telehash/objc/cryptopp;
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
