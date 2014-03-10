@@ -871,7 +871,7 @@
 					"$(inherited)",
 					"CRYPTOPP_DISABLE_ASM=1",
 				);
-				HEADER_SEARCH_PATHS = /Users/daniel/Projects/Cocoa/telehash/objc/cryptopp;
+				HEADER_SEARCH_PATHS = "$(SRCROOT)/cryptopp";
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -882,7 +882,7 @@
 			buildSettings = {
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "telehash/telehash-Prefix.pch";
-				HEADER_SEARCH_PATHS = /Users/daniel/Projects/Cocoa/telehash/objc/cryptopp;
+				HEADER_SEARCH_PATHS = "$(SRCROOT)/cryptopp";
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -981,6 +981,7 @@
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)/cryptopp-ios/include";
+				"USER_HEADER_SEARCH_PATHS[arch=*]" = "$(SRCROOT)/cryptopp-ios/include";
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
