@@ -20,6 +20,7 @@
 #import "THMeshBuckets.h"
 #import "THPendingJob.h"
 #import "THCipherSet.h"
+#import "NSData+HexString.h"
 #include <arpa/inet.h>
 
 @interface THSwitch()
@@ -57,7 +58,6 @@
         self.pendingJobs = [NSMutableArray array];
         self.udpSocket = [[GCDAsyncUdpSocket alloc] initWithDelegate:self delegateQueue:dispatch_get_main_queue()];
         self.channelQueue = dispatch_queue_create("channelWorkQueue", NULL);
-        self.dhtQueue = dispatch_queue_create("dhtWorkQueue", NULL);
         self.status = THSWitchOffline;
     }
     return self;
@@ -88,6 +88,7 @@
 
 -(void)loadSeeds:(NSData *)seedData;
 {
+#if TODO_FIXME
     NSError* error;
     NSArray* json = [NSJSONSerialization JSONObjectWithData:seedData options:0 error:&error];
     if (json) {
@@ -102,12 +103,15 @@
             [self openLine:seedIdentity];
         }];
     }
+#endif
 }
 
 -(void)sendPacket:(THPacket*)packet toAddress:(NSData*)address;
 {
     //TODO:  Evaluate using a timeout!
-    [self.udpSocket sendData:[packet encode] toAddress:address withTimeout:-1 tag:0];
+    NSData* packetData = [packet encode];
+    //NSLog(@"Sending %@", packetData);
+    [self.udpSocket sendData:packetData toAddress:address withTimeout:-1 tag:0];
 }
 
 /*
@@ -137,6 +141,9 @@
 -(void)channel:(THChannel*)channel line:(THLine*)line firstPacket:(THPacket*)packet
 {
     channel.line = line;
+    if ([channel.channelId isEqualToNumber:@0]) {
+        channel.channelId = [NSNumber numberWithUnsignedInteger:line.nextChannelId];
+    }
     [channel.toIdentity.channels setObject:channel forKey:channel.channelId];
     channel.state = THChannelOpen;
     channel.channelIsReady = YES;
@@ -176,6 +183,8 @@
     
 
     // We have everything we need to direct request
+    // XXX FIXME
+    /*
     if (toIdentity.address && toIdentity.rsaKeys) {
         THLine* channelLine = [THLine new];
         channelLine.toIdentity = toIdentity;
@@ -185,6 +194,7 @@
         [channelLine sendOpen];
         return;
     };
+    */
     
     // Let's do a peer request
     if (toIdentity.via) {
@@ -244,13 +254,21 @@
 
 -(void)processOpen:(THPacket*)incomingPacket from:(NSData*)address
 {
-    THLine* newLine = [THLine processOpen:incomingPacket];
+    THCipherSet* cipherSet = [self.identity.cipherParts objectForKey:[[incomingPacket.body subdataWithRange:NSMakeRange(0, 1)] hexString]];
+    if (!cipherSet) {
+        NSLog(@"Invalid cipher set requested %@", [[incomingPacket.body subdataWithRange:NSMakeRange(0, 1)] hexString]);
+        return;
+    }
+    THLine* newLine = [cipherSet processOpen:incomingPacket];
+    if (!newLine) {
+        NSLog(@"Unable to process open packet");
+        return;
+    }
     
     // remove any existing lines to this hashname
-    if (newLine) {
-        [self.meshBuckets removeLine:newLine];
-        if (newLine.inLineId) [self.openLines removeObjectForKey:newLine.inLineId];
-    }
+    [self.meshBuckets removeLine:newLine];
+    if (newLine.inLineId) [self.openLines removeObjectForKey:newLine.inLineId];
+    
     __block THPendingJob* pendingLineJob = nil;
     [self.pendingJobs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         THPendingJob* job = (THPendingJob*)obj;
@@ -318,12 +336,27 @@
     }
 }
 
+-(THPacket*)generateOpen:(THLine *)toLine
+{
+    // Find our highest matching cipher set
+    NSMutableSet* ourIDs = [NSMutableSet setWithArray:[self.identity.cipherParts allKeys]];
+    [ourIDs intersectSet:[NSSet setWithArray:[toLine.toIdentity.cipherParts allKeys]]];
+    if (ourIDs.count <= 0) {
+        NSLog(@"Unable to find a matching csid for open.");
+        return nil;
+    }
+    NSSortDescriptor *sort = [NSSortDescriptor sortDescriptorWithKey:@"description" ascending:NO];
+    NSArray* sortedCSIds = [ourIDs sortedArrayUsingDescriptors:@[sort]];
+    THCipherSet* cs = [self.identity.cipherParts objectForKey:[sortedCSIds objectAtIndex:0]];
+    return [cs generateOpen:toLine from:self.identity];
+}
+
 #pragma region -- UDP Handlers
 
 -(void)udpSocket:(GCDAsyncUdpSocket *)sock didReceiveData:(NSData *)data fromAddress:(NSData *)address withFilterContext:(id)filterContext
 {
     const struct sockaddr_in* addr = [address bytes];
-    NSLog(@"Incoming data from %@", [NSString stringWithUTF8String:inet_ntoa(addr->sin_addr)]);
+    //NSLog(@"Incoming data from %@", [NSString stringWithUTF8String:inet_ntoa(addr->sin_addr)]);
     THPacket* incomingPacket = [THPacket packetData:data];
     incomingPacket.fromAddress = address;
     if (!incomingPacket) {
@@ -337,7 +370,7 @@
         [self processOpen:incomingPacket from:address];
     } else if(incomingPacket.jsonLength == 0) {
         // Validate the line id then process it
-        NSString* lineId = [[incomingPacket.body subdataWithRange:NSMakeRange(1, 16)] hexString];
+        NSString* lineId = [[incomingPacket.body subdataWithRange:NSMakeRange(0, 16)] hexString];
         NSLog(@"Received a line packet for %@", lineId);
         // Process a line packet
         THLine* line = [self.openLines objectForKey:lineId];

@@ -11,23 +11,21 @@
 
 @class THPacket;
 @class THChannel;
-@class THCipherSet;
+@class THCipherSetLineInfo;
 
 @interface THLine : NSObject
 
 @property THIdentity* toIdentity;
-@property THCipherSet* cipherSet;
+@property THCipherSetLineInfo* cipherSetInfo;
 @property NSString* outLineId;
 @property NSString* inLineId;
 @property NSData* address;
-@property NSData* decryptorKey;
-@property NSData* encryptorKey;
-@property NSData* remoteECCKey;
 @property BOOL isOpen;
 @property NSUInteger lastActitivy;
 @property NSUInteger lastInActivity;
 @property NSUInteger lastOutActivity;
 @property NSUInteger createdAt;
+@property (readonly) NSUInteger nextChannelId;
 
 -(id)init;
 -(void)sendOpen;
@@ -36,7 +34,5 @@
 -(void)sendPacket:(THPacket*)packet;
 -(void)close;
 -(void)handleOpen:(THPacket*)openPacket;
-
-+(THLine*)processOpen:(THPacket*)packet;
 
 @end

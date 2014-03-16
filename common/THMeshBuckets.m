@@ -122,7 +122,6 @@
     }
     
     THChannel* linkChannel = [identity channelForType:@"link"];
-    // TODO:  Check for a previous link channel and decide how to handle it
     // TODO:  Check our hints for age on this entry, if it's older we should bump the newest from the bucket if it's full
     if (linkTotal >= MAX_LINKS && bucket.count >= K_BUCKET_SIZE) {
         // TODO:  Evict the oldest
@@ -236,6 +235,14 @@
     if (channel.lastOutActivity + 30 < now) {
         THPacket* pingPacket = [THPacket new];
         [pingPacket.json setObject:@YES forKey:@"seed"];
+        if (channel.lastOutActivity == 0) {
+            // Add the sees, it's our initial response
+            NSArray* sees = [self nearby:channel.toIdentity];
+            if (sees == nil) {
+                sees = [NSArray array];
+            }
+            [pingPacket.json setObject:[sees valueForKey:@"seekString"] forKey:@"see"];
+        }
         [channel sendPacket:pingPacket];
     }
     
@@ -318,6 +325,7 @@
      }
      
      // TODO:  Make sure we're moving closer
+     
      // Sort on distance and run again
      [self.nearby sortUsingComparator:^NSComparisonResult(id obj1, id obj2) {
          NSInteger hash1 = [self.seekingIdentity distanceFrom:obj1];

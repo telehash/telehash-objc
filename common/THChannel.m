@@ -29,7 +29,7 @@
         _state = THChannelOpening;
         self.toIdentity = identity;
         self.channelIsReady = NO;
-        self.channelId  = [[RNG randomBytesOfLength:16] hexString]; // We'll just go ahead and make one
+        self.channelId = 0; // We'll just go ahead and make one
         self.lastInActivity = 0;
         self.lastOutActivity = 0;
         THSwitch* defaultSwitch = [THSwitch defaultSwitch];

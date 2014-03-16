@@ -30,7 +30,6 @@
     if (jsonLength >= 2) {
         parsedJson = [NSJSONSerialization JSONObjectWithData:[packetData subdataWithRange:NSMakeRange(2, jsonLength)] options:0 error:&parserError];
         if (parsedJson == nil || ![parsedJson isKindOfClass:[NSDictionary class]]) {
-            // TODO:  Something went wrong, deal with it
             NSLog(@"Something went wrong parsing: %@", parserError);
             return nil;
         }
@@ -66,13 +65,16 @@
 -(NSData*)encode;
 {
     NSError* error;
-    NSData* encodedJSON = [NSJSONSerialization dataWithJSONObject:self.json options:0 error:&error];
-    short totalLength = encodedJSON.length + self.body.length + 2;
+    NSData* encodedJSON;
+    if (self.json.count > 0) {
+        encodedJSON = [NSJSONSerialization dataWithJSONObject:self.json options:0 error:&error];
+    }
+    unsigned short totalLength = encodedJSON.length + self.body.length + 2;
     NSMutableData* packetData = [NSMutableData dataWithCapacity:totalLength];
     
-    totalLength = htons(encodedJSON.length);
+    totalLength = htons(MAX(encodedJSON.length, self.jsonLength));
     [packetData appendBytes:&totalLength length:sizeof(short)];
-    [packetData appendData:encodedJSON];
+    if (encodedJSON.length > 0) [packetData appendData:encodedJSON];
     [packetData appendData:self.body];
     
     return packetData;

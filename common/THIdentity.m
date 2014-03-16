@@ -15,6 +15,7 @@
 #import "THSwitch.h"
 #import "THChannel.h"
 #import "CTRAES256.h"
+#import "THCipherSet.h"
 
 #include <arpa/inet.h>
 
@@ -33,11 +34,14 @@ static NSMutableDictionary* identityCache;
     }
 }
 
-+(id)generateIdentity;
++(id)identityFromParts:(NSDictionary *)parts key:(THCipherSet*)cs
 {
-    THIdentity* identity = [THIdentity new];
-    identity.rsaKeys = [RSA generateRSAKeysOfLength:2048];
-    [identityCache setObject:identity forKey:identity.hashname];
+    THIdentity* identity = [identityCache objectForKey:[THIdentity hashnameForParts:parts]];
+    if (!identity) {
+        // Load the parts and validate the key
+        identity = [[THIdentity alloc] initWithParts:parts key:cs];
+        if (identity) [identityCache setObject:identity forKey:identity.hashname];
+    }
     return identity;
 }
 
@@ -46,93 +50,37 @@ static NSMutableDictionary* identityCache;
     THIdentity* identity = [identityCache objectForKey:hashname];
     if (!identity) {
         identity = [[THIdentity alloc] initWithHashname:hashname];
-        [identityCache setObject:identity forKey:hashname];
+        if (identity) [identityCache setObject:identity forKey:hashname];
     }
     return identity;
 }
 
-+(id)identityFromPublicFile:(NSString*)publicKeyPath privateFile:(NSString*)privateKeyPath;
-{
-    if (![[NSFileManager defaultManager] fileExistsAtPath:publicKeyPath]) return nil;
-    if (![[NSFileManager defaultManager] fileExistsAtPath:privateKeyPath]) return nil;
-    
-    // TODO:  Deal with cacheing this?
-    RSA* rsaKeys = [RSA RSAFromPublicKeyPath:publicKeyPath privateKeyPath:privateKeyPath];
-    SHA256* sha = [SHA256 new];
-    [sha updateWithData:rsaKeys.DERPublicKey];
-    NSString* hashname = [[sha finish] hexString];
-    THIdentity* cachedIdentity = [identityCache objectForKey:hashname];
-    if (!cachedIdentity) {
-        cachedIdentity = [THIdentity new];
-        [identityCache setObject:cachedIdentity forKey:hashname];
-    }
-    cachedIdentity.rsaKeys = rsaKeys;
-    return cachedIdentity;
-}
-
-+(id)identityFromPublicKey:(NSData *)publicKey privateKey:(NSData *)privateKey
-{
-    SHA256* sha = [SHA256 new];
-    [sha updateWithData:publicKey];
-    NSString* hashname = [[sha finish] hexString];
-
-    THIdentity* identity = [identityCache objectForKey:hashname];
-    if (!identity) {
-        identity = [[THIdentity alloc] initWithPublicKey:publicKey privateKey:privateKey];
-        [identityCache setObject:identity forKey:identity.hashname];
-    }
-    identity.rsaKeys = [RSA RSAWithPublicKey:publicKey privateKey:privateKey];
-    return identity;
-}
-
-+(id)identityFromPublicKey:(NSData*)key;
-{
-    SHA256* sha = [SHA256 new];
-    [sha updateWithData:key];
-    NSString* hashname = [[sha finish] hexString];
-
-    THIdentity* identity = [identityCache objectForKey:hashname];
-    if (!identity) {
-        identity = [[THIdentity alloc] initWithPublicKey:key privateKey:nil];
-        [identityCache setObject:identity forKey:identity.hashname];
-    } else {
-        identity.rsaKeys = [RSA RSAWithPublicKey:key privateKey:nil];
-    }
-    return identity;
-}
-
--(id)initWithHashname:(NSString *)hashname;
+-(id)init
 {
     self = [super init];
-    if (self) {
-        [self commonInit];
-        _hashnameCache = hashname;
-    }
+    [self commonInit];
     return self;
 }
 
--(id)initWithPublicKeyPath:(NSString*)publicKeyPath privateKey:(NSString*)privateKeyPath;
+-(id)initWithParts:(NSDictionary *)parts key:(THCipherSet*)cs
 {
     self = [super init];
     if (self) {
-        [self commonInit];
-        self.rsaKeys = [RSA RSAFromPublicKeyPath:publicKeyPath privateKeyPath:privateKeyPath];
-    }
-    return self;
-}
+        NSString* fingerprint = [parts objectForKey:cs.identifier];
+        if (![[cs.fingerprint hexString] isEqualToString:fingerprint]) {
+            return nil;
+        }
 
--(id)initWithPublicKey:(NSData*)key privateKey:(NSData *)privateKey
-{
-    self = [super init];
-    if (self) {
         [self commonInit];
-        self.rsaKeys = [RSA RSAWithPublicKey:key privateKey:privateKey];
+        self.cipherParts = @{cs.identifier:cs};
+        self->_parts = parts;
     }
     return self;
 }
 
 -(void)commonInit
 {
+    self.cipherParts = [NSMutableDictionary dictionary];
     self.channels = [NSMutableDictionary dictionary];
 }
 
@@ -152,9 +100,7 @@ static NSMutableDictionary* identityCache;
 -(NSString*)hashname;
 {
     if (!_hashnameCache) {
-        SHA256* sha = [SHA256 new];
-        [sha updateWithData:self.rsaKeys.DERPublicKey];
-        _hashnameCache = [[sha finish] hexString];
+        _hashnameCache = [THIdentity hashnameForParts:self.parts];
     }
     return _hashnameCache;
 }
@@ -222,8 +168,39 @@ int nlz(unsigned long x) {
 
 }
 
--(void)processOpenPacket:(THPacket*)openPacket innerPacket:(THPacket *)innerPacket
+-(void)addCipherSet:(THCipherSet *)cipherSet
 {
+    NSMutableDictionary* newParts = [NSMutableDictionary dictionaryWithDictionary:_cipherParts];
+    if ([newParts objectForKey:cipherSet.identifier] != nil) {
+        NSLog(@"Tried to add an already existing cipher set.");
+        return;
+    }
+    [newParts setObject:cipherSet forKey:cipherSet.identifier];
+    _cipherParts = newParts;
     
+    NSMutableDictionary* fingerprintParts = [NSMutableDictionary dictionaryWithCapacity:newParts.count];
+    for (NSString* csid in newParts) {
+        THCipherSet* cs = [newParts objectForKey:csid];
+        [fingerprintParts setObject:[cs.fingerprint hexString] forKey:csid];
+    }
+    _parts = fingerprintParts;
+}
+                            
++(NSString*)hashnameForParts:(NSDictionary*)parts
+{
+    NSData* shaBuffer = [NSData data];
+    NSArray* sortedKeys = [[parts allKeys] sortedArrayUsingSelector: @selector(compare:)];
+    for (NSString* key in sortedKeys) {
+        SHA256* sha = [SHA256 new];
+        [sha updateWithData:shaBuffer];
+        [sha updateWithData:[key dataUsingEncoding:NSUTF8StringEncoding]];
+        shaBuffer = [sha finish];
+        sha = [SHA256 new];
+        [sha updateWithData:shaBuffer];
+        NSString* value = [parts objectForKey:key];
+        [sha updateWithData:[(NSString*)value dataUsingEncoding:NSUTF8StringEncoding]];
+        shaBuffer = [sha finish];
+    }
+    return [shaBuffer hexString];
 }
 @end

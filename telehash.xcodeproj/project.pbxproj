@@ -56,6 +56,8 @@
 		8298FF4918C5B5B0009CD379 /* GCMAES256.mm in Sources */ = {isa = PBXBuildFile; fileRef = 8298FF4718C5B5B0009CD379 /* GCMAES256.mm */; };
 		8298FF4A18C5B5B0009CD379 /* GCMAES256.h in Headers */ = {isa = PBXBuildFile; fileRef = 8298FF4818C5B5B0009CD379 /* GCMAES256.h */; };
 		8298FF4F18C5B5B4009CD379 /* GCMAES256.mm in Sources */ = {isa = PBXBuildFile; fileRef = 8298FF4718C5B5B0009CD379 /* GCMAES256.mm */; };
+		8298FF5E18C83ECB009CD379 /* server.der in Resources */ = {isa = PBXBuildFile; fileRef = 8298FF5C18C83ECB009CD379 /* server.der */; };
+		8298FF5F18C83ECC009CD379 /* server.pder in Resources */ = {isa = PBXBuildFile; fileRef = 8298FF5D18C83ECB009CD379 /* server.pder */; };
 		82A31BA3183457EB005077AD /* NSData+HexString.h in Headers */ = {isa = PBXBuildFile; fileRef = 82A31BA1183457EB005077AD /* NSData+HexString.h */; };
 		82A31BA4183457EB005077AD /* NSData+HexString.m in Sources */ = {isa = PBXBuildFile; fileRef = 82A31BA2183457EB005077AD /* NSData+HexString.m */; };
 		82A31BA5183457EB005077AD /* NSData+HexString.m in Sources */ = {isa = PBXBuildFile; fileRef = 82A31BA2183457EB005077AD /* NSData+HexString.m */; };
@@ -218,6 +220,8 @@
 		8251ADBC18C05A26005CB9E2 /* THCipherSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THCipherSet.m; sourceTree = "<group>"; };
 		8298FF4718C5B5B0009CD379 /* GCMAES256.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = GCMAES256.mm; sourceTree = "<group>"; };
 		8298FF4818C5B5B0009CD379 /* GCMAES256.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCMAES256.h; sourceTree = "<group>"; };
+		8298FF5C18C83ECB009CD379 /* server.der */ = {isa = PBXFileReference; lastKnownFileType = file; path = server.der; sourceTree = "<group>"; };
+		8298FF5D18C83ECB009CD379 /* server.pder */ = {isa = PBXFileReference; lastKnownFileType = file; path = server.pder; sourceTree = "<group>"; };
 		82A31BA1183457EB005077AD /* NSData+HexString.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+HexString.h"; sourceTree = "<group>"; };
 		82A31BA2183457EB005077AD /* NSData+HexString.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData+HexString.m"; sourceTree = "<group>"; };
 		82B1720217FDE18F00C29EAF /* test.pkt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file; path = test.pkt; sourceTree = "<group>"; };
@@ -371,6 +375,8 @@
 		8218D18817FA6E8B0053AFAC /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				8298FF5C18C83ECB009CD379 /* server.der */,
+				8298FF5D18C83ECB009CD379 /* server.pder */,
 				8251ADB918C023DC005CB9E2 /* open.pkt */,
 				8218D18917FA6E8B0053AFAC /* telehashTests-Info.plist */,
 				8218D18A17FA6E8B0053AFAC /* InfoPlist.strings */,
@@ -685,8 +691,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8298FF5F18C83ECC009CD379 /* server.pder in Resources */,
 				8218D18C17FA6E8B0053AFAC /* InfoPlist.strings in Resources */,
 				8251ADBA18C023DC005CB9E2 /* open.pkt in Resources */,
+				8298FF5E18C83ECB009CD379 /* server.der in Resources */,
 				82B1720317FDE18F00C29EAF /* test.pkt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

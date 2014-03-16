@@ -48,7 +48,6 @@ typedef void(^LineOpenBlock)(THIdentity*);
 @property THIdentity* identity;
 @property id<THSwitchDelegate> delegate;
 @property dispatch_queue_t channelQueue;
-@property dispatch_queue_t dhtQueue;
 @property THSwitchStatus status;
 
 +(id)THSWitchWithIdentity:(THIdentity*)identity;
@@ -67,6 +66,7 @@ typedef void(^LineOpenBlock)(THIdentity*);
 -(void)closeLine:(THLine*)line;
 -(void)loadSeeds:(NSData*)seedData;
 -(void)updateStatus:(THSwitchStatus)status;
+-(THPacket*)generateOpen:(THLine*)toLine;
 
 // This is an internal handling hack
 -(BOOL)findPendingSeek:(THPacket*)packet;

@@ -181,9 +181,17 @@ using CryptoPP::PKCS1v15;
     AutoSeededRandomPool rng;
     
     NSMutableData* plaintext = [NSMutableData dataWithLength:decryptor.MaxPlaintextLength([cipherText length])];
-    DecodingResult result = decryptor.Decrypt(rng, (const byte*)[cipherText bytes], [cipherText length], (byte*)[plaintext mutableBytes]);
-    [plaintext setLength:result.messageLength];
-    return plaintext;
+    try {
+        DecodingResult result = decryptor.Decrypt(rng, (const byte*)[cipherText bytes], [cipherText length], (byte*)[plaintext mutableBytes]);
+        if (result.isValidCoding) {
+            [plaintext setLength:result.messageLength];
+            return plaintext;
+        } else {
+            return nil;
+        }
+    } catch (const Exception& e) {
+        return nil;
+    }
 }
 
 -(BOOL) verify:(NSData*)message withSignature:(NSData*)signature;

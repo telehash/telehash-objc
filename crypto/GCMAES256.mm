@@ -33,8 +33,8 @@ using CryptoPP::AES;
     if (!decryptor) return nil;
     decryptor->_plainText = [NSMutableData dataWithLength:data.length];
     bool verified = decryptor->aes.DecryptAndVerify((byte*)[decryptor->_plainText mutableBytes], (const byte*)[mac bytes], mac.length, (const byte*)[iv bytes], 16, 0, 0, (const byte*)[data bytes], data.length);
-    decryptor->_verified = verified ? YES : NO;
-    return self;
+    if (!verified) return nil;
+    return decryptor;
 }
 
 -(id)initWithKey:(NSData *)key iv:(NSData *)iv;
@@ -48,17 +48,22 @@ using CryptoPP::AES;
 @end
 
 @implementation GCMAES256Encryptor
-+(GCMAES256Encryptor*)encryptPlaintext:(NSData*)data key:(NSData*)key iv:(NSData*)iv;
++(GCMAES256Encryptor*)encryptPlaintext:(NSData*)data key:(NSData*)key iv:(NSData*)iv
+{
+    return [GCMAES256Encryptor encryptPlaintext:data key:key iv:iv macLength:0];
+}
+
++(GCMAES256Encryptor*)encryptPlaintext:(NSData*)data key:(NSData*)key iv:(NSData*)iv macLength:(unsigned int)macLength
 {
     GCMAES256Encryptor* encryptor = [[GCMAES256Encryptor alloc] initWithKey:key iv:iv];
     if (!encryptor) return nil;
     
     encryptor->_cipherText = [NSMutableData dataWithLength:data.length];
-    unsigned int macSize = encryptor->aes.DigestSize();
+    unsigned int macSize = macLength == 0 ? encryptor->aes.DigestSize() : macLength;
     encryptor->_mac = [NSMutableData dataWithLength:macSize];
     encryptor->aes.EncryptAndAuthenticate((byte*)[encryptor->_cipherText mutableBytes], (byte*)[encryptor->_mac mutableBytes], macSize, (const byte*)[iv bytes], 16, 0, 0, (const byte*)[data bytes], data.length);
     
-    return self;
+    return encryptor;
 }
 
 -(id)initWithKey:(NSData *)key iv:(NSData *)iv;
