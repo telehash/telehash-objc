@@ -20,6 +20,8 @@
 #import "THChannel.h"
 #import "THMeshBuckets.h"
 #import "THCipherSet.h"
+#import "THPeerRelay.h"
+#import "THPath.h"
 
 #include <arpa/inet.h>
 
@@ -42,7 +44,7 @@
 {
     THSwitch* defaultSwitch = [THSwitch defaultSwitch];
     THPacket* openPacket = [defaultSwitch generateOpen:self];
-    [defaultSwitch sendPacket:openPacket toAddress:self.address];
+    [self.activePath sendPacket:openPacket];
 }
 
 -(void)handleOpen:(THPacket *)openPacket
@@ -141,15 +143,28 @@
         }
         
         THPacket* connectPacket = [THPacket new];
-        [connectPacket.json setObject:[[RNG randomBytesOfLength:16] hexString] forKey:@"c"];
         [connectPacket.json setObject:@"connect" forKey:@"type"];
-        const struct sockaddr_in* addr = [packet.fromAddress bytes];
-        [connectPacket.json setObject:[NSString stringWithUTF8String:inet_ntoa(addr->sin_addr)] forKey:@"ip"];
-        [connectPacket.json setObject:[NSNumber numberWithUnsignedInt:addr->sin_port] forKey:@"port"];
-        //connectPacket.body = [peerLine.toIdentity.rsaKeys DERPublicKey];
-        /// XXX FIXME
+        [connectPacket.json setObject:[packet.json objectForKey:@"from"] forKey:@"from"];
+        NSArray* paths = [packet.json objectForKey:@"paths"];
+        if (paths) {
+            // XXX FIXME check if we know any other paths
+            [connectPacket.json setObject:paths forKey:@"paths"];
+        }
+        connectPacket.body = packet.body;
+
+        THPeerRelay* relay = [THPeerRelay new];
         
-        [self.toIdentity sendPacket:connectPacket];
+        THUnreliableChannel* connectChannel = [[THUnreliableChannel alloc] initToIdentity:peerLine.toIdentity];
+        connectChannel.delegate = relay;
+        THUnreliableChannel* peerChannel = [[THUnreliableChannel alloc] initToIdentity:self.toIdentity];
+        peerChannel.channelId = [packet.json objectForKey:@"c"];
+        peerChannel.delegate = relay;
+
+        relay.connectChannel = connectChannel;
+        relay.peerChannel = peerChannel;
+        
+        [thSwitch openChannel:connectChannel firstPacket:connectPacket];
+        // XXX FIXME check the connect channel timeout for going away?
     } else if ([channelType isEqualToString:@"connect"]) {
 #if TODO_FIXME
         THIdentity* peerIdentity = [THIdentity identityFromPublicKey:innerPacket.body];
@@ -244,7 +259,9 @@
     THPacket* lineOutPacket = [THPacket new];
     lineOutPacket.body = linePacketData;
     lineOutPacket.jsonLength = 0;
-    [defaultSwitch sendPacket:lineOutPacket toAddress:self.address];
+    
+    [self.activePath sendPacket:lineOutPacket];
+    //[defaultSwitch sendPacket:lineOutPacket toAddress:self.address];
 }
 
 -(void)close

@@ -279,7 +279,6 @@
     seekChannel.delegate = self;
     
     THPacket* seekPacket = [THPacket new];
-    [seekPacket.json setObject:[[RNG randomBytesOfLength:16] hexString] forKey:@"c"];
     [seekPacket.json setObject:self.seekingIdentity.hashname forKey:@"seek"];
     [seekPacket.json setObject:@"seek" forKey:@"type"];
     

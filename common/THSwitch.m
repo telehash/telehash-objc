@@ -21,11 +21,9 @@
 #import "THPendingJob.h"
 #import "THCipherSet.h"
 #import "NSData+HexString.h"
-#include <arpa/inet.h>
+#import "THPeerRelay.h"
 
 @interface THSwitch()
-
-@property GCDAsyncUdpSocket* udpSocket;
 
 @end
 
@@ -56,33 +54,15 @@
         self.meshBuckets = [THMeshBuckets new];
         self.openLines = [NSMutableDictionary dictionary];
         self.pendingJobs = [NSMutableArray array];
-        self.udpSocket = [[GCDAsyncUdpSocket alloc] initWithDelegate:self delegateQueue:dispatch_get_main_queue()];
-        self.channelQueue = dispatch_queue_create("channelWorkQueue", NULL);
         self.status = THSWitchOffline;
     }
     return self;
 }
 
--(void)start;
-{
-    [self startOnPort:0];
-}
--(void)startOnPort:(unsigned short)port
+-(void)start
 {
     self.meshBuckets.localIdentity = self.identity;
-    
-    NSError* bindError;
-    [self.udpSocket bindToPort:port error:&bindError];
-    if (bindError != nil) {
-        // TODO:  How do we show errors?!
-        NSLog(@"%@", bindError);
-        return;
-    }
-    NSLog(@"Now listening on %d", self.udpSocket.localPort);
-    NSError* recvError;
-    [self.udpSocket beginReceiving:&recvError];
-    // TODO: Needs more error handling
-    
+    // XXX TODO FIXME For each path start it
     [self updateStatus:THSwitchListening];
 }
 
@@ -105,21 +85,6 @@
     }
 #endif
 }
-
--(void)sendPacket:(THPacket*)packet toAddress:(NSData*)address;
-{
-    //TODO:  Evaluate using a timeout!
-    NSData* packetData = [packet encode];
-    //NSLog(@"Sending %@", packetData);
-    [self.udpSocket sendData:packetData toAddress:address withTimeout:-1 tag:0];
-}
-
-/*
--channelForType:(NSString*)type to:(NSString*)hashname;
-{
-    
-}
-*/
 
 -(THLine*)lineToHashname:(NSString*)hashname;
 {
@@ -198,16 +163,25 @@
     
     // Let's do a peer request
     if (toIdentity.via) {
+        THIdentity* viaIdentity = [THIdentity identityFromHashname:toIdentity.via.hashname];
+        
         THPacket* peerPacket = [THPacket new];
-        [peerPacket.json setObject:[[RNG randomBytesOfLength:16] hexString] forKey:@"c"];
+        [peerPacket.json setObject:[NSNumber numberWithUnsignedInteger:viaIdentity.currentLine.nextChannelId] forKey:@"c"];
         [peerPacket.json setObject:toIdentity.hashname forKey:@"peer"];
         [peerPacket.json setObject:@"peer" forKey:@"type"];
         [peerPacket.json setObject:@YES forKey:@"end"];
         
-        [self.udpSocket sendData:[NSData data] toAddress:toIdentity.address withTimeout:-1 tag:0];
+        THUnreliableChannel* peerChannel = [[THUnreliableChannel alloc] initToIdentity:viaIdentity];
+        [self openChannel:peerChannel firstPacket:peerPacket];
+        
+        THRelayPath* relayPath = [THRelayPath new];
+        relayPath.peerChannel = peerChannel;
+        
+        toIdentity.activePath = relayPath;
+        
+        // XXX FIXME TODO:  Hole punch packet on paths [self.udpSocket sendData:[NSData data] toAddress:toIdentity.address withTimeout:-1 tag:0];
         
         // We blind send this and hope for the best!
-        THIdentity* viaIdentity = [THIdentity identityFromHashname:toIdentity.via.hashname];
         [viaIdentity sendPacket:peerPacket];
         
         return;
@@ -252,7 +226,7 @@
     return handled;
 }
 
--(void)processOpen:(THPacket*)incomingPacket from:(NSData*)address
+-(void)processOpen:(THPacket*)incomingPacket
 {
     THCipherSet* cipherSet = [self.identity.cipherParts objectForKey:[[incomingPacket.body subdataWithRange:NSMakeRange(0, 1)] hexString]];
     if (!cipherSet) {
@@ -351,26 +325,13 @@
     return [cs generateOpen:toLine from:self.identity];
 }
 
-#pragma region -- UDP Handlers
-
--(void)udpSocket:(GCDAsyncUdpSocket *)sock didReceiveData:(NSData *)data fromAddress:(NSData *)address withFilterContext:(id)filterContext
+-(void)handlePath:(THPath *)path packet:(THPacket *)packet
 {
-    const struct sockaddr_in* addr = [address bytes];
-    //NSLog(@"Incoming data from %@", [NSString stringWithUTF8String:inet_ntoa(addr->sin_addr)]);
-    THPacket* incomingPacket = [THPacket packetData:data];
-    incomingPacket.fromAddress = address;
-    if (!incomingPacket) {
-        NSLog(@"Unexpected or unparseable packet from %@: %@", [NSString stringWithUTF8String:inet_ntoa(addr->sin_addr)], [data base64EncodedStringWithOptions:0]);
-        return;
-    }
-    
-    incomingPacket.fromAddress = address;
-    
-    if (incomingPacket.jsonLength == 1) {
-        [self processOpen:incomingPacket from:address];
-    } else if(incomingPacket.jsonLength == 0) {
+    if (packet.jsonLength == 1) {
+        [self processOpen:packet];
+    } else if(packet.jsonLength == 0) {
         // Validate the line id then process it
-        NSString* lineId = [[incomingPacket.body subdataWithRange:NSMakeRange(0, 16)] hexString];
+        NSString* lineId = [[packet.body subdataWithRange:NSMakeRange(0, 16)] hexString];
         NSLog(@"Received a line packet for %@", lineId);
         // Process a line packet
         THLine* line = [self.openLines objectForKey:lineId];
@@ -378,15 +339,11 @@
         if (line == nil) {
             return;
         }
-        [line handlePacket:incomingPacket];
+        [line handlePacket:packet];
     } else {
-        NSLog(@"Dropping an unknown packet from %@", [NSString stringWithUTF8String:inet_ntoa(addr->sin_addr)]);
+        NSLog(@"Dropping an unknown packet");
     }
-}
 
--(void)udpSocket:(GCDAsyncUdpSocket *)sock didSendDataWithTag:(long)tag
-{
-    
 }
 
 @end

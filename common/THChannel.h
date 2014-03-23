@@ -35,7 +35,7 @@ typedef enum {
 
 @property NSNumber* maxSeen;
 @property NSArray* missing;
-@property id<THChannelDelegate> delegate;
+@property (nonatomic, assign) id<THChannelDelegate> delegate;
 @property BOOL channelIsReady;
 @property THIdentity* toIdentity;
 @property THLine* line;

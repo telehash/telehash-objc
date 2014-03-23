@@ -45,7 +45,9 @@
     NSLog(@"2a fingerprint %@", [cs2a.fingerprint hexString]);
     thSwitch.identity = baseIdentity;
     NSLog(@"Hashname: %@", [thSwitch.identity hashname]);
-    [thSwitch startOnPort:42424];
+    THIPV4Path* ipPath = [THIPV4Path new];
+    [baseIdentity addPath:ipPath];
+    [ipPath startOnPort:42424];
     
     //[thSwitch loadSeeds:[NSData dataWithContentsOfFile:@"/tmp/telehash/seeds.json"]];
 }

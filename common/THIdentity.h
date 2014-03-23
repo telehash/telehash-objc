@@ -13,6 +13,7 @@
 @class THLine;
 @class THChannel;
 @class THCipherSet;
+@class THPath;
 
 @interface THIdentity : NSObject
 
@@ -30,8 +31,11 @@
 @property THLine* currentLine;
 @property NSDictionary* cipherParts;
 @property NSDictionary* parts;
+@property NSArray* availablePaths;
+@property THPath* activePath;
 
 -(void)addCipherSet:(THCipherSet*)cipherSet;
+-(void)addPath:(THPath*)path;
 
 // TODO:  Method to create a channel for a type
 

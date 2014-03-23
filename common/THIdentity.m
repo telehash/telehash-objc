@@ -185,6 +185,11 @@ int nlz(unsigned long x) {
     }
     _parts = fingerprintParts;
 }
+
+-(void)addPath:(THPath *)path
+{
+    self.availablePaths = [self.availablePaths arrayByAddingObject:path];
+}
                             
 +(NSString*)hashnameForParts:(NSDictionary*)parts
 {
