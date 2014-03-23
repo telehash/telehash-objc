@@ -53,6 +53,7 @@
     self.createdAt = [[openPacket.json objectForKey:@"at"] unsignedIntegerValue];
     self.lastInActivity = time(NULL);
     self.address = openPacket.fromAddress;
+    self.activePath = [openPacket.path returnPathTo:openPacket.fromAddress];
 }
 
 -(NSUInteger)nextChannelId

@@ -47,6 +47,17 @@
     return self;
 }
 
+-(THPath*)returnPathTo:(NSData*)address
+{
+    THIPV4Path* returnPath = [[THIPV4Path alloc] initWithSocket:udpSocket toAddress:address];
+    return returnPath;
+}
+
+-(void)dealloc
+{
+    NSLog(@"Path go bye bye");
+}
+
 -(void)start;
 {
     [self startOnPort:0];

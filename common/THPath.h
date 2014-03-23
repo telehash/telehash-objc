@@ -23,6 +23,7 @@
 @property (nonatomic, assign) id<THPathDelegate> delegate;
 @property (readonly) NSString* typeName;
 -(void)sendPacket:(THPacket*)packet;
+-(THPath*)returnPathTo:(NSData*)address;
 @end
 
 @interface THIPV4Path : THPath<GCDAsyncUdpSocketDelegate>

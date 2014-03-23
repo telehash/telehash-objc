@@ -81,6 +81,7 @@ static NSMutableDictionary* identityCache;
 -(void)commonInit
 {
     self.cipherParts = [NSMutableDictionary dictionary];
+    self.availablePaths = [NSArray array];
     self.channels = [NSMutableDictionary dictionary];
 }
 

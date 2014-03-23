@@ -131,6 +131,7 @@ static unsigned char eccHeader[] = {0x04};
     THPacket* innerPacket = [THPacket packetData:decryptor.plainText];
     //NSLog(@"Processing open for %@", innerPacket.json);
     innerPacket.fromAddress = openPacket.fromAddress;
+    innerPacket.path = openPacket.path;
     
     if (!innerPacket) {
         NSLog(@"Invalid inner packet");

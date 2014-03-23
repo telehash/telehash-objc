@@ -46,6 +46,7 @@
     thSwitch.identity = baseIdentity;
     NSLog(@"Hashname: %@", [thSwitch.identity hashname]);
     THIPV4Path* ipPath = [THIPV4Path new];
+    ipPath.delegate = thSwitch;
     [baseIdentity addPath:ipPath];
     [ipPath startOnPort:42424];
     
