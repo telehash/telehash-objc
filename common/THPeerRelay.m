@@ -12,10 +12,18 @@
 
 @implementation THPeerRelay
 
+-(void)dealloc
+{
+    NSLog(@"THPeerRelay went away");
+}
+
 -(BOOL)channel:(THChannel *)channel handlePacket:(THPacket *)packet
 {
+    THPacket* innerPacket = [THPacket packetData:packet.body];
+    NSLog(@"Relay got %@", packet.body);
     THPacket* outPacket = [THPacket new];
     outPacket.body = packet.body;
+    outPacket.jsonLength = innerPacket.jsonLength;
 
     // XXX FIXME Rate limiting
     if (channel == self.peerChannel) {

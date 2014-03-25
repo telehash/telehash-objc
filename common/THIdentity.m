@@ -78,6 +78,15 @@ static NSMutableDictionary* identityCache;
     return self;
 }
 
+-(id)initWithHashname:(NSString *)hashname
+{
+    self = [super init];
+    if (self) {
+        _hashnameCache = hashname;
+    }
+    return self;
+}
+
 -(void)commonInit
 {
     self.cipherParts = [NSMutableDictionary dictionary];
@@ -163,10 +172,14 @@ int nlz(unsigned long x) {
 
 -(NSString*)seekString
 {
-    if (!self.address) return self.hashname;
-    const struct sockaddr_in* addr = [self.address bytes];
-    return [NSString stringWithFormat:@"%@,%s,%d", self.hashname, inet_ntoa(addr->sin_addr),addr->sin_port];
-
+    NSString* maxPart = [[[self.parts allKeys] sortedArrayUsingSelector:@selector(compare:)] lastObject];
+    // XXX TODO: FIXME Set the part on the seek string
+    if (!self.address) {
+        return [NSString stringWithFormat:@"%@,%@", self.hashname, maxPart];
+    } else {
+        const struct sockaddr_in* addr = [self.address bytes];
+        return [NSString stringWithFormat:@"%@,%@,%s,%d", self.hashname, maxPart, inet_ntoa(addr->sin_addr),addr->sin_port];
+    }
 }
 
 -(void)addCipherSet:(THCipherSet *)cipherSet

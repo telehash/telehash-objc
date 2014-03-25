@@ -145,20 +145,20 @@
         
         THPacket* connectPacket = [THPacket new];
         [connectPacket.json setObject:@"connect" forKey:@"type"];
-        [connectPacket.json setObject:[packet.json objectForKey:@"from"] forKey:@"from"];
-        NSArray* paths = [packet.json objectForKey:@"paths"];
+        [connectPacket.json setObject:self.toIdentity.parts forKey:@"from"];
+        NSArray* paths = [innerPacket.json objectForKey:@"paths"];
         if (paths) {
             // XXX FIXME check if we know any other paths
             [connectPacket.json setObject:paths forKey:@"paths"];
         }
-        connectPacket.body = packet.body;
+        connectPacket.body = innerPacket.body;
 
         THPeerRelay* relay = [THPeerRelay new];
         
         THUnreliableChannel* connectChannel = [[THUnreliableChannel alloc] initToIdentity:peerLine.toIdentity];
         connectChannel.delegate = relay;
         THUnreliableChannel* peerChannel = [[THUnreliableChannel alloc] initToIdentity:self.toIdentity];
-        peerChannel.channelId = [packet.json objectForKey:@"c"];
+        peerChannel.channelId = [innerPacket.json objectForKey:@"c"];
         peerChannel.delegate = relay;
 
         relay.connectChannel = connectChannel;
@@ -252,6 +252,7 @@
 -(void)sendPacket:(THPacket *)packet;
 {
     self.lastOutActivity = time(NULL);
+    NSLog(@"Sending %@", packet.json);
     THSwitch* defaultSwitch = [THSwitch defaultSwitch];
     NSData* innerPacketData = [self.cipherSetInfo encryptLinePacket:packet];
     NSMutableData* linePacketData = [NSMutableData dataWithCapacity:(innerPacketData.length + 16)];

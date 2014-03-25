@@ -9,19 +9,13 @@
 #import "THSwitch.h"
 #import "THPacket.h"
 #import "THIdentity.h"
-#import "ECDH.h"
-#import "SHA256.h"
-#import "CTRAES256.h"
 #import "NSString+HexString.h"
 #import "THLine.h"
 #import "THChannel.h"
-#import "RNG.h"
-#import "NSData+HexString.h"
 #import "THMeshBuckets.h"
 #import "THPendingJob.h"
 #import "THCipherSet.h"
 #import "NSData+HexString.h"
-#import "THPeerRelay.h"
 
 @interface THSwitch()
 
@@ -106,7 +100,7 @@
 -(void)channel:(THChannel*)channel line:(THLine*)line firstPacket:(THPacket*)packet
 {
     channel.line = line;
-    if ([channel.channelId isEqualToNumber:@0]) {
+    if (!channel.channelId || [channel.channelId isEqualToNumber:@0]) {
         channel.channelId = [NSNumber numberWithUnsignedInteger:line.nextChannelId];
     }
     [channel.toIdentity.channels setObject:channel forKey:channel.channelId];

@@ -13,7 +13,7 @@
 @class THChannel;
 
 @interface THPeerRelay : NSObject<THChannelDelegate>
-@property (nonatomic, assign) THChannel* connectChannel;
-@property (nonatomic, assign) THChannel* peerChannel;
+@property THChannel* connectChannel;
+@property THChannel* peerChannel;
 -(void)sendPacket:(THPacket*)packet;
 @end
