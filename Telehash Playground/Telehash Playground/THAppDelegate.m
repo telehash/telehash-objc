@@ -49,8 +49,9 @@
     ipPath.delegate = thSwitch;
     [baseIdentity addPath:ipPath];
     [ipPath startOnPort:42424];
+    baseIdentity.activePath = ipPath;
     
-    //[thSwitch loadSeeds:[NSData dataWithContentsOfFile:@"/tmp/telehash/seeds.json"]];
+    [thSwitch loadSeeds:[NSData dataWithContentsOfFile:@"/tmp/telehash/seeds.json"]];
 }
 
 -(NSInteger)numberOfRowsInTableView:(NSTableView *)tableView;

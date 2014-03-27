@@ -303,6 +303,7 @@ static unsigned char eccHeader[] = {0x04};
     [openBody appendData:packetEncryptor.cipherText];
     [openBody appendData:packetEncryptor.mac];
     
+    NSLog(@"%@", openBody);
     openPacket.body = openBody;
     openPacket.jsonLength = 1;
     

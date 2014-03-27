@@ -27,8 +27,10 @@
 @end
 
 @interface THIPV4Path : THPath<GCDAsyncUdpSocketDelegate>
++(NSData*)addressTo:(NSString*)ip port:(NSUInteger)port;
 -(id)init;
 -(id)initWithSocket:(GCDAsyncUdpSocket*)socket toAddress:(NSData*)address;
+-(id)initWithSocket:(GCDAsyncUdpSocket*)socket ip:(NSString*)ip port:(NSUInteger)port;
 -(void)start;
 -(void)startOnPort:(unsigned short)port;
 -(void)sendPacket:(THPacket *)packet;

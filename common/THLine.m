@@ -95,7 +95,7 @@
     [self.cipherSetInfo decryptLinePacket:packet];
     THPacket* innerPacket = [THPacket packetData:packet.body];
     //NSLog(@"Packet is type %@", [innerPacket.json objectForKey:@"type"]);
-    NSLog(@"Line %@ line id %@ handling %@", self.toIdentity.hashname, self.outLineId, innerPacket.json);
+    NSLog(@"Line from %@ line id %@ handling %@", self.toIdentity.hashname, self.outLineId, innerPacket.json);
     NSString* channelId = [innerPacket.json objectForKey:@"c"];
     NSString* channelType = [innerPacket.json objectForKey:@"type"];
     
@@ -160,38 +160,38 @@
         THUnreliableChannel* peerChannel = [[THUnreliableChannel alloc] initToIdentity:self.toIdentity];
         peerChannel.channelId = [innerPacket.json objectForKey:@"c"];
         peerChannel.delegate = relay;
+        [thSwitch openChannel:peerChannel firstPacket:nil];
 
         relay.connectChannel = connectChannel;
         relay.peerChannel = peerChannel;
         
         [thSwitch openChannel:connectChannel firstPacket:connectPacket];
-        // XXX FIXME check the connect channel timeout for going away?
+        // XXX FIXME TODO: check the connect channel timeout for going away?
     } else if ([channelType isEqualToString:@"connect"]) {
-#if TODO_FIXME
-        THIdentity* peerIdentity = [THIdentity identityFromPublicKey:innerPacket.body];
-        if (peerIdentity.currentLine) {
-            [[THSwitch defaultSwitch] closeLine:peerIdentity.currentLine];
-        }
-        NSLog(@"Going to connect to %@", peerIdentity.hashname);
-        
-        // Iterate over the paths and find the ipv4
-        [[innerPacket.json objectForKey:@"paths"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            NSDictionary* pathInfo = (NSDictionary*)obj;
-            if ([[obj objectForKey:@"type"] isEqualToString:@"ipv4"]) {
-                *stop = YES;
-                [peerIdentity setIP:[pathInfo objectForKey:@"ip"] port:[[pathInfo objectForKey:@"port"] unsignedIntegerValue]];
-            }
-        }];
-        
-        // TODO: This is old and DEPRECATED, to be removed
-        if (peerIdentity.address.length == 0) {
-            NSString* ip = [innerPacket.json objectForKey:@"ip"];
-            NSNumber* port = [innerPacket.json objectForKey:@"port"];
+        // XXX FIXME TODO: Find the correct cipher set here
+        THCipherSet2a* cs = [[THCipherSet2a alloc] initWithPublicKey:innerPacket.body privateKey:nil];
+        THIdentity* peerIdentity = [THIdentity identityFromParts:[innerPacket.json objectForKey:@"parts"] key:cs];
+        if (!peerIdentity) {
+            // We couldn't verify the identity, so shut it down
+            THPacket* closePacket = [THPacket new];
+            [closePacket.json setObject:@YES forKey:@"end"];
+            [closePacket.json setObject:[innerPacket.json objectForKey:@"c"] forKey:@"c"];
             
-            [peerIdentity setIP:ip port:[port unsignedIntegerValue]];
+            THPath* returnPath = [packet.path returnPathTo:packet.fromAddress];
+            [returnPath sendPacket:closePacket];
+            return;
         }
+        
+        THUnreliableChannel* peerChannel = [[THUnreliableChannel alloc] initToIdentity:peerIdentity];
+        peerChannel.channelId = [innerPacket.json objectForKey:@"c"];
+        [thSwitch openChannel:peerChannel firstPacket:nil];
+        
+        THRelayPath* relayPath = [THRelayPath new];
+        relayPath.peerChannel = peerChannel;
+        
+        peerIdentity.activePath = relayPath;
+        
         [thSwitch openLine:peerIdentity];
-#endif
     } else if ([channelType isEqualToString:@"path"]) {
         THPacket* errPacket = [THPacket new];
         [errPacket.json setObject:@"Path not yet supported." forKey:@"err"];

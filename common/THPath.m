@@ -23,6 +23,16 @@
     NSData* toAddress;
 }
 
++(NSData*)addressTo:(NSString*)ip port:(NSUInteger)port
+{
+    struct sockaddr_in ipAddress;
+    ipAddress.sin_len = sizeof(ipAddress);
+    ipAddress.sin_family = AF_INET;
+    ipAddress.sin_port = htons(port);
+    inet_pton(AF_INET, [ip UTF8String], &ipAddress.sin_addr);
+    return [NSData dataWithBytes:&ipAddress length:ipAddress.sin_len];
+}
+
 -(NSString*)typeName
 {
     return @"ipv4";
@@ -43,6 +53,26 @@
     if (self) {
         udpSocket = socket;
         toAddress = address;
+    }
+    return self;
+}
+
+-(id)initWithSocket:(GCDAsyncUdpSocket *)socket ip:(NSString *)ip port:(NSUInteger)port
+{
+    // Only valid data please
+    if (ip == nil || port == 0) return nil;
+    
+    self = [super init];
+    if (self) {
+        udpSocket = socket;
+
+        
+        struct sockaddr_in ipAddress;
+        ipAddress.sin_len = sizeof(ipAddress);
+        ipAddress.sin_family = AF_INET;
+        ipAddress.sin_port = htons(port);
+        inet_pton(AF_INET, [ip UTF8String], &ipAddress.sin_addr);
+        toAddress = [NSData dataWithBytes:&ipAddress length:ipAddress.sin_len];
     }
     return self;
 }

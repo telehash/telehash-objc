@@ -62,29 +62,34 @@
 
 -(void)loadSeeds:(NSData *)seedData;
 {
-#if TODO_FIXME
     NSError* error;
-    NSArray* json = [NSJSONSerialization JSONObjectWithData:seedData options:0 error:&error];
-    if (json) {
-        [json enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            NSDictionary* entry = (NSDictionary*)obj;
-            NSString* pubKey = [entry objectForKey:@"pubkey"];
-            if (!pubKey) return;
-            NSData* pubKeyData = [[NSData alloc] initWithBase64EncodedString:pubKey options:0];
-            THIdentity* seedIdentity = [THIdentity identityFromPublicKey:pubKeyData];
-            [seedIdentity setIP:[entry objectForKey:@"ip"] port:[[entry objectForKey:@"port"] unsignedIntegerValue]];
-            
-            [self openLine:seedIdentity];
-        }];
-    }
-#endif
+    NSDictionary* json = [NSJSONSerialization JSONObjectWithData:seedData options:0 error:&error];
+    if (!json) return;
+
+    [json enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+        NSDictionary* entry = (NSDictionary*)obj;
+        NSArray* paths = [entry objectForKey:@"paths"];
+        NSDictionary* parts = [entry objectForKey:@"parts"];
+        NSDictionary* keys = [entry objectForKey:@"keys"];
+        NSData* keyData = [[NSData alloc] initWithBase64EncodedString:[keys objectForKey:@"2a"] options:0];
+        THCipherSet2a* cs = [[THCipherSet2a alloc] initWithPublicKey:keyData privateKey:nil];
+        THIdentity* seedIdentity = [THIdentity identityFromParts:parts key:cs];
+        for (NSDictionary* path in paths) {
+            if ([[path objectForKey:@"type"] isEqualToString:@"ipv4"]) {
+                NSData* address = [THIPV4Path addressTo:[path objectForKey:@"ip"] port:[[path objectForKey:@"port"] unsignedIntegerValue]];
+                seedIdentity.activePath = [self.identity.activePath returnPathTo:address];
+            }
+        }
+        
+        [self openLine:seedIdentity];
+    }];
 }
 
 -(THLine*)lineToHashname:(NSString*)hashname;
 {
     // XXX: If we don't have a line should we do an open here?
     // XXX: This is a common lookup, should we cache this another way as well?
-    NSLog(@"looking for %@", hashname);
+    //NSLog(@"looking for %@", hashname);
     __block THLine* ret = nil;
     [self.openLines enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
         THLine* line = (THLine*)obj;
@@ -93,7 +98,7 @@
             *stop = YES;
         }
     }];
-    NSLog(@"We found line to hashname %@ %@", ret.toIdentity.hashname, ret);
+    //NSLog(@"We found line to hashname %@ %@", ret.toIdentity.hashname, ret);
     return ret;
 }
 
@@ -106,7 +111,7 @@
     [channel.toIdentity.channels setObject:channel forKey:channel.channelId];
     channel.state = THChannelOpen;
     channel.channelIsReady = YES;
-    [channel sendPacket:packet];
+    if (packet) [channel sendPacket:packet];
 }
 
 -(void)openChannel:(THChannel *)channel firstPacket:(THPacket *)packet;
@@ -142,18 +147,15 @@
     
 
     // We have everything we need to direct request
-    // XXX FIXME
-    /*
-    if (toIdentity.address && toIdentity.rsaKeys) {
+    if (toIdentity.activePath) {
         THLine* channelLine = [THLine new];
         channelLine.toIdentity = toIdentity;
-        channelLine.address = toIdentity.address;
+        channelLine.activePath = toIdentity.activePath;
         toIdentity.currentLine = channelLine;
         
         [channelLine sendOpen];
         return;
     };
-    */
     
     // Let's do a peer request
     if (toIdentity.via) {
@@ -326,7 +328,7 @@
     } else if(packet.jsonLength == 0) {
         // Validate the line id then process it
         NSString* lineId = [[packet.body subdataWithRange:NSMakeRange(0, 16)] hexString];
-        NSLog(@"Received a line packet for %@", lineId);
+        //NSLog(@"Received a line packet for %@", lineId);
         // Process a line packet
         THLine* line = [self.openLines objectForKey:lineId];
         // If there is no line to handle this dump it
