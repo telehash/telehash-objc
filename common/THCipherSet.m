@@ -237,7 +237,7 @@ static unsigned char eccHeader[] = {0x04};
     if (!line.cipherSetInfo) {
         // FIXME, should be the remote cipherSet
         THCipherSetLineInfo2a* lineInfo =[THCipherSetLineInfo2a new];
-        lineInfo.cipherSet = self;
+        lineInfo.cipherSet = [line.toIdentity.cipherParts objectForKey:[self identifier]];
         line.cipherSetInfo = lineInfo;
     }
     THCipherSetLineInfo2a* lineInfo = (THCipherSetLineInfo2a*)line.cipherSetInfo;

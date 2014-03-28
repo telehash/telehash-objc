@@ -157,6 +157,7 @@
     THPacket* relayPacket = [THPacket new];
     relayPacket.body = [packet encode];
     
+    NSLog(@"Relay sending");
     [self.peerChannel sendPacket:relayPacket];
 }
 

@@ -95,7 +95,7 @@
     [self.cipherSetInfo decryptLinePacket:packet];
     THPacket* innerPacket = [THPacket packetData:packet.body];
     //NSLog(@"Packet is type %@", [innerPacket.json objectForKey:@"type"]);
-    NSLog(@"Line from %@ line id %@ handling %@", self.toIdentity.hashname, self.outLineId, innerPacket.json);
+    NSLog(@"Line from %@ line id %@ handling %@\n%@", self.toIdentity.hashname, self.outLineId, innerPacket.json, innerPacket.body);
     NSString* channelId = [innerPacket.json objectForKey:@"c"];
     NSString* channelType = [innerPacket.json objectForKey:@"type"];
     
@@ -170,7 +170,7 @@
     } else if ([channelType isEqualToString:@"connect"]) {
         // XXX FIXME TODO: Find the correct cipher set here
         THCipherSet2a* cs = [[THCipherSet2a alloc] initWithPublicKey:innerPacket.body privateKey:nil];
-        THIdentity* peerIdentity = [THIdentity identityFromParts:[innerPacket.json objectForKey:@"parts"] key:cs];
+        THIdentity* peerIdentity = [THIdentity identityFromParts:[innerPacket.json objectForKey:@"from"] key:cs];
         if (!peerIdentity) {
             // We couldn't verify the identity, so shut it down
             THPacket* closePacket = [THPacket new];
@@ -182,12 +182,14 @@
             return;
         }
         
-        THUnreliableChannel* peerChannel = [[THUnreliableChannel alloc] initToIdentity:peerIdentity];
+        THUnreliableChannel* peerChannel = [[THUnreliableChannel alloc] initToIdentity:self.toIdentity];
         peerChannel.channelId = [innerPacket.json objectForKey:@"c"];
         [thSwitch openChannel:peerChannel firstPacket:nil];
         
         THRelayPath* relayPath = [THRelayPath new];
         relayPath.peerChannel = peerChannel;
+        relayPath.delegate = thSwitch;
+        peerChannel.delegate = relayPath;
         
         peerIdentity.activePath = relayPath;
         
@@ -252,7 +254,7 @@
 -(void)sendPacket:(THPacket *)packet;
 {
     self.lastOutActivity = time(NULL);
-    NSLog(@"Sending %@", packet.json);
+    NSLog(@"Sending %@\%@", packet.json, packet.body);
     THSwitch* defaultSwitch = [THSwitch defaultSwitch];
     NSData* innerPacketData = [self.cipherSetInfo encryptLinePacket:packet];
     NSMutableData* linePacketData = [NSMutableData dataWithCapacity:(innerPacketData.length + 16)];
