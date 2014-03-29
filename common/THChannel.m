@@ -60,6 +60,17 @@
 {
     self.lastInActivity = time(NULL);
 }
+
+-(void)close
+{
+    if (self.state != THChannelEnded) {
+        THPacket* endPacket = [THPacket new];
+        [endPacket.json setObject:@YES forKey:@"end"];
+        [self sendPacket:endPacket];
+        self.state = THChannelEnded;
+    }
+    [self.toIdentity.channels removeObjectForKey:self.channelId];
+}
 @end
 
 @implementation THUnreliableChannel
@@ -84,7 +95,8 @@
     
     [self.delegate channel:self handlePacket:packet];
     if ([[packet.json objectForKey:@"end"] boolValue] == YES) {
-        [self.toIdentity.channels removeObjectForKey:self.channelId];
+        self.state = THChannelEnded;
+        [self close];
     }
 }
 
@@ -211,6 +223,9 @@
             [self.delegate channel:self handlePacket:curPacket];
             if ([[curPacket.json objectForKey:@"end"] boolValue] == YES) {
                 // TODO: Shut it down!
+                self.state = THChannelEnded;
+                [self close];
+                return;
             }
             nextExpectedSequence = [[curPacket.json objectForKey:@"seq"] unsignedIntegerValue] + 1;
         });

@@ -48,6 +48,7 @@ typedef enum {
 -(id)initToIdentity:(THIdentity*)identity;
 -(void)sendPacket:(THPacket*)packet;
 -(void)handlePacket:(THPacket*)packet;
+-(void)close;
 
 @end
 
