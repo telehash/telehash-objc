@@ -51,7 +51,11 @@
     [ipPath startOnPort:42424];
     baseIdentity.activePath = ipPath;
     
-    [thSwitch loadSeeds:[NSData dataWithContentsOfFile:@"/tmp/telehash/seeds.json"]];
+    NSString* filePath = [[NSBundle mainBundle] pathForResource:@"seeds" ofType:@"json"];
+    NSData* seedData = [NSData dataWithContentsOfFile:filePath];
+    if (seedData) [thSwitch loadSeeds:seedData];
+
+    //[thSwitch loadSeeds:[NSData dataWithContentsOfFile:@"/tmp/telehash/seeds.json"]];
 }
 
 -(NSInteger)numberOfRowsInTableView:(NSTableView *)tableView;

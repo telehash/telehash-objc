@@ -257,6 +257,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6522195D18BD2F89003C077B /* libcryptopp-osx.a in Frameworks */,
 				8218D17117FA6E8A0053AFAC /* Cocoa.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -923,7 +924,7 @@
 					"$(inherited)",
 					"CRYPTOPP_DISABLE_ASM=1",
 				);
-				HEADER_SEARCH_PATHS = /usr/local/include;
+				HEADER_SEARCH_PATHS = "$(SRCROOT)/cryptopp";
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -934,7 +935,7 @@
 			buildSettings = {
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "telehash/telehash-Prefix.pch";
-				HEADER_SEARCH_PATHS = /usr/local/include;
+				HEADER_SEARCH_PATHS = "$(SRCROOT)/cryptopp";
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -1029,6 +1030,7 @@
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)/cryptopp-ios/include";
+				"USER_HEADER_SEARCH_PATHS[arch=*]" = "$(SRCROOT)/cryptopp-ios/include";
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
