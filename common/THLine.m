@@ -19,10 +19,16 @@
 #import "NSString+HexString.h"
 #import "THChannel.h"
 #import "THMeshBuckets.h"
+#import "THCipherSet.h"
+#import "THPeerRelay.h"
+#import "THPath.h"
 
 #include <arpa/inet.h>
 
 @implementation THLine
+{
+    NSUInteger _nextChannelId;
+}
 
 -(id)init;
 {
@@ -36,66 +42,35 @@
 
 -(void)sendOpen;
 {
-    THPacket* openPacket = [THPacket new];
-    [openPacket.json setObject:@"open" forKey:@"type"];
-    if (!self.ecdh) {
-        self.ecdh = [ECDH new];
-    }
-    NSString* encodedKey = [[self.toIdentity.rsaKeys encrypt:self.ecdh.publicKey] base64EncodedStringWithOptions:0];
-    [openPacket.json setObject:encodedKey forKey:@"open"];
-    
-    THPacket* innerPacket = [THPacket new];
-    [innerPacket.json setObject:self.toIdentity.hashname forKey:@"to"];
-    NSDate* now = [NSDate date];
-    NSUInteger at = (NSInteger)([now timeIntervalSince1970]) * 1000;
-    NSLog(@"Open timestamp is %ld", self.createdAt);
-    [innerPacket.json setObject:[NSNumber numberWithInteger:at] forKey:@"at"];
-    
-    // Generate a new line id if we weren't given one
-    if (!self.inLineId) {
-        self.inLineId =  [[RNG randomBytesOfLength:16] hexString];
-    }
-    [innerPacket.json setObject:self.inLineId forKey:@"line"];
     THSwitch* defaultSwitch = [THSwitch defaultSwitch];
-    innerPacket.body = defaultSwitch.identity.rsaKeys.DERPublicKey;
-    
-    openPacket.body = [innerPacket encode];
-    NSData* packetIV = [RNG randomBytesOfLength:16];
-    [openPacket.json setObject:[packetIV hexString] forKey:@"iv"];
-    
-    SHA256* sha = [SHA256 new];
-    [sha updateWithData:self.ecdh.publicKey];
-    NSData* dhKeyHash = [sha finish];
-    
-    [openPacket encryptWithKey:dhKeyHash iv:packetIV];
-    NSData* bodySig = [defaultSwitch.identity.rsaKeys sign:openPacket.body];
-    sha = [SHA256 new];
-    [sha updateWithData:self.ecdh.publicKey];
-    [sha updateWithData:[self.inLineId dataFromHexString]];
-    NSData* encryptedSig = [CTRAES256Encryptor encryptPlaintext:bodySig key:[sha finish] iv:packetIV];
-    [openPacket.json setObject:[encryptedSig base64EncodedStringWithOptions:0] forKey:@"sig"];
-    
-    self.lastOutActivity = time(NULL);
-    
-    [defaultSwitch sendPacket:openPacket toAddress:self.address];
+    THPacket* openPacket = [defaultSwitch generateOpen:self];
+    [self.activePath sendPacket:openPacket];
+}
+
+-(void)handleOpen:(THPacket *)openPacket
+{
+    self.outLineId = [openPacket.json objectForKey:@"line"];
+    self.createdAt = [[openPacket.json objectForKey:@"at"] unsignedIntegerValue];
+    self.lastInActivity = time(NULL);
+    self.address = openPacket.fromAddress;
+    self.activePath = [openPacket.path returnPathTo:openPacket.fromAddress];
+}
+
+-(NSUInteger)nextChannelId
+{
+    return _nextChannelId++;
 }
 
 -(void)openLine;
 {
-    
-    NSData* sharedSecret = [self.ecdh agreeWithRemotePublicKey:self.remoteECCKey];
-    NSMutableData* keyingMaterial = [NSMutableData dataWithLength:32 + sharedSecret.length];
-    [keyingMaterial replaceBytesInRange:NSMakeRange(0, sharedSecret.length) withBytes:[sharedSecret bytes] length:sharedSecret.length];
-    [keyingMaterial replaceBytesInRange:NSMakeRange(sharedSecret.length, 16) withBytes:[[self.outLineId dataFromHexString] bytes] length:16];
-    [keyingMaterial replaceBytesInRange:NSMakeRange(keyingMaterial.length - 16, 16) withBytes:[[self.inLineId dataFromHexString] bytes] length:16];
-    self.decryptorKey = [SHA256 hashWithData:keyingMaterial];
-    
-    [keyingMaterial replaceBytesInRange:NSMakeRange(sharedSecret.length, 16) withBytes:[[self.inLineId dataFromHexString] bytes] length:16];
-    [keyingMaterial replaceBytesInRange:NSMakeRange(keyingMaterial.length - 16, 16) withBytes:[[self.outLineId dataFromHexString] bytes] length:16];
-    self.encryptorKey = [SHA256 hashWithData:keyingMaterial];
-    //NSLog(@"Encryptor key: %@", self.encryptorKey);
-    //NSLog(@"Decryptor key: %@", self.decryptorKey);
-    
+    // Do the distance calc and see if we start at 1 or 2
+    THSwitch* thSwitch = [THSwitch defaultSwitch];
+    if ([self.toIdentity.hashname compare:thSwitch.identity.hashname] == NSOrderedAscending) {
+        _nextChannelId = 1;
+    } else {
+        _nextChannelId = 2;
+    }
+    [self.cipherSetInfo.cipherSet finalizeLineKeys:self];
     [self.toIdentity.channels enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
         NSLog(@"Checking %@ as %@", obj, [obj class]);
         // Get all our pending reliable channels spun out
@@ -117,18 +92,15 @@
     self.lastActitivy = time(NULL);
     
     //NSLog(@"Going to handle a packet");
-    THPacket* innerPacket = [THPacket packetData:[CTRAES256Decryptor decryptPlaintext:packet.body key:self.decryptorKey iv:[[packet.json objectForKey:@"iv"] dataFromHexString]]];
+    [self.cipherSetInfo decryptLinePacket:packet];
+    THPacket* innerPacket = [THPacket packetData:packet.body];
     //NSLog(@"Packet is type %@", [innerPacket.json objectForKey:@"type"]);
-    NSLog(@"Line %@ line id %@ handling %@", self.toIdentity.hashname, self.outLineId, innerPacket.json);
+    NSLog(@"Line from %@ line id %@ handling %@\n%@", self.toIdentity.hashname, self.outLineId, innerPacket.json, innerPacket.body);
     NSString* channelId = [innerPacket.json objectForKey:@"c"];
     NSString* channelType = [innerPacket.json objectForKey:@"type"];
     
     THSwitch* thSwitch = [THSwitch defaultSwitch];
     
-	if ([self.delegate respondsToSelector:@selector(debugInboundPacket:)]) {
-		[self.delegate debugInboundPacket:innerPacket];
-	}
-	
     // if the switch is handling it bail
     if ([thSwitch findPendingSeek:innerPacket]) return;
     
@@ -172,37 +144,55 @@
         }
         
         THPacket* connectPacket = [THPacket new];
-        [connectPacket.json setObject:[[RNG randomBytesOfLength:16] hexString] forKey:@"c"];
         [connectPacket.json setObject:@"connect" forKey:@"type"];
-        const struct sockaddr_in* addr = [packet.fromAddress bytes];
-        [connectPacket.json setObject:[NSString stringWithUTF8String:inet_ntoa(addr->sin_addr)] forKey:@"ip"];
-        [connectPacket.json setObject:[NSNumber numberWithUnsignedInt:addr->sin_port] forKey:@"port"];
-        connectPacket.body = [peerLine.toIdentity.rsaKeys DERPublicKey];
+        [connectPacket.json setObject:self.toIdentity.parts forKey:@"from"];
+        NSArray* paths = [innerPacket.json objectForKey:@"paths"];
+        if (paths) {
+            // XXX FIXME check if we know any other paths
+            [connectPacket.json setObject:paths forKey:@"paths"];
+        }
+        connectPacket.body = innerPacket.body;
+
+        THPeerRelay* relay = [THPeerRelay new];
         
-        [self.toIdentity sendPacket:connectPacket];
+        THUnreliableChannel* connectChannel = [[THUnreliableChannel alloc] initToIdentity:peerLine.toIdentity];
+        connectChannel.delegate = relay;
+        THUnreliableChannel* peerChannel = [[THUnreliableChannel alloc] initToIdentity:self.toIdentity];
+        peerChannel.channelId = [innerPacket.json objectForKey:@"c"];
+        peerChannel.delegate = relay;
+        [thSwitch openChannel:peerChannel firstPacket:nil];
+
+        relay.connectChannel = connectChannel;
+        relay.peerChannel = peerChannel;
+        
+        [thSwitch openChannel:connectChannel firstPacket:connectPacket];
+        // XXX FIXME TODO: check the connect channel timeout for going away?
     } else if ([channelType isEqualToString:@"connect"]) {
-        THIdentity* peerIdentity = [THIdentity identityFromPublicKey:innerPacket.body];
-        if (peerIdentity.currentLine) {
-            [[THSwitch defaultSwitch] closeLine:peerIdentity.currentLine];
-        }
-        NSLog(@"Going to connect to %@", peerIdentity.hashname);
-        
-        // Iterate over the paths and find the ipv4
-        [[innerPacket.json objectForKey:@"paths"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            NSDictionary* pathInfo = (NSDictionary*)obj;
-            if ([[obj objectForKey:@"type"] isEqualToString:@"ipv4"]) {
-                *stop = YES;
-                [peerIdentity setIP:[pathInfo objectForKey:@"ip"] port:[[pathInfo objectForKey:@"port"] unsignedIntegerValue]];
-            }
-        }];
-        
-        // TODO: This is old and DEPRECATED, to be removed
-        if (peerIdentity.address.length == 0) {
-            NSString* ip = [innerPacket.json objectForKey:@"ip"];
-            NSNumber* port = [innerPacket.json objectForKey:@"port"];
+        // XXX FIXME TODO: Find the correct cipher set here
+        THCipherSet2a* cs = [[THCipherSet2a alloc] initWithPublicKey:innerPacket.body privateKey:nil];
+        THIdentity* peerIdentity = [THIdentity identityFromParts:[innerPacket.json objectForKey:@"from"] key:cs];
+        if (!peerIdentity) {
+            // We couldn't verify the identity, so shut it down
+            THPacket* closePacket = [THPacket new];
+            [closePacket.json setObject:@YES forKey:@"end"];
+            [closePacket.json setObject:[innerPacket.json objectForKey:@"c"] forKey:@"c"];
             
-            [peerIdentity setIP:ip port:[port unsignedIntegerValue]];
+            THPath* returnPath = [packet.path returnPathTo:packet.fromAddress];
+            [returnPath sendPacket:closePacket];
+            return;
         }
+        
+        THUnreliableChannel* peerChannel = [[THUnreliableChannel alloc] initToIdentity:self.toIdentity];
+        peerChannel.channelId = [innerPacket.json objectForKey:@"c"];
+        [thSwitch openChannel:peerChannel firstPacket:nil];
+        
+        THRelayPath* relayPath = [THRelayPath new];
+        relayPath.peerChannel = peerChannel;
+        relayPath.delegate = thSwitch;
+        peerChannel.delegate = relayPath;
+        
+        peerIdentity.activePath = relayPath;
+        
         [thSwitch openLine:peerIdentity];
     } else if ([channelType isEqualToString:@"path"]) {
         THPacket* errPacket = [THPacket new];
@@ -246,7 +236,7 @@
                 newChannel = [[THUnreliableChannel alloc] initToIdentity:self.toIdentity];
                 newChannelType = UnreliableChannel;
             }
-            newChannel.channelId = channelId;
+            newChannel.channelId = [NSNumber numberWithUnsignedInteger:self.nextChannelId];
             newChannel.channelIsReady = YES;
             newChannel.type = channelType;
             THSwitch* defaultSwitch = [THSwitch defaultSwitch];
@@ -264,23 +254,22 @@
 -(void)sendPacket:(THPacket *)packet;
 {
     self.lastOutActivity = time(NULL);
-	
-	if ([self.delegate respondsToSelector:@selector(debugOutboundPacket:)]) {
-		[self.delegate debugOutboundPacket:packet];
-	}
-	
-    THPacket* linePacket = [THPacket new];
-    [linePacket.json setObject:self.outLineId forKey:@"line"];
-    [linePacket.json setObject:@"line" forKey:@"type"];
-    NSData* iv = [RNG randomBytesOfLength:16];
-    [linePacket.json setObject:[iv hexString] forKey:@"iv"];
-    linePacket.body = [packet encode];
-	
-    NSLog(@"Sending to %@ on line %@: %@", self.toIdentity.hashname, self.outLineId, packet.json);
-    
-    [linePacket encryptWithKey:self.encryptorKey iv:iv];
-    
+    NSLog(@"Sending %@\%@", packet.json, packet.body);
     THSwitch* defaultSwitch = [THSwitch defaultSwitch];
-    [defaultSwitch sendPacket:linePacket toAddress:self.address];
+    NSData* innerPacketData = [self.cipherSetInfo encryptLinePacket:packet];
+    NSMutableData* linePacketData = [NSMutableData dataWithCapacity:(innerPacketData.length + 16)];
+    [linePacketData appendData:[self.outLineId dataFromHexString]];
+    [linePacketData appendData:innerPacketData];
+    THPacket* lineOutPacket = [THPacket new];
+    lineOutPacket.body = linePacketData;
+    lineOutPacket.jsonLength = 0;
+    
+    [self.activePath sendPacket:lineOutPacket];
+    //[defaultSwitch sendPacket:lineOutPacket toAddress:self.address];
+}
+
+-(void)close
+{
+    [[THSwitch defaultSwitch] closeLine:self];
 }
 @end

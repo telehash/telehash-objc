@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "GCDAsyncUdpSocket.h"
+#import "THPath.h"
 
 @class THIdentity;
 @class THChannel;
@@ -38,7 +38,7 @@ typedef void(^LineOpenBlock)(THIdentity*);
 
 @end
 
-@interface THSwitch : NSObject <GCDAsyncUdpSocketDelegate>
+@interface THSwitch : NSObject <THPathDelegate>
 
 +(id)defaultSwitch;
 
@@ -47,15 +47,11 @@ typedef void(^LineOpenBlock)(THIdentity*);
 @property NSMutableArray* pendingJobs;
 @property THIdentity* identity;
 @property id<THSwitchDelegate> delegate;
-@property dispatch_queue_t channelQueue;
-@property dispatch_queue_t dhtQueue;
 @property THSwitchStatus status;
 
 +(id)THSWitchWithIdentity:(THIdentity*)identity;
 
 -(void)start;
--(void)startOnPort:(unsigned short)port;
--(void)sendPacket:(THPacket*)packet toAddress:(NSData*)address;
 -(THLine*)lineToHashname:(NSString*)hashname;
 -(void)openChannel:(THChannel*)channel firstPacket:(THPacket*)packet;
 /// Open a line to the given identity
@@ -67,12 +63,8 @@ typedef void(^LineOpenBlock)(THIdentity*);
 -(void)closeLine:(THLine*)line;
 -(void)loadSeeds:(NSData*)seedData;
 -(void)updateStatus:(THSwitchStatus)status;
+-(THPacket*)generateOpen:(THLine*)toLine;
 
 // This is an internal handling hack
 -(BOOL)findPendingSeek:(THPacket*)packet;
-
-#pragma mark UDP Handlers
--(void)udpSocket:(GCDAsyncUdpSocket *)sock didReceiveData:(NSData *)data fromAddress:(NSData *)address withFilterContext:(id)filterContext;
--(void)udpSocket:(GCDAsyncUdpSocket *)sock didSendDataWithTag:(long)tag;
-
 @end

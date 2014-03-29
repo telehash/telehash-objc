@@ -10,6 +10,8 @@
 #import "THIdentity.h"
 #import <THPacket.h>
 #import "THSwitch.h"
+#import "THCipherSet.h"
+#import "NSData+Hexstring.h"
 
 #include <arpa/inet.h>
 
@@ -29,16 +31,25 @@
     // Insert code here to initialize your application
     thSwitch = [THSwitch defaultSwitch];
     thSwitch.delegate = self;
-    thSwitch.identity = [THIdentity identityFromPublicFile:@"/tmp/telehash/server.pder" privateFile:@"/tmp/telehash/server.der"];
-    if (!thSwitch.identity) {
-        thSwitch.identity = [THIdentity generateIdentity];
+    THIdentity* baseIdentity = [THIdentity new];
+    THCipherSet2a* cs2a = [[THCipherSet2a alloc] initWithPublicKeyPath:@"/tmp/telehash/server.pder" privateKeyPath:@"/tmp/telehash/server.der"];
+    if (!cs2a) {
         NSFileManager* fm = [NSFileManager defaultManager];
         NSError* err;
         [fm createDirectoryAtPath:@"/tmp/telehash" withIntermediateDirectories:NO attributes:nil error:&err];
-        [thSwitch.identity.rsaKeys savePublicKey:@"/tmp/telehash/server.pder" privateKey:@"/tmp/telehash/server.der"];
+        THCipherSet2a* cs2a = [THCipherSet2a new];
+        [cs2a generateKeys];
+        [cs2a.rsaKeys savePublicKey:@"/tmp/telehash/server.pder" privateKey:@"/tmp/telehash/server.der"];
     }
+    [baseIdentity addCipherSet:cs2a];
+    NSLog(@"2a fingerprint %@", [cs2a.fingerprint hexString]);
+    thSwitch.identity = baseIdentity;
     NSLog(@"Hashname: %@", [thSwitch.identity hashname]);
-    [thSwitch startOnPort:42424];
+    THIPV4Path* ipPath = [THIPV4Path new];
+    ipPath.delegate = thSwitch;
+    [baseIdentity addPath:ipPath];
+    [ipPath startOnPort:42424];
+    baseIdentity.activePath = ipPath;
     
     NSString* filePath = [[NSBundle mainBundle] pathForResource:@"seeds" ofType:@"json"];
     NSData* seedData = [NSData dataWithContentsOfFile:filePath];
@@ -63,24 +74,6 @@
 -(void)openedLine:(THLine *)line;
 {
     [tableView reloadData];
-    
-    return;
-    
-#if SERVER_TEST == 0
-    THIdentity* identity = [THIdentity identityFromPublicKey:[NSData dataWithContentsOfFile:@"/tmp/telehash/chat.pder"]];
-    //[identity setIP:@"127.0.0.1" port:42424];
-    THReliableChannel* channel = [[THReliableChannel alloc] initToIdentity:identity];
-    startChannelId = channel.channelId;
-    channel.delegate = self;
-    
-    THPacket* packet = [THPacket new];
-    [packet.json setObject:@"_members" forKey:@"type"];
-    [packet.json setObject:@{ @"room": @"testRoom" } forKey:@"_"];
-    [packet.json setObject:@YES forKey:@"end"];
-    
-    [thSwitch openChannel:channel firstPacket:packet];
-#endif
-
 }
 
 -(void)channelReady:(THChannel *)channel type:(THChannelType)type firstPacket:(THPacket *)packet;
@@ -88,37 +81,6 @@
     NSLog(@"Channel is ready");
     NSLog(@"First packet is %@", packet.json);
     return;
-    
-#if SERVER_TEST
-    NSString* packetType = [packet.json objectForKey:@"type"];
-    if ([packetType isEqualToString:@"_members"]) {
-        THSwitch* defaultSwitch = [THSwitch defaultSwitch];
-        THPacket* respPacket = [THPacket new];
-        [respPacket.json setObject:@{@"members":@[defaultSwitch.identity.hashname, channel.line.toIdentity.hashname]} forKey:@"_"];
-        [respPacket.json setObject:@"_members" forKey:@"type"];
-        [respPacket.json setObject:@YES forKey:@"end"];
-        
-        [channel sendPacket:respPacket];
-    } else if ([packetType isEqualToString:@"_chat"]) {
-        THPacket* joinPacket = [THPacket new];
-        [joinPacket.json setObject:@{@"nick":@"temasObjc"} forKey:@"_"];
-        [channel sendPacket:joinPacket];
-        channel.delegate = self;
-    } else {
-        NSLog(@"We're in the other generic handler now.  What do?");
-    }
-#else
-    if ([channel.channelId isEqualToString:startChannelId]) {
-        THReliableChannel* newChannel = [[THReliableChannel alloc] initToIdentity:channel.toIdentity];
-        newChannel.delegate = self;
-        
-        THPacket* outPacket = [THPacket new];
-        [outPacket.json setObject:@"_chat" forKey:@"type"];
-        [outPacket.json setObject:@{ @"room": @"testRoom" } forKey:@"_"];
-        
-        [thSwitch openChannel:newChannel firstPacket:outPacket];
-    }
-#endif
 }
 
 -(IBAction)connectToHashname:(id)sender
@@ -126,6 +88,7 @@
     THIdentity* connectToIdentity;
     NSString* key = [keyField stringValue];
     if (key.length > 0) {
+/*
         NSData* keyData = [[NSData alloc] initWithBase64EncodedString:key options:0];
         connectToIdentity = [THIdentity identityFromPublicKey:keyData];
         NSString* address = [addressField stringValue];
@@ -133,6 +96,7 @@
         if (address && port > 0) {
             [connectToIdentity setIP:address port:port];
         }
+*/
     } else {
         connectToIdentity = [THIdentity identityFromHashname:[hashnameField stringValue]];
     }

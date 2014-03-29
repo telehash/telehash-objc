@@ -9,21 +9,15 @@
 #import "THSwitch.h"
 #import "THPacket.h"
 #import "THIdentity.h"
-#import "ECDH.h"
-#import "SHA256.h"
-#import "CTRAES256.h"
 #import "NSString+HexString.h"
 #import "THLine.h"
 #import "THChannel.h"
-#import "RNG.h"
-#import "NSData+HexString.h"
 #import "THMeshBuckets.h"
 #import "THPendingJob.h"
-#include <arpa/inet.h>
+#import "THCipherSet.h"
+#import "NSData+HexString.h"
 
 @interface THSwitch()
-
-@property GCDAsyncUdpSocket* udpSocket;
 
 @end
 
@@ -54,73 +48,48 @@
         self.meshBuckets = [THMeshBuckets new];
         self.openLines = [NSMutableDictionary dictionary];
         self.pendingJobs = [NSMutableArray array];
-        self.udpSocket = [[GCDAsyncUdpSocket alloc] initWithDelegate:self delegateQueue:dispatch_get_main_queue()];
-        self.channelQueue = dispatch_queue_create("channelWorkQueue", NULL);
-        self.dhtQueue = dispatch_queue_create("dhtWorkQueue", NULL);
         self.status = THSWitchOffline;
     }
     return self;
 }
 
--(void)start;
-{
-    [self startOnPort:0];
-}
--(void)startOnPort:(unsigned short)port
+-(void)start
 {
     self.meshBuckets.localIdentity = self.identity;
-    
-    NSError* bindError;
-    [self.udpSocket bindToPort:port error:&bindError];
-    if (bindError != nil) {
-        // TODO:  How do we show errors?!
-        NSLog(@"%@", bindError);
-        return;
-    }
-    NSLog(@"Now listening on %d", self.udpSocket.localPort);
-    NSError* recvError;
-    [self.udpSocket beginReceiving:&recvError];
-    // TODO: Needs more error handling
-    
+    // XXX TODO FIXME For each path start it
     [self updateStatus:THSwitchListening];
 }
 
 -(void)loadSeeds:(NSData *)seedData;
 {
     NSError* error;
-    NSArray* json = [NSJSONSerialization JSONObjectWithData:seedData options:0 error:&error];
-    if (json) {
-        [json enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            NSDictionary* entry = (NSDictionary*)obj;
-            NSString* pubKey = [entry objectForKey:@"pubkey"];
-            if (!pubKey) return;
-            NSData* pubKeyData = [[NSData alloc] initWithBase64EncodedString:pubKey options:0];
-            THIdentity* seedIdentity = [THIdentity identityFromPublicKey:pubKeyData];
-            [seedIdentity setIP:[entry objectForKey:@"ip"] port:[[entry objectForKey:@"port"] unsignedIntegerValue]];
-            
-            [self openLine:seedIdentity];
-        }];
-    }
-}
+    NSDictionary* json = [NSJSONSerialization JSONObjectWithData:seedData options:0 error:&error];
+    if (!json) return;
 
--(void)sendPacket:(THPacket*)packet toAddress:(NSData*)address;
-{
-    //TODO:  Evaluate using a timeout!
-    [self.udpSocket sendData:[packet encode] toAddress:address withTimeout:-1 tag:0];
+    [json enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+        NSDictionary* entry = (NSDictionary*)obj;
+        NSArray* paths = [entry objectForKey:@"paths"];
+        NSDictionary* parts = [entry objectForKey:@"parts"];
+        NSDictionary* keys = [entry objectForKey:@"keys"];
+        NSData* keyData = [[NSData alloc] initWithBase64EncodedString:[keys objectForKey:@"2a"] options:0];
+        THCipherSet2a* cs = [[THCipherSet2a alloc] initWithPublicKey:keyData privateKey:nil];
+        THIdentity* seedIdentity = [THIdentity identityFromParts:parts key:cs];
+        for (NSDictionary* path in paths) {
+            if ([[path objectForKey:@"type"] isEqualToString:@"ipv4"]) {
+                NSData* address = [THIPV4Path addressTo:[path objectForKey:@"ip"] port:[[path objectForKey:@"port"] unsignedIntegerValue]];
+                seedIdentity.activePath = [self.identity.activePath returnPathTo:address];
+            }
+        }
+        
+        [self openLine:seedIdentity];
+    }];
 }
-
-/*
--channelForType:(NSString*)type to:(NSString*)hashname;
-{
-    
-}
-*/
 
 -(THLine*)lineToHashname:(NSString*)hashname;
 {
     // XXX: If we don't have a line should we do an open here?
     // XXX: This is a common lookup, should we cache this another way as well?
-    NSLog(@"looking for %@", hashname);
+    //NSLog(@"looking for %@", hashname);
     __block THLine* ret = nil;
     [self.openLines enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
         THLine* line = (THLine*)obj;
@@ -129,17 +98,20 @@
             *stop = YES;
         }
     }];
-    NSLog(@"We found line to hashname %@ %@", ret.toIdentity.hashname, ret);
+    //NSLog(@"We found line to hashname %@ %@", ret.toIdentity.hashname, ret);
     return ret;
 }
 
 -(void)channel:(THChannel*)channel line:(THLine*)line firstPacket:(THPacket*)packet
 {
     channel.line = line;
+    if (!channel.channelId || [channel.channelId isEqualToNumber:@0]) {
+        channel.channelId = [NSNumber numberWithUnsignedInteger:line.nextChannelId];
+    }
     [channel.toIdentity.channels setObject:channel forKey:channel.channelId];
     channel.state = THChannelOpen;
     channel.channelIsReady = YES;
-    [channel sendPacket:packet];
+    if (packet) [channel sendPacket:packet];
 }
 
 -(void)openChannel:(THChannel *)channel firstPacket:(THPacket *)packet;
@@ -175,10 +147,10 @@
     
 
     // We have everything we need to direct request
-    if (toIdentity.address && toIdentity.rsaKeys) {
+    if (toIdentity.activePath) {
         THLine* channelLine = [THLine new];
         channelLine.toIdentity = toIdentity;
-        channelLine.address = toIdentity.address;
+        channelLine.activePath = toIdentity.activePath;
         toIdentity.currentLine = channelLine;
         
         [channelLine sendOpen];
@@ -187,16 +159,25 @@
     
     // Let's do a peer request
     if (toIdentity.via) {
+        THIdentity* viaIdentity = [THIdentity identityFromHashname:toIdentity.via.hashname];
+        
         THPacket* peerPacket = [THPacket new];
-        [peerPacket.json setObject:[[RNG randomBytesOfLength:16] hexString] forKey:@"c"];
+        [peerPacket.json setObject:[NSNumber numberWithUnsignedInteger:viaIdentity.currentLine.nextChannelId] forKey:@"c"];
         [peerPacket.json setObject:toIdentity.hashname forKey:@"peer"];
         [peerPacket.json setObject:@"peer" forKey:@"type"];
         [peerPacket.json setObject:@YES forKey:@"end"];
         
-        [self.udpSocket sendData:[NSData data] toAddress:toIdentity.address withTimeout:-1 tag:0];
+        THUnreliableChannel* peerChannel = [[THUnreliableChannel alloc] initToIdentity:viaIdentity];
+        [self openChannel:peerChannel firstPacket:peerPacket];
+        
+        THRelayPath* relayPath = [THRelayPath new];
+        relayPath.peerChannel = peerChannel;
+        
+        toIdentity.activePath = relayPath;
+        
+        // XXX FIXME TODO:  Hole punch packet on paths [self.udpSocket sendData:[NSData data] toAddress:toIdentity.address withTimeout:-1 tag:0];
         
         // We blind send this and hope for the best!
-        THIdentity* viaIdentity = [THIdentity identityFromHashname:toIdentity.via.hashname];
         [viaIdentity sendPacket:peerPacket];
         
         return;
@@ -241,66 +222,30 @@
     return handled;
 }
 
--(void)processOpen:(THPacket*)incomingPacket from:(NSData*)address
+-(void)processOpen:(THPacket*)incomingPacket
 {
-    // TODO:  Check the open lines for this address?
-    
-    // Process an open packet
-    NSData* decodedKey = [[NSData alloc] initWithBase64EncodedData:[incomingPacket.json objectForKey:@"open"] options:0];
-    NSData* eccKey =  [self.identity.rsaKeys decrypt:decodedKey];
-    
-    NSData* innerPacketKey = [SHA256 hashWithData:eccKey];
-    NSData* iv = [[incomingPacket.json objectForKey:@"iv"] dataFromHexString];
-    THPacket* innerPacket = [THPacket packetData:[CTRAES256Decryptor decryptPlaintext:incomingPacket.body key:innerPacketKey iv:iv]];
-    
-    if (!innerPacket) {
-        NSLog(@"Invalid inner packet");
+    THCipherSet* cipherSet = [self.identity.cipherParts objectForKey:[[incomingPacket.body subdataWithRange:NSMakeRange(0, 1)] hexString]];
+    if (!cipherSet) {
+        NSLog(@"Invalid cipher set requested %@", [[incomingPacket.body subdataWithRange:NSMakeRange(0, 1)] hexString]);
         return;
     }
-    
-    THIdentity* senderIdentity = [THIdentity identityFromPublicKey:innerPacket.body];
-    
-    // If the new line is older than the current one bail
-    if (senderIdentity.currentLine && senderIdentity.currentLine.createdAt > [[innerPacket.json objectForKey:@"at"] unsignedIntegerValue]) {
-        NSLog(@"Dumped a line that is older than current");
+    THLine* newLine = [cipherSet processOpen:incomingPacket];
+    if (!newLine) {
+        NSLog(@"Unable to process open packet");
         return;
     }
-    
-    // If this is an attempt to reopen the original, just dump it and keep using it
-    if ([senderIdentity.currentLine.outLineId isEqualToString:[innerPacket.json objectForKey:@"line"]] &&
-        senderIdentity.currentLine.createdAt == [[innerPacket.json objectForKey:@"at"] unsignedIntegerValue]) {
-        NSLog(@"Attempted to reopen the line for %@ line id: %@", senderIdentity.hashname, senderIdentity.currentLine.outLineId);
-        return;
-    } else if (senderIdentity.currentLine.createdAt > 0 && senderIdentity.currentLine.createdAt < [[innerPacket.json objectForKey:@"at"] unsignedIntegerValue]) {
-        [senderIdentity.channels removeAllObjects];
-        senderIdentity.currentLine = nil;
-    }
-    
-    NSData* rawSigEncrypted = [[NSData alloc] initWithBase64EncodedString:[incomingPacket.json objectForKey:@"sig"] options:0];
-    SHA256* sigKeySha = [SHA256 new];
-    [sigKeySha updateWithData:eccKey];
-    [sigKeySha updateWithData:[[innerPacket.json objectForKey:@"line" ] dataFromHexString]];
-    NSData* sigKey = [sigKeySha finish];
-    NSData* rawSig = [CTRAES256Decryptor decryptPlaintext:rawSigEncrypted key:sigKey iv:iv];
-    if (![senderIdentity.rsaKeys verify:incomingPacket.body withSignature:rawSig]) {
-        NSLog(@"Invalid signature, dumping.");
-        return;
-    }
-    
-    THLine* newLine = senderIdentity.currentLine;
     
     // remove any existing lines to this hashname
-    if (newLine) {
-        [self.meshBuckets removeLine:newLine];
-        if (newLine.inLineId) [self.openLines removeObjectForKey:newLine.inLineId];
-    }
+    [self.meshBuckets removeLine:newLine];
+    if (newLine.inLineId) [self.openLines removeObjectForKey:newLine.inLineId];
+    
     __block THPendingJob* pendingLineJob = nil;
     [self.pendingJobs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         THPendingJob* job = (THPendingJob*)obj;
         if (job.type != PendingIdentity) return;
         
         THIdentity* pendingIdentity = (THIdentity*)job.pending;
-        if ([pendingIdentity.hashname isEqualToString:senderIdentity.hashname]) {
+        if ([pendingIdentity.hashname isEqualToString:newLine.toIdentity.hashname]) {
             pendingLineJob = job;
             *stop = YES;
             [self.pendingJobs removeObjectAtIndex:idx];
@@ -310,10 +255,6 @@
         THIdentity* pendingIdentity = (THIdentity*)pendingLineJob.pending;
         newLine = pendingIdentity.currentLine;
         NSLog(@"Finish open on %@", newLine);
-        newLine.outLineId = [innerPacket.json objectForKey:@"line"];
-        newLine.remoteECCKey = eccKey;
-        newLine.createdAt = [[innerPacket.json objectForKey:@"at"] unsignedIntegerValue];
-        newLine.lastInActivity = time(NULL);
         [newLine openLine];
         
         [self.openLines setObject:newLine forKey:newLine.inLineId];
@@ -326,17 +267,6 @@
         
         [self.meshBuckets linkToIdentity:newLine.toIdentity];
     } else {
-        
-        newLine = [THLine new];
-        newLine.lastInActivity = time(NULL);
-        newLine.toIdentity = senderIdentity;
-        newLine.address = address;
-        newLine.outLineId = [innerPacket.json objectForKey:@"line"];
-        newLine.remoteECCKey = eccKey;
-        newLine.createdAt = [[innerPacket.json objectForKey:@"at"] unsignedIntegerValue];
-        
-        senderIdentity.currentLine = newLine;
-        
         [newLine sendOpen];
         [newLine openLine];
         
@@ -376,39 +306,40 @@
     }
 }
 
-#pragma region -- UDP Handlers
-
--(void)udpSocket:(GCDAsyncUdpSocket *)sock didReceiveData:(NSData *)data fromAddress:(NSData *)address withFilterContext:(id)filterContext
+-(THPacket*)generateOpen:(THLine *)toLine
 {
-    const struct sockaddr_in* addr = [address bytes];
-    NSLog(@"Incoming data from %@", [NSString stringWithUTF8String:inet_ntoa(addr->sin_addr)]);
-    THPacket* incomingPacket = [THPacket packetData:data];
-    incomingPacket.fromAddress = address;
-    if (!incomingPacket) {
-        NSLog(@"Unexpected or unparseable packet from %@: %@", [NSString stringWithUTF8String:inet_ntoa(addr->sin_addr)], [data base64EncodedStringWithOptions:0]);
-        return;
+    // Find our highest matching cipher set
+    NSMutableSet* ourIDs = [NSMutableSet setWithArray:[self.identity.cipherParts allKeys]];
+    [ourIDs intersectSet:[NSSet setWithArray:[toLine.toIdentity.cipherParts allKeys]]];
+    if (ourIDs.count <= 0) {
+        NSLog(@"Unable to find a matching csid for open.");
+        return nil;
     }
-	
-    if ([[incomingPacket.json objectForKey:@"type"] isEqualToString:@"open"]) {
-        [self processOpen:incomingPacket from:address];
-    } else if([[incomingPacket.json objectForKey:@"type"] isEqualToString:@"line"]) {
-        NSLog(@"Received a line packet for %@", [incomingPacket.json objectForKey:@"line"]);
+    NSSortDescriptor *sort = [NSSortDescriptor sortDescriptorWithKey:@"description" ascending:NO];
+    NSArray* sortedCSIds = [ourIDs sortedArrayUsingDescriptors:@[sort]];
+    THCipherSet* cs = [self.identity.cipherParts objectForKey:[sortedCSIds objectAtIndex:0]];
+    return [cs generateOpen:toLine from:self.identity];
+}
+
+-(void)handlePath:(THPath *)path packet:(THPacket *)packet
+{
+    if (packet.jsonLength == 1) {
+        [self processOpen:packet];
+    } else if(packet.jsonLength == 0) {
+        // Validate the line id then process it
+        NSString* lineId = [[packet.body subdataWithRange:NSMakeRange(0, 16)] hexString];
+        //NSLog(@"Received a line packet for %@", lineId);
         // Process a line packet
-        THLine* line = [self.openLines objectForKey:[incomingPacket.json objectForKey:@"line"]];
+        THLine* line = [self.openLines objectForKey:lineId];
         // If there is no line to handle this dump it
         if (line == nil) {
             return;
         }
-        [line handlePacket:incomingPacket];
+        [line handlePacket:packet];
     } else {
-        NSLog(@"We received an unknown packet type: %@", [incomingPacket.json objectForKey:@"type"]);
-        return;
+        NSLog(@"Dropping an unknown packet");
     }
-}
 
--(void)udpSocket:(GCDAsyncUdpSocket *)sock didSendDataWithTag:(long)tag
-{
-    
 }
 
 @end

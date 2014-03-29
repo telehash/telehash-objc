@@ -12,30 +12,33 @@
 @class THPacket;
 @class THLine;
 @class THChannel;
+@class THCipherSet;
+@class THPath;
 
 @interface THIdentity : NSObject
 
 +(id)generateIdentity;
++(id)identityFromParts:(NSDictionary*)parts key:(THCipherSet*)key;
 +(id)identityFromHashname:(NSString*)hashname;
-+(id)identityFromPublicFile:(NSString*)publicKeyPath privateFile:(NSString*)privateKeyPath;
-+(id)identityFromPublicKey:(NSData *)publicKey privateKey:(NSData *)privateKey;
-+(id)identityFromPublicKey:(NSData*)key;
-// Keys, hashname, address
 
 -(id)initWithHashname:(NSString*)hashname;
--(id)initWithPublicKeyPath:(NSString*)publicKeyPath privateKey:(NSString*)privateKeyPath;
--(id)initWithPublicKey:(NSData *)publicKey privateKey:(NSData *)privateKey;
+-(id)initWithParts:(NSDictionary*)parts key:(THCipherSet*)key;
 
-@property RSA* rsaKeys;
 @property (readonly) NSString* hashname;
 @property NSData* address;
 @property THIdentity* via;
 @property NSMutableDictionary* channels;
 @property THLine* currentLine;
+@property NSDictionary* cipherParts;
+@property NSDictionary* parts;
+@property NSArray* availablePaths;
+@property THPath* activePath;
+
+-(void)addCipherSet:(THCipherSet*)cipherSet;
+-(void)addPath:(THPath*)path;
 
 // TODO:  Method to create a channel for a type
 
--(void)processOpenPacket:(THPacket*)openPacket innerPacket:(THPacket *)innerPacket;
 -(NSInteger)distanceFrom:(THIdentity*)identity;
 -(void)setIP:(NSString*)ip port:(NSUInteger)port;
 
@@ -44,6 +47,8 @@
 
 -(THChannel*)channelForType:(NSString*)type;
 
+
++(NSString*)hashnameForParts:(NSDictionary*)parts;
 @end
 
 /*

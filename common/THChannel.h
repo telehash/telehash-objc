@@ -35,20 +35,20 @@ typedef enum {
 
 @property NSNumber* maxSeen;
 @property NSArray* missing;
-@property id<THChannelDelegate> delegate;
+@property (nonatomic, strong) id<THChannelDelegate> delegate;
 @property BOOL channelIsReady;
 @property THIdentity* toIdentity;
 @property THLine* line;
-@property NSString* channelId;
+@property NSNumber* channelId;
 @property THChannelState state;
 @property NSString* type;
 @property NSUInteger lastInActivity;
 @property NSUInteger lastOutActivity;
 
 -(id)initToIdentity:(THIdentity*)identity;
-// TODO:  init method that allows creation against THSwitch instances other than the shared one
 -(void)sendPacket:(THPacket*)packet;
 -(void)handlePacket:(THPacket*)packet;
+-(void)close;
 
 @end
 
@@ -63,7 +63,7 @@ typedef enum {
     THPacketBuffer* inPacketBuffer;
     THPacketBuffer* outPacketBuffer;
     NSUInteger lastAck;
-    NSUInteger maxProcessed;
+    NSUInteger nextExpectedSequence;
 }
 @property dispatch_queue_t dispatchQueue;
 -(id)initToIdentity:(THIdentity*)identity;

@@ -11,6 +11,7 @@
 #import "THSwitch.h"
 #import "THIdentity.h"
 #import "THPacketBuffer.h"
+#import "THCipherSet.h"
 
 @interface telehashTests : XCTestCase
 
@@ -41,19 +42,28 @@
     XCTAssertEqualObjects(pkt.body, [NSData dataWithBytes:"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f" length:16], @"body was incorrect");
 }
 
-#if 0
--(void)testSwitch
+-(void)testOpenPacketParsing
 {
-    THSwitch* thSwitch = [THSwitch defaultSwitch];
-    thSwitch.identity = [THIdentity identityFromPublicKey:@"telehashTests/server.pder" privateKey:@"telehashTests/server.der"];
-    /*
-    [thSwitch onChannel:^(THChannel* channel, THIdentity* from){
-        NSLog(@"We do stuff");
-    }];
-    */
-    [thSwitch start];
+    // Ensure we can process open packets which have a length of 1 and a leading bye of the body
+    NSURL* fileURL = [[NSURL alloc] initFileURLWithPath:@"telehashTests/open.pkt"];
+    THPacket* openPkt = [THPacket packetData:[NSData dataWithContentsOfURL:fileURL]];
+    
+    XCTAssert(openPkt.jsonLength == 1, @"JSON length was not 1");
+    XCTAssertEqualObjects(openPkt.body, [NSData dataWithBytes:"\xff\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f" length:17], @"body was incorrect");
 }
-#endif
+
+-(void)testHashname
+{
+    THIdentity* identity = [THIdentity new];
+    NSURL* pubURL = [[NSURL alloc] initFileURLWithPath:@"telehashTests/server.pder"];
+    NSData* serverPub = [NSData dataWithContentsOfURL:pubURL];
+    NSURL* privURL = [[NSURL alloc] initFileURLWithPath:@"telehashTests/server.der"];
+    NSData* serverPriv = [NSData dataWithContentsOfURL:privURL];
+    THCipherSet2a* cs2a = [[THCipherSet2a alloc] initWithPublicKey:serverPub privateKey:serverPriv];
+    [identity.cipherParts setValue:cs2a forKey:@"2a"];
+    
+    XCTAssertEqualObjects(@"50a5d0d0e00080edf6cdf98eae2fc38196890e6c443e3d268b5963cf0052a900", identity.hashname, @"Hashname incorrect");
+}
 
 -(void)testPacketCreation
 {

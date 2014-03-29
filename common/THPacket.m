@@ -7,7 +7,6 @@
 //
 
 #import "THPacket.h"
-#import "CTRAES256.h"
 
 @implementation THPacket
 
@@ -27,16 +26,18 @@
     }
     
     NSError* parserError;
-    id parsedJson = [NSJSONSerialization JSONObjectWithData:[packetData subdataWithRange:NSMakeRange(2, jsonLength)] options:0 error:&parserError];
-    
-    THPacket* packet;
-    if (parsedJson == nil || ![parsedJson isKindOfClass:[NSDictionary class]]) {
-        // TODO:  Something went wrong, deal with it
-        NSLog(@"Something went wrong parsing: %@", parserError);
-        return nil;
-    } else {
-        packet = [[THPacket alloc] initWithJson:parsedJson];
+    id parsedJson;
+    if (jsonLength >= 2) {
+        parsedJson = [NSJSONSerialization JSONObjectWithData:[packetData subdataWithRange:NSMakeRange(2, jsonLength)] options:0 error:&parserError];
+        if (parsedJson == nil || ![parsedJson isKindOfClass:[NSDictionary class]]) {
+            NSLog(@"Something went wrong parsing: %@", parserError);
+            return nil;
+        }
     }
+    
+    THPacket* packet = [[THPacket alloc] initWithJson:parsedJson];
+    packet.jsonLength = jsonLength;
+    if (jsonLength == 1) --jsonLength;
     packet.body = [packetData subdataWithRange:NSMakeRange(2 + jsonLength, packetData.length - jsonLength - 2)];
 
     return packet;
@@ -64,25 +65,19 @@
 -(NSData*)encode;
 {
     NSError* error;
-    NSData* encodedJSON = [NSJSONSerialization dataWithJSONObject:self.json options:0 error:&error];
-    short totalLength = encodedJSON.length + self.body.length + 2;
+    NSData* encodedJSON;
+    if (self.json.count > 0) {
+        encodedJSON = [NSJSONSerialization dataWithJSONObject:self.json options:0 error:&error];
+    }
+    unsigned short totalLength = encodedJSON.length + self.body.length + 2;
     NSMutableData* packetData = [NSMutableData dataWithCapacity:totalLength];
     
-    totalLength = htons(encodedJSON.length);
+    totalLength = htons(MAX(encodedJSON.length, self.jsonLength));
     [packetData appendBytes:&totalLength length:sizeof(short)];
-    [packetData appendData:encodedJSON];
+    if (encodedJSON.length > 0) [packetData appendData:encodedJSON];
     [packetData appendData:self.body];
     
     return packetData;
 }
 
--(void)encryptWithKey:(NSData*)key iv:(NSData*)iv;
-{
-    self.body = [CTRAES256Encryptor encryptPlaintext:self.body key:key iv:iv];
-}
-
--(void)decryptWithKey:(NSData *)key iv:(NSData *)iv;
-{
-    self.body = [CTRAES256Decryptor decryptPlaintext:self.body key:key iv:iv];
-}
 @end

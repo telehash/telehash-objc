@@ -122,7 +122,6 @@
     }
     
     THChannel* linkChannel = [identity channelForType:@"link"];
-    // TODO:  Check for a previous link channel and decide how to handle it
     // TODO:  Check our hints for age on this entry, if it's older we should bump the newest from the bucket if it's full
     if (linkTotal >= MAX_LINKS && bucket.count >= K_BUCKET_SIZE) {
         // TODO:  Evict the oldest
@@ -236,6 +235,14 @@
     if (channel.lastOutActivity + 30 < now) {
         THPacket* pingPacket = [THPacket new];
         [pingPacket.json setObject:@YES forKey:@"seed"];
+        if (channel.lastOutActivity == 0) {
+            // Add the sees, it's our initial response
+            NSArray* sees = [self nearby:channel.toIdentity];
+            if (sees == nil) {
+                sees = [NSArray array];
+            }
+            [pingPacket.json setObject:[sees valueForKey:@"seekString"] forKey:@"see"];
+        }
         [channel sendPacket:pingPacket];
     }
     
@@ -274,7 +281,6 @@
     seekChannel.delegate = self;
     
     THPacket* seekPacket = [THPacket new];
-    [seekPacket.json setObject:[[RNG randomBytesOfLength:16] hexString] forKey:@"c"];
     [seekPacket.json setObject:self.seekingIdentity.hashname forKey:@"seek"];
     [seekPacket.json setObject:@"seek" forKey:@"type"];
     
@@ -304,22 +310,36 @@
         if (seeParts.count > 1) {
             [self.seekingIdentity setIP:[seeParts objectAtIndex:1] port:[[seeParts objectAtIndex:2] integerValue]];
         }
-        foundIt = YES;
-        *stop = YES;
-        return;
-    } else {
-        // If they told us to ask ourself ignore it
-        if ([[seeParts objectAtIndex:0] isEqualToString:self.localIdentity.hashname]) return;
-        // If we're moving closer we want to go ahead and start a seek to it
-        THIdentity* nearIdentity = [THIdentity identityFromHashname:[seeParts objectAtIndex:0]];
-        nearIdentity.via = channel.toIdentity;
-        [self.nearby addObject:nearIdentity];
-    }
-
-    }];
-
-    if (foundIt) {
-     if (self.completion) self.completion(YES);
+     }];
+     
+     if (foundIt) {
+         if (self.completion) self.completion(YES);
+         return YES;
+     }
+     
+     // TODO:  Make sure we're moving closer
+     
+     // Sort on distance and run again
+     [self.nearby sortUsingComparator:^NSComparisonResult(id obj1, id obj2) {
+         NSInteger hash1 = [self.seekingIdentity distanceFrom:obj1];
+         NSInteger hash2 = [self.seekingIdentity distanceFrom:obj2];
+         
+         if (hash1 < hash2) {
+             return NSOrderedDescending;
+         } else if (hash2 > hash1) {
+             return NSOrderedAscending;
+         }
+         
+         return NSOrderedSame;
+     }];
+     
+     if (self.nearby.count > 0) {
+         [self runSeek];
+         for (NSUInteger i = self.runningSearches; i < MIN(3, self.nearby.count - 1); ++i) {
+             [self runSeek];
+         }
+     }
+     
      return YES;
     }
 

@@ -29,7 +29,7 @@
         _state = THChannelOpening;
         self.toIdentity = identity;
         self.channelIsReady = NO;
-        self.channelId  = [[RNG randomBytesOfLength:16] hexString]; // We'll just go ahead and make one
+        self.channelId = 0; // We'll just go ahead and make one
         self.lastInActivity = 0;
         self.lastOutActivity = 0;
         THSwitch* defaultSwitch = [THSwitch defaultSwitch];
@@ -60,6 +60,17 @@
 {
     self.lastInActivity = time(NULL);
 }
+
+-(void)close
+{
+    if (self.state != THChannelEnded) {
+        THPacket* endPacket = [THPacket new];
+        [endPacket.json setObject:@YES forKey:@"end"];
+        [self sendPacket:endPacket];
+        self.state = THChannelEnded;
+    }
+    [self.toIdentity.channels removeObjectForKey:self.channelId];
+}
 @end
 
 @implementation THUnreliableChannel
@@ -84,7 +95,8 @@
     
     [self.delegate channel:self handlePacket:packet];
     if ([[packet.json objectForKey:@"end"] boolValue] == YES) {
-        [self.toIdentity.channels removeObjectForKey:self.channelId];
+        self.state = THChannelEnded;
+        [self close];
     }
 }
 
@@ -157,11 +169,10 @@
 
 -(void)checkAckPing:(NSUInteger)packetTime;
 {
-    THSwitch* defaultSwitch = [THSwitch defaultSwitch];
     double delayInSeconds = 1.0;
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
-    dispatch_after(popTime, defaultSwitch.channelQueue, ^(void){
-        if (lastAck < maxProcessed) {
+    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+        if (lastAck < (nextExpectedSequence - 1)) {
             [self sendPacket:[THPacket new]];
         }
     });
@@ -187,7 +198,7 @@
     // Append channel id
     [packet.json setObject:self.channelId forKey:@"c"];
     // Append ack
-    [packet.json setObject:[NSNumber numberWithUnsignedLong:maxProcessed] forKey:@"ack"];
+    [packet.json setObject:[NSNumber numberWithUnsignedLong:(nextExpectedSequence - 1)] forKey:@"ack"];
     lastAck = time(NULL);
     
     [outPacketBuffer push:packet];
@@ -203,7 +214,7 @@
     }
 
     while (inPacketBuffer.length > 0) {
-        if (inPacketBuffer.frontSeq < maxProcessed) {
+        if (inPacketBuffer.frontSeq != nextExpectedSequence) {
             // XXX dispatch a missing queue?
             return;
         }
@@ -212,8 +223,11 @@
             [self.delegate channel:self handlePacket:curPacket];
             if ([[curPacket.json objectForKey:@"end"] boolValue] == YES) {
                 // TODO: Shut it down!
+                self.state = THChannelEnded;
+                [self close];
+                return;
             }
-            maxProcessed = [[curPacket.json objectForKey:@"seq"] unsignedIntegerValue];
+            nextExpectedSequence = [[curPacket.json objectForKey:@"seq"] unsignedIntegerValue] + 1;
         });
     }
 }

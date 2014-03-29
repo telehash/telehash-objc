@@ -8,11 +8,15 @@
 
 #import <Foundation/Foundation.h>
 
+@class THPath;
+
 @interface THPacket : NSObject
 
 @property (atomic) NSMutableData* raw;
 @property (atomic) NSMutableDictionary* json;
 @property (atomic) NSData* body;
+@property (atomic, assign) unsigned short jsonLength;
+@property (atomic, assign) THPath* path;
 @property (atomic) NSData* fromAddress;
 
 -(id)init;
@@ -21,8 +25,5 @@
 +(id)packetData:(NSData*)packetData;
 
 -(NSData*)encode;
-
--(void)encryptWithKey:(NSData*)key iv:(NSData*)iv;
--(void)decryptWithKey:(NSData*)key iv:(NSData*)iv;
 
 @end
