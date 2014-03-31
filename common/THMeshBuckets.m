@@ -297,74 +297,58 @@
     __block BOOL foundIt = NO;
     NSLog(@"Checking for %@ in sees %@",  self.seekingIdentity.hashname, sees);
     [sees enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-    NSString* seeString = (NSString*)obj;
-    NSArray* seeParts = [seeString componentsSeparatedByString:@","];
-    if (seeParts.count == 0) {
-        NSLog(@"Invalid see parts: %@", seeParts);
-        return;
-    }
-    if ([[seeParts objectAtIndex:0] isEqualToString:self.seekingIdentity.hashname]) {
-        NSLog(@"We found %@!", self.seekingIdentity.hashname);
-        // this is it!
-        self.seekingIdentity.via = channel.toIdentity;
-        if (seeParts.count > 1) {
-            [self.seekingIdentity setIP:[seeParts objectAtIndex:1] port:[[seeParts objectAtIndex:2] integerValue]];
+        NSString* seeString = (NSString*)obj;
+        NSArray* seeParts = [seeString componentsSeparatedByString:@","];
+        if (seeParts.count == 0) {
+            NSLog(@"Invalid see parts: %@", seeParts);
+            return;
         }
-     }];
-     
-     if (foundIt) {
-         if (self.completion) self.completion(YES);
-         return YES;
-     }
-     
-     // TODO:  Make sure we're moving closer
-     
-     // Sort on distance and run again
-     [self.nearby sortUsingComparator:^NSComparisonResult(id obj1, id obj2) {
-         NSInteger hash1 = [self.seekingIdentity distanceFrom:obj1];
-         NSInteger hash2 = [self.seekingIdentity distanceFrom:obj2];
-         
-         if (hash1 < hash2) {
-             return NSOrderedDescending;
-         } else if (hash2 > hash1) {
-             return NSOrderedAscending;
-         }
-         
-         return NSOrderedSame;
-     }];
-     
-     if (self.nearby.count > 0) {
-         [self runSeek];
-         for (NSUInteger i = self.runningSearches; i < MIN(3, self.nearby.count - 1); ++i) {
-             [self runSeek];
-         }
-     }
-     
-     return YES;
+        if ([[seeParts objectAtIndex:0] isEqualToString:self.seekingIdentity.hashname]) {
+            NSLog(@"We found %@!", self.seekingIdentity.hashname);
+            // this is it!
+            self.seekingIdentity.via = channel.toIdentity;
+            if (seeParts.count > 1) {
+                [self.seekingIdentity setIP:[seeParts objectAtIndex:1] port:[[seeParts objectAtIndex:2] integerValue]];
+            }
+            foundIt = YES;
+            *stop = YES;
+            return;
+        } else {
+            // If they told us to ask ourself ignore it
+            if ([[seeParts objectAtIndex:0] isEqualToString:self.localIdentity.hashname]) return;
+            // If we're moving closer we want to go ahead and start a seek to it
+            THIdentity* nearIdentity = [THIdentity identityFromHashname:[seeParts objectAtIndex:0]];
+            nearIdentity.via = channel.toIdentity;
+            [self.nearby addObject:nearIdentity];
+        }
+    }];
+    
+    if (foundIt) {
+        if (self.completion) self.completion(YES);
+        return YES;
     }
-
-    // TODO:  Make sure we're moving closer
+     
     // Sort on distance and run again
     [self.nearby sortUsingComparator:^NSComparisonResult(id obj1, id obj2) {
         NSInteger hash1 = [self.seekingIdentity distanceFrom:obj1];
         NSInteger hash2 = [self.seekingIdentity distanceFrom:obj2];
-
+         
         if (hash1 < hash2) {
             return NSOrderedDescending;
         } else if (hash2 > hash1) {
             return NSOrderedAscending;
         }
-
+         
         return NSOrderedSame;
     }];
-
-    --self.runningSearches;
+     
     if (self.nearby.count > 0) {
+        [self runSeek];
         for (NSUInteger i = self.runningSearches; i < MIN(3, self.nearby.count - 1); ++i) {
             [self runSeek];
         }
     }
-
+     
     return YES;
 }
 
