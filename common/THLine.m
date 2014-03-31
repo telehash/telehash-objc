@@ -58,7 +58,7 @@
 
 -(NSUInteger)nextChannelId
 {
-    return _nextChannelId++;
+    return _nextChannelId+=2;
 }
 
 -(void)openLine;
