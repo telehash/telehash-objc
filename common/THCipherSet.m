@@ -154,6 +154,10 @@ static unsigned char eccHeader[] = {0x04};
         return nil;
     }
     
+    if (![senderIdentity.cipherParts objectForKey:@"2a"]) {
+        [senderIdentity addCipherSet:incomingCS];
+    }
+    
     SHA256* sigKeySha = [SHA256 new];
     [sigKeySha updateWithData:remoteECCKey];
     [sigKeySha updateWithData:[[innerPacket.json objectForKey:@"line" ] dataFromHexString]];
@@ -186,8 +190,6 @@ static unsigned char eccHeader[] = {0x04};
     }
     
     THLine* newLine = senderIdentity.currentLine;
-    
-    // TODO:  If we have an existing line we update it's info and give it back otherwise create
     
     if (newLine) {
         // This is a partially opened line

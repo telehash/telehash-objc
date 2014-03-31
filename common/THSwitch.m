@@ -16,6 +16,7 @@
 #import "THPendingJob.h"
 #import "THCipherSet.h"
 #import "NSData+HexString.h"
+#import "THCipherSet.h"
 
 @interface THSwitch()
 
@@ -165,7 +166,8 @@
         [peerPacket.json setObject:[NSNumber numberWithUnsignedInteger:viaIdentity.currentLine.nextChannelId] forKey:@"c"];
         [peerPacket.json setObject:toIdentity.hashname forKey:@"peer"];
         [peerPacket.json setObject:@"peer" forKey:@"type"];
-        [peerPacket.json setObject:@YES forKey:@"end"];
+        THCipherSet2a* cs = [self.identity.cipherParts objectForKey:@"2a"];
+        peerPacket.body = cs.rsaKeys.DERPublicKey;
         
         THUnreliableChannel* peerChannel = [[THUnreliableChannel alloc] initToIdentity:viaIdentity];
         [self openChannel:peerChannel firstPacket:peerPacket];
