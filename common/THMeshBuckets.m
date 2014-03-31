@@ -307,8 +307,8 @@
             NSLog(@"We found %@!", self.seekingIdentity.hashname);
             // this is it!
             self.seekingIdentity.via = channel.toIdentity;
-            if (seeParts.count > 1) {
-                [self.seekingIdentity setIP:[seeParts objectAtIndex:1] port:[[seeParts objectAtIndex:2] integerValue]];
+            if (seeParts.count > 2) {
+                [self.seekingIdentity setIP:[seeParts objectAtIndex:2] port:[[seeParts objectAtIndex:3] integerValue]];
             }
             foundIt = YES;
             *stop = YES;
