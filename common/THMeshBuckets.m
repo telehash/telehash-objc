@@ -308,7 +308,15 @@
             // this is it!
             self.seekingIdentity.via = channel.toIdentity;
             if (seeParts.count > 2) {
-                [self.seekingIdentity setIP:[seeParts objectAtIndex:2] port:[[seeParts objectAtIndex:3] integerValue]];
+                THIPV4Path* localPath;
+                for (THPath* path in self.localIdentity.availablePaths) {
+                    if ([path.typeName isEqualToString:@"ipv4"]) {
+                        localPath = (THIPV4Path*)path;
+                        break;
+                    }
+                }
+                NSData* remoteAddress = [THIPV4Path addressTo:[seeParts objectAtIndex:2] port:[[seeParts objectAtIndex:3] integerValue]];
+                [self.seekingIdentity addPath:[localPath returnPathTo:remoteAddress]];
             }
             foundIt = YES;
             *stop = YES;

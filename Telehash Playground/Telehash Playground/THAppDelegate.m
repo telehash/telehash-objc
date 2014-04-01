@@ -49,7 +49,6 @@
     ipPath.delegate = thSwitch;
     [baseIdentity addPath:ipPath];
     [ipPath startOnPort:42424];
-    baseIdentity.activePath = ipPath;
     
     NSString* filePath = [[NSBundle mainBundle] pathForResource:@"seeds" ofType:@"json"];
     NSData* seedData = [NSData dataWithContentsOfFile:filePath];

@@ -203,6 +203,7 @@ int nlz(unsigned long x) {
 -(void)addPath:(THPath *)path
 {
     self.availablePaths = [self.availablePaths arrayByAddingObject:path];
+    if (!self.activePath) self.activePath = path;
 }
                             
 +(NSString*)hashnameForParts:(NSDictionary*)parts

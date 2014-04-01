@@ -54,6 +54,12 @@
     return self;
 }
 
+-(void)setIdentity:(THIdentity *)identity
+{
+    _identity = identity;
+    self.meshBuckets.localIdentity = identity;
+}
+
 -(void)start
 {
     self.meshBuckets.localIdentity = self.identity;
@@ -148,7 +154,7 @@
     
 
     // We have everything we need to direct request
-    if (toIdentity.activePath) {
+    if (toIdentity.activePath && [toIdentity.cipherParts objectForKey:@"2a"]) {
         THLine* channelLine = [THLine new];
         channelLine.toIdentity = toIdentity;
         channelLine.activePath = toIdentity.activePath;
@@ -162,18 +168,20 @@
     if (toIdentity.via) {
         THIdentity* viaIdentity = [THIdentity identityFromHashname:toIdentity.via.hashname];
         
+        THUnreliableChannel* peerChannel = [[THUnreliableChannel alloc] initToIdentity:viaIdentity];
+        [self openChannel:peerChannel firstPacket:nil];
+        
         THPacket* peerPacket = [THPacket new];
         [peerPacket.json setObject:[NSNumber numberWithUnsignedInteger:viaIdentity.currentLine.nextChannelId] forKey:@"c"];
         [peerPacket.json setObject:toIdentity.hashname forKey:@"peer"];
         [peerPacket.json setObject:@"peer" forKey:@"type"];
+        [peerPacket.json setObject:peerChannel.channelId forKey:@"c"];
         THCipherSet2a* cs = [self.identity.cipherParts objectForKey:@"2a"];
         peerPacket.body = cs.rsaKeys.DERPublicKey;
         
-        THUnreliableChannel* peerChannel = [[THUnreliableChannel alloc] initToIdentity:viaIdentity];
-        [self openChannel:peerChannel firstPacket:nil];
-        
         THRelayPath* relayPath = [THRelayPath new];
         relayPath.peerChannel = peerChannel;
+        peerChannel.delegate = relayPath;
         
         toIdentity.activePath = relayPath;
         
