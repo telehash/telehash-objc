@@ -170,7 +170,7 @@
         peerPacket.body = cs.rsaKeys.DERPublicKey;
         
         THUnreliableChannel* peerChannel = [[THUnreliableChannel alloc] initToIdentity:viaIdentity];
-        [self openChannel:peerChannel firstPacket:peerPacket];
+        [self openChannel:peerChannel firstPacket:nil];
         
         THRelayPath* relayPath = [THRelayPath new];
         relayPath.peerChannel = peerChannel;
