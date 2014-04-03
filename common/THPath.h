@@ -15,6 +15,8 @@
 
 @class THPath;
 
+typedef BOOL(^THInterfaceApproverBlock)(NSString* interface);
+
 @protocol THPathDelegate <NSObject>
 -(void)handlePath:(THPath*)path packet:(THPacket*)packet;
 @end
@@ -24,16 +26,22 @@
 @property (readonly) NSString* typeName;
 -(void)sendPacket:(THPacket*)packet;
 -(THPath*)returnPathTo:(NSData*)address;
+-(NSDictionary*)information;
+-(NSDictionary*)informationTo:(NSData*)address;
 @end
 
 @interface THIPV4Path : THPath<GCDAsyncUdpSocketDelegate>
+@property (readonly) NSString* ip;
+@property (readonly) NSUInteger port;
 +(NSData*)addressTo:(NSString*)ip port:(NSUInteger)port;
 -(id)init;
+-(id)initWithInterface:(NSString*)interface;
 -(id)initWithSocket:(GCDAsyncUdpSocket*)socket toAddress:(NSData*)address;
 -(id)initWithSocket:(GCDAsyncUdpSocket*)socket ip:(NSString*)ip port:(NSUInteger)port;
 -(void)start;
 -(void)startOnPort:(unsigned short)port;
 -(void)sendPacket:(THPacket *)packet;
++(NSArray*)gatherAvailableInterfacesApprovedBy:(THInterfaceApproverBlock)approver;
 @end
 
 @interface THRelayPath : THPath<THChannelDelegate>

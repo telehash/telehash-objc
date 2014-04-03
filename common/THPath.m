@@ -12,6 +12,7 @@
 #import "GCDAsyncUdpSocket.h"
 #import "THPacket.h"
 #include <arpa/inet.h>
+#include <ifaddrs.h>
 
 @implementation THPath
 
@@ -20,6 +21,7 @@
 @implementation THIPV4Path
 {
     GCDAsyncUdpSocket* udpSocket;
+    NSString* bindInterface;
     NSData* toAddress;
 }
 
@@ -43,6 +45,15 @@
     self = [super init];
     if (self) {
         udpSocket = [[GCDAsyncUdpSocket alloc] initWithDelegate:self delegateQueue:dispatch_get_main_queue()];
+    }
+    return self;
+}
+
+-(id)initWithInterface:(NSString *)interface
+{
+    self = [self init];
+    if (self) {
+        bindInterface = interface;
     }
     return self;
 }
@@ -77,6 +88,16 @@
     return self;
 }
 
+-(NSString*)ip
+{
+    return udpSocket.localHost_IPv4;
+}
+
+-(NSUInteger)port
+{
+    return udpSocket.localPort_IPv4;
+}
+
 -(THPath*)returnPathTo:(NSData*)address
 {
     THIPV4Path* returnPath = [[THIPV4Path alloc] initWithSocket:udpSocket toAddress:address];
@@ -95,7 +116,11 @@
 -(void)startOnPort:(unsigned short)port
 {
     NSError* bindError;
-    [udpSocket bindToPort:port error:&bindError];
+    if (bindInterface) {
+        [udpSocket bindToPort:port interface:bindInterface error:&bindError];
+    } else {
+        [udpSocket bindToPort:port error:&bindError];
+    }
     if (bindError != nil) {
         // TODO:  How do we show errors?!
         NSLog(@"%@", bindError);
@@ -107,7 +132,6 @@
     // TODO: Needs more error handling
 }
 
-// TODO XXX FIXME Manage the listening side of the socket too!
 -(void)sendPacket:(THPacket *)packet
 {
     //TODO:  Evaluate using a timeout!
@@ -120,12 +144,14 @@
 
 -(void)udpSocket:(GCDAsyncUdpSocket *)sock didReceiveData:(NSData *)data fromAddress:(NSData *)address withFilterContext:(id)filterContext
 {
-    const struct sockaddr_in* addr = [address bytes];
     //NSLog(@"Incoming data from %@", [NSString stringWithUTF8String:inet_ntoa(addr->sin_addr)]);
     THPacket* incomingPacket = [THPacket packetData:data];
     incomingPacket.fromAddress = address;
     if (!incomingPacket) {
-        NSLog(@"Unexpected or unparseable packet from %@: %@", [NSString stringWithUTF8String:inet_ntoa(addr->sin_addr)], [data base64EncodedStringWithOptions:0]);
+        NSString* host;
+        uint16_t port;
+        [GCDAsyncUdpSocket getHost:&host port:&port fromAddress:address];
+        NSLog(@"Unexpected or unparseable packet from %@:%d: %@", host, port, [data base64EncodedStringWithOptions:0]);
         return;
     }
     
@@ -140,6 +166,58 @@
 -(void)udpSocket:(GCDAsyncUdpSocket *)sock didSendDataWithTag:(long)tag
 {
     
+}
+
+-(NSDictionary*)information
+{
+    return @{
+        @"type":self.typeName,
+        @"ip":self.ip,
+        @"port":@(self.port)
+    };
+}
+
+-(NSDictionary*)informationTo:(NSData*)address
+{
+    NSString* ipRet;
+    uint16_t port;
+    
+    [GCDAsyncUdpSocket getHost:&ipRet port:&port fromAddress:address];
+    
+    return @{
+        @"type": self.typeName,
+        @"ip":ipRet,
+        @"port":@(port)
+    };
+}
+
++(NSArray*)gatherAvailableInterfacesApprovedBy:(THInterfaceApproverBlock)approver
+{
+    struct ifaddrs *interfaces = NULL;
+    struct ifaddrs *temp_addr = NULL;
+    int success = 0;
+    // retrieve the current interfaces - returns 0 on success
+    success = getifaddrs(&interfaces);
+    if (success != 0) return nil;
+
+    // Loop through linked list of interfaces
+    temp_addr = interfaces;
+    NSMutableArray* ret = [NSMutableArray array];
+    while(temp_addr != NULL) {
+        if(temp_addr->ifa_addr->sa_family == AF_INET) {
+            NSString* interface = [NSString stringWithUTF8String:temp_addr->ifa_name];
+            if (approver(interface)) {
+                THIPV4Path* newPath = [[THIPV4Path alloc] initWithInterface:interface];
+                [ret addObject:newPath];
+            }
+        }
+        temp_addr = temp_addr->ifa_next;
+    }
+    
+    // Free memory
+    freeifaddrs(interfaces);
+    
+    return ret;
 }
 
 @end
@@ -157,7 +235,7 @@
     THPacket* relayPacket = [THPacket new];
     relayPacket.body = [packet encode];
     
-    NSLog(@"Relay sending");
+    NSLog(@"Relay sending %@", packet.json);
     [self.peerChannel sendPacket:relayPacket];
 }
 
@@ -169,5 +247,20 @@
     }
     
     return YES;
+}
+
+-(void)channel:(THChannel *)channel didFailWithError:(NSError *)error
+{
+    // XXX TODO: Shutdown the busted path
+}
+
+-(void)channel:(THChannel *)channel didChangeStateTo:(THChannelState)channelState
+{
+    // XXX TODO:  Shutdown on channel ended
+}
+
+-(NSDictionary*)information
+{
+    return nil;
 }
 @end

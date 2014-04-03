@@ -145,15 +145,20 @@ int nlz(unsigned long x) {
     return 0;
 }
 
--(void)sendPacket:(THPacket *)packet
+-(void)sendPacket:(THPacket *)packet path:(THPath*)path
 {
     if (!self.currentLine) {
         [[THSwitch defaultSwitch] openLine:self completion:^(THIdentity* lineIdentity) {
-            [self.currentLine sendPacket:packet];
+            [self.currentLine sendPacket:packet path:path];
         }];
     } else {
-        [self.currentLine sendPacket:packet];
+        [self.currentLine sendPacket:packet path:path];
     }
+}
+
+-(void)sendPacket:(THPacket *)packet
+{
+    [self sendPacket:packet path:nil];
 }
 
 -(THChannel*)channelForType:(NSString *)type
@@ -205,7 +210,16 @@ int nlz(unsigned long x) {
     self.availablePaths = [self.availablePaths arrayByAddingObject:path];
     if (!self.activePath) self.activePath = path;
 }
-                            
+
+-(NSArray*)pathInformation
+{
+    NSMutableArray* paths = [NSMutableArray arrayWithCapacity:self.availablePaths.count];
+    for(THPath* path in self.availablePaths) {
+        [paths addObject:[path information]];
+    }
+    return paths;
+}
+
 +(NSString*)hashnameForParts:(NSDictionary*)parts
 {
     NSData* shaBuffer = [NSData data];

@@ -199,11 +199,14 @@
         
         [thSwitch openLine:peerIdentity];
     } else if ([channelType isEqualToString:@"path"]) {
-        THPacket* errPacket = [THPacket new];
-        [errPacket.json setObject:@"Path not yet supported." forKey:@"err"];
-        [errPacket.json setObject:channelId forKey:@"c"];
+        THPacket* pathPacket = [THPacket new];
+        [pathPacket.json setObject:[thSwitch.identity pathInformation] forKey:@"paths"];
+        [pathPacket.json setObject:@"path" forKey:@"type"];
+        [pathPacket.json setObject:@YES forKey:@"end"];
+        [pathPacket.json setObject:[innerPacket.json objectForKey:@"c"] forKey:@"c"];
+        [pathPacket.json setObject:[packet.path informationTo:packet.fromAddress] forKey:@"path"];
         
-        [self.toIdentity sendPacket:errPacket];
+        [self.toIdentity sendPacket:pathPacket path:[packet.path returnPathTo:packet.fromAddress]];
     } else {
         NSNumber* seq = [innerPacket.json objectForKey:@"seq"];
         // Let the channel instance handle it
@@ -255,11 +258,10 @@
     }
 }
 
--(void)sendPacket:(THPacket *)packet;
+-(void)sendPacket:(THPacket *)packet path:(THPath*)path
 {
     self.lastOutActivity = time(NULL);
     NSLog(@"Sending %@\%@", packet.json, packet.body);
-    THSwitch* defaultSwitch = [THSwitch defaultSwitch];
     NSData* innerPacketData = [self.cipherSetInfo encryptLinePacket:packet];
     NSMutableData* linePacketData = [NSMutableData dataWithCapacity:(innerPacketData.length + 16)];
     [linePacketData appendData:[self.outLineId dataFromHexString]];
@@ -268,8 +270,13 @@
     lineOutPacket.body = linePacketData;
     lineOutPacket.jsonLength = 0;
     
-    [self.activePath sendPacket:lineOutPacket];
-    //[defaultSwitch sendPacket:lineOutPacket toAddress:self.address];
+    if (path == nil) path = self.activePath;
+    [path sendPacket:lineOutPacket];
+}
+
+-(void)sendPacket:(THPacket *)packet;
+{
+    [self sendPacket:packet path:nil];
 }
 
 -(void)close

@@ -45,10 +45,15 @@
     NSLog(@"2a fingerprint %@", [cs2a.fingerprint hexString]);
     thSwitch.identity = baseIdentity;
     NSLog(@"Hashname: %@", [thSwitch.identity hashname]);
-    THIPV4Path* ipPath = [THIPV4Path new];
-    ipPath.delegate = thSwitch;
-    [baseIdentity addPath:ipPath];
-    [ipPath startOnPort:42424];
+    NSArray* netPaths = [THIPV4Path gatherAvailableInterfacesApprovedBy:^BOOL(NSString *interface) {
+        if ([interface isEqualToString:@"en0"]) return YES;
+        return NO;
+    }];
+    for (THIPV4Path* path in netPaths) {
+        path.delegate = thSwitch;
+        [baseIdentity addPath:path];
+        [path startOnPort:42424];
+    }
     
     NSString* filePath = [[NSBundle mainBundle] pathForResource:@"seeds" ofType:@"json"];
     NSData* seedData = [NSData dataWithContentsOfFile:filePath];

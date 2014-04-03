@@ -34,6 +34,7 @@
 -(void)openLine;
 -(void)handlePacket:(THPacket*)packet;
 -(void)sendPacket:(THPacket*)packet;
+-(void)sendPacket:(THPacket *)packet path:(THPath*)path;
 -(void)close;
 -(void)handleOpen:(THPacket*)openPacket;
 

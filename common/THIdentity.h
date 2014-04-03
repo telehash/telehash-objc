@@ -43,9 +43,12 @@
 -(void)setIP:(NSString*)ip port:(NSUInteger)port;
 
 -(void)sendPacket:(THPacket*)packet;
+-(void)sendPacket:(THPacket*)packet path:(THPath*)path;
 -(NSString*)seekString;
 
 -(THChannel*)channelForType:(NSString*)type;
+
+-(NSArray*)pathInformation;
 
 
 +(NSString*)hashnameForParts:(NSDictionary*)parts;
