@@ -31,7 +31,7 @@
 @property THLine* currentLine;
 @property NSDictionary* cipherParts;
 @property NSDictionary* parts;
-@property NSArray* availablePaths;
+@property NSMutableArray* availablePaths;
 @property THPath* activePath;
 
 -(void)addCipherSet:(THCipherSet*)cipherSet;

@@ -19,11 +19,13 @@ typedef BOOL(^THInterfaceApproverBlock)(NSString* interface);
 
 @protocol THPathDelegate <NSObject>
 -(void)handlePath:(THPath*)path packet:(THPacket*)packet;
+-(void)pathDidChangeActive:(THPath*)path;
 @end
 
 @interface THPath : NSObject
 @property (nonatomic, assign) id<THPathDelegate> delegate;
 @property (readonly) NSString* typeName;
+@property (assign) BOOL available;
 -(void)sendPacket:(THPacket*)packet;
 -(THPath*)returnPathTo:(NSData*)address;
 -(NSDictionary*)information;

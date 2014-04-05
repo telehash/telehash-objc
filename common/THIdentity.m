@@ -90,7 +90,7 @@ static NSMutableDictionary* identityCache;
 -(void)commonInit
 {
     self.cipherParts = [NSMutableDictionary dictionary];
-    self.availablePaths = [NSArray array];
+    self.availablePaths = [NSMutableArray array];
     self.channels = [NSMutableDictionary dictionary];
 }
 
@@ -207,7 +207,7 @@ int nlz(unsigned long x) {
 
 -(void)addPath:(THPath *)path
 {
-    self.availablePaths = [self.availablePaths arrayByAddingObject:path];
+    [self.availablePaths addObject:path];
     if (!self.activePath) self.activePath = path;
 }
 

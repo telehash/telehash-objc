@@ -11,18 +11,24 @@
 #import "THSwitch.h"
 #import "GCDAsyncUdpSocket.h"
 #import "THPacket.h"
+#import <SystemConfiguration/SystemConfiguration.h>
 #include <arpa/inet.h>
 #include <ifaddrs.h>
+
+static void THReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReachabilityFlags flags, void* info);
 
 @implementation THPath
 
 @end
+
 
 @implementation THIPV4Path
 {
     GCDAsyncUdpSocket* udpSocket;
     NSString* bindInterface;
     NSData* toAddress;
+    SCNetworkReachabilityRef reachability;
+    SCNetworkReachabilityContext reachabilityContext;
 }
 
 +(NSData*)addressTo:(NSString*)ip port:(NSUInteger)port
@@ -106,6 +112,10 @@
 
 -(void)dealloc
 {
+    if (reachability) {
+        SCNetworkReachabilitySetCallback(reachability, NULL, NULL);
+        CFRelease(reachability);
+    }
     NSLog(@"Path go bye bye");
 }
 
@@ -125,6 +135,22 @@
         // TODO:  How do we show errors?!
         NSLog(@"%@", bindError);
         return;
+    }
+    if (toAddress) {
+        const struct sockaddr* remoteAddress = (const struct sockaddr*)[toAddress bytes];
+        reachability = SCNetworkReachabilityCreateWithAddressPair(NULL, [udpSocket.localAddress_IPv4 bytes], remoteAddress);
+    } else {
+        reachability = SCNetworkReachabilityCreateWithAddress(NULL, [udpSocket.localAddress_IPv4 bytes]);
+    }
+    reachabilityContext.version = 0;
+    reachabilityContext.info = (__bridge void *)(self);
+    reachabilityContext.copyDescription = NULL;
+    reachabilityContext.release = NULL;
+    reachabilityContext.retain = NULL;
+    SCNetworkReachabilitySetCallback(reachability, THReachabilityCallback, &reachabilityContext);
+    if (!SCNetworkReachabilitySetDispatchQueue(reachability, dispatch_get_main_queue())) {
+        SCNetworkReachabilitySetCallback(reachability, NULL, NULL);
+        // XXX TODO:  Should we not use this interface now?
     }
     NSLog(@"Now listening on %d", udpSocket.localPort);
     NSError* recvError;
@@ -205,9 +231,19 @@
     NSMutableArray* ret = [NSMutableArray array];
     while(temp_addr != NULL) {
         if(temp_addr->ifa_addr->sa_family == AF_INET) {
+            // See if it's even reachable
+            SCNetworkReachabilityRef checkReachability = SCNetworkReachabilityCreateWithAddress(NULL, temp_addr->ifa_addr);
+            SCNetworkReachabilityFlags flags;
+            BOOL gotFlags = SCNetworkReachabilityGetFlags(checkReachability, &flags);
+            CFRelease(checkReachability);
+            // Bail on errors doing basic reachability checks
+            if (!gotFlags) continue;
+            // If this is not actually reachable skip it
+            if ((flags & kSCNetworkFlagsReachable) == 0) continue;
             NSString* interface = [NSString stringWithUTF8String:temp_addr->ifa_name];
             if (approver(interface)) {
                 THIPV4Path* newPath = [[THIPV4Path alloc] initWithInterface:interface];
+                newPath.available = YES;
                 [ret addObject:newPath];
             }
         }
@@ -264,3 +300,14 @@
     return nil;
 }
 @end
+
+static void THReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReachabilityFlags flags, void* info)
+{
+    THIPV4Path* path = (__bridge THIPV4Path*)info;
+    path.available = (flags & kSCNetworkFlagsReachable) == kSCNetworkFlagsReachable ? YES : NO;
+    path.available = (flags & kSCNetworkFlagsConnectionRequired) == kSCNetworkFlagsConnectionRequired ? NO : YES;
+    if ([path.delegate respondsToSelector:@selector(pathDidChangeActive:)]) {
+        [path.delegate pathDidChangeActive:path];
+    }
+    NSLog(@"Interface changed!");
+}

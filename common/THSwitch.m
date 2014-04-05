@@ -352,4 +352,21 @@
 
 }
 
+-(void)pathDidChangeActive:(THPath *)path
+{
+    if (path.available == NO) {
+        [self.identity.availablePaths removeObject:path];
+        if (self.identity.availablePaths.count == 0) {
+            NSLog(@"Oh no, we're offline!");
+            // XXX TODO:  What to do?
+            self.identity.activePath = nil;
+            return;
+        }
+        self.identity.activePath = [self.identity.availablePaths objectAtIndex:0];
+    } else {
+        [self.identity.availablePaths insertObject:path atIndex:0];
+        self.identity.activePath = path;
+    }
+}
+
 @end
