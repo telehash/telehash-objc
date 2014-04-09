@@ -28,7 +28,6 @@
     if (self) {
         _state = THChannelOpening;
         self.toIdentity = identity;
-        self.channelIsReady = NO;
         self.channelId = 0; // We'll just go ahead and make one
         self.lastInActivity = 0;
         self.lastOutActivity = 0;
@@ -203,7 +202,7 @@
     
     [outPacketBuffer push:packet];
     
-    if (self.channelIsReady) [self.toIdentity sendPacket:packet];
+    if (self.state == THChannelOpen) [self.toIdentity sendPacket:packet];
 }
 
 -(void)delegateHandlePackets;

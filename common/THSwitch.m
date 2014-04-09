@@ -117,7 +117,6 @@
     }
     [channel.toIdentity.channels setObject:channel forKey:channel.channelId];
     channel.state = THChannelOpen;
-    channel.channelIsReady = YES;
     if (packet) [channel sendPacket:packet];
 }
 
@@ -289,6 +288,12 @@
         
         if (pendingLineJob) pendingLineJob.handler(newLine);
         
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            THChannel* linkChannel = [newLine.toIdentity channelForType:@"link"];
+            if (!linkChannel) {
+                [self.meshBuckets linkToIdentity:newLine.toIdentity];
+            }
+        });
         [self.meshBuckets addIdentity:newLine.toIdentity];
     }
     

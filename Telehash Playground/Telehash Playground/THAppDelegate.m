@@ -46,6 +46,7 @@
     thSwitch.identity = baseIdentity;
     NSLog(@"Hashname: %@", [thSwitch.identity hashname]);
     NSArray* netPaths = [THIPV4Path gatherAvailableInterfacesApprovedBy:^BOOL(NSString *interface) {
+        if ([interface isEqualToString:@"lo0"]) return YES;
         if ([interface isEqualToString:@"en0"]) return YES;
         return NO;
     }];

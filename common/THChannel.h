@@ -19,6 +19,7 @@
 typedef enum {
     THChannelOpening,
     THChannelOpen,
+    THChannelPaused,
     THChannelEnded,
     THChannelErrored
 } THChannelState;
@@ -36,7 +37,6 @@ typedef enum {
 @property NSNumber* maxSeen;
 @property NSArray* missing;
 @property (nonatomic, strong) id<THChannelDelegate> delegate;
-@property BOOL channelIsReady;
 @property THIdentity* toIdentity;
 @property THLine* line;
 @property NSNumber* channelId;

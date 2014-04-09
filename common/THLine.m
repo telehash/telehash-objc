@@ -81,7 +81,7 @@
         if ([obj class] != [THReliableChannel class]) return;
         THReliableChannel* channel = (THReliableChannel*)obj;
         // If the channel already thinks it's good, we'll just ignore it's state
-        if (channel.channelIsReady) return;
+        if (channel.state == THChannelOpen) return;
 
         NSLog(@"Going to flush");
         [channel flushOut];
@@ -129,7 +129,6 @@
         THUnreliableChannel* linkChannel = [THUnreliableChannel new];
         linkChannel.toIdentity = self.toIdentity;
         linkChannel.channelId = [innerPacket.json objectForKey:@"c"];
-        linkChannel.channelIsReady = YES;
         [linkChannel setState:THChannelOpen];
         
         THUnreliableChannel* curChannel = (THUnreliableChannel*)[self.toIdentity channelForType:@"link"];
@@ -195,6 +194,7 @@
         relayPath.delegate = thSwitch;
         peerChannel.delegate = relayPath;
         
+        [peerIdentity.availablePaths addObject:relayPath];
         peerIdentity.activePath = relayPath;
         
         [thSwitch openLine:peerIdentity];
@@ -204,7 +204,10 @@
         [pathPacket.json setObject:@"path" forKey:@"type"];
         [pathPacket.json setObject:@YES forKey:@"end"];
         [pathPacket.json setObject:[innerPacket.json objectForKey:@"c"] forKey:@"c"];
-        [pathPacket.json setObject:[packet.path informationTo:packet.fromAddress] forKey:@"path"];
+        NSDictionary* returnPathInfo = [packet.path informationTo:packet.fromAddress];
+        if (returnPathInfo) {
+            [pathPacket.json setObject:[packet.path informationTo:packet.fromAddress] forKey:@"path"];
+        }
         
         [self.toIdentity sendPacket:pathPacket path:[packet.path returnPathTo:packet.fromAddress]];
     } else {
@@ -216,7 +219,7 @@
                 // This is a reliable channel, let's make sure we're in a good state
                 THReliableChannel* reliableChannel = (THReliableChannel*)channel;
                 if (seq.unsignedIntegerValue == 0 && [[innerPacket.json objectForKey:@"ack"] unsignedIntegerValue] == 0) {
-                    reliableChannel.channelIsReady = YES;
+                    [reliableChannel setState:THChannelOpen];
                     THSwitch* defaultSwitch = [THSwitch defaultSwitch];
                     if ([defaultSwitch.delegate respondsToSelector:@selector(channelReady:type:firstPacket:)]) {
                         [defaultSwitch.delegate channelReady:reliableChannel type:ReliableChannel firstPacket:innerPacket];
@@ -244,7 +247,7 @@
                 newChannelType = UnreliableChannel;
             }
             newChannel.channelId = [NSNumber numberWithUnsignedInteger:self.nextChannelId];
-            newChannel.channelIsReady = YES;
+            [newChannel setState:THChannelOpen];
             newChannel.type = channelType;
             THSwitch* defaultSwitch = [THSwitch defaultSwitch];
             if ([defaultSwitch.delegate respondsToSelector:@selector(channelReady:type:firstPacket:)]) {

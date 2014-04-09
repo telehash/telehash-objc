@@ -278,11 +278,17 @@ static void THReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 -(BOOL)channel:(THChannel *)channel handlePacket:(THPacket *)packet
 {
     THPacket* relayedPacket = [THPacket packetData:packet.body];
+    relayedPacket.path = self;
     if ([self.delegate respondsToSelector:@selector(handlePath:packet:)]) {
         [self.delegate handlePath:self packet:relayedPacket];
     }
     
     return YES;
+}
+
+-(THPath*)returnPathTo:(NSData *)address
+{
+    return self;
 }
 
 -(void)channel:(THChannel *)channel didFailWithError:(NSError *)error
@@ -296,6 +302,11 @@ static void THReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 
 -(NSDictionary*)information
+{
+    return nil;
+}
+
+-(NSDictionary*)informationTo:(NSData *)address
 {
     return nil;
 }
