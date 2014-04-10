@@ -11,11 +11,13 @@
 
 @class THIdentity;
 @class THLine;
+@class THSwitch;
 
 typedef void(^SeekCompletionBlock)(BOOL found);
 
 @interface THMeshBuckets : NSObject<THChannelDelegate>
 
+@property (nonatomic, assign) THSwitch* localSwitch;
 @property THIdentity* localIdentity;
 @property NSMutableArray* buckets;
 @property NSMutableArray* pendingSeeks;

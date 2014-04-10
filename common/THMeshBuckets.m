@@ -15,6 +15,7 @@
 #import "THSwitch.h"
 #import "THPendingJob.h"
 #import "THChannel.h"
+#import "THPath.h"
 
 #define K_BUCKET_SIZE 8
 #define MAX_LINKS 256
@@ -22,6 +23,7 @@
 @interface PendingSeekJob : NSObject<THChannelDelegate>
 @property THIdentity* localIdentity;
 @property THIdentity* seekingIdentity;
+@property THSwitch* localSwitch;
 @property NSMutableArray* nearby;
 @property NSUInteger runningSearches;
 @property (nonatomic, copy) SeekCompletionBlock completion;
@@ -210,6 +212,7 @@
     NSLog(@"Seeking for %@", toIdentity.hashname);
     
     PendingSeekJob* seekJob = [PendingSeekJob new];
+    seekJob.localSwitch = self.localSwitch;
     seekJob.localIdentity = self.localIdentity;
     seekJob.seekingIdentity = toIdentity;
     seekJob.completion = completion;
@@ -308,15 +311,15 @@
             // this is it!
             self.seekingIdentity.via = channel.toIdentity;
             if (seeParts.count > 2) {
-                THIPV4Path* localPath;
-                for (THPath* path in self.localIdentity.availablePaths) {
-                    if ([path.typeName isEqualToString:@"ipv4"]) {
-                        localPath = (THIPV4Path*)path;
+                THIPv4Transport* localTransport;
+                for (THTransport* transport in self.localSwitch.transports) {
+                    if ([transport.typeName isEqualToString:@"ipv4"]) {
+                        localTransport = (THIPv4Transport*)transport;
                         break;
                     }
                 }
                 NSData* remoteAddress = [THIPV4Path addressTo:[seeParts objectAtIndex:2] port:[[seeParts objectAtIndex:3] integerValue]];
-                [self.seekingIdentity addPath:[localPath returnPathTo:remoteAddress]];
+                [self.seekingIdentity addPath:[localTransport returnPathTo:remoteAddress]];
             }
             foundIt = YES;
             *stop = YES;

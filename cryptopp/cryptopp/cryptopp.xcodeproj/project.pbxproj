@@ -1240,7 +1240,7 @@
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD)";
 				DSTROOT = /tmp/cryptopp.dst;
-				GCC_PREPROCESSOR_DEFINITIONS = "";
+				GCC_PREPROCESSOR_DEFINITIONS = "CRYPTOPP_DISABLE_ASM=1";
 				PRODUCT_NAME = "cryptopp-osx";
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;

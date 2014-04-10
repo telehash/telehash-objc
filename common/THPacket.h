@@ -16,8 +16,7 @@
 @property (atomic) NSMutableDictionary* json;
 @property (atomic) NSData* body;
 @property (atomic, assign) unsigned short jsonLength;
-@property (atomic, assign) THPath* path;
-@property (atomic) NSData* fromAddress;
+@property (atomic, retain) THPath* returnPath;
 
 -(id)init;
 -(id)initWithJson:(NSMutableDictionary*)json;

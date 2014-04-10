@@ -7,13 +7,14 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "THPath.h"
+#import "THTransport.h"
 
 @class THIdentity;
 @class THChannel;
 @class THPacket;
 @class THLine;
 @class THMeshBuckets;
+@class THTransport;
 
 typedef enum {
     ReliableChannel,
@@ -38,7 +39,7 @@ typedef void(^LineOpenBlock)(THIdentity*);
 
 @end
 
-@interface THSwitch : NSObject <THPathDelegate>
+@interface THSwitch : NSObject <THTransportDelegate>
 
 +(id)defaultSwitch;
 
@@ -48,10 +49,12 @@ typedef void(^LineOpenBlock)(THIdentity*);
 @property THIdentity* identity;
 @property id<THSwitchDelegate> delegate;
 @property THSwitchStatus status;
+@property NSMutableArray* transports;
 
 +(id)THSWitchWithIdentity:(THIdentity*)identity;
 
 -(void)start;
+-(void)addTransport:(THTransport*)transport;
 -(THLine*)lineToHashname:(NSString*)hashname;
 -(void)openChannel:(THChannel*)channel firstPacket:(THPacket*)packet;
 /// Open a line to the given identity
@@ -64,6 +67,9 @@ typedef void(^LineOpenBlock)(THIdentity*);
 -(void)loadSeeds:(NSData*)seedData;
 -(void)updateStatus:(THSwitchStatus)status;
 -(THPacket*)generateOpen:(THLine*)toLine;
+
+-(void)transport:(THTransport *)transport handlePacket:(THPacket *)packet;
+-(void)transportDidChangeActive:(THTransport *)transport;
 
 // This is an internal handling hack
 -(BOOL)findPendingSeek:(THPacket*)packet;

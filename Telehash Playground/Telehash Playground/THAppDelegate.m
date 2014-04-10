@@ -12,6 +12,8 @@
 #import "THSwitch.h"
 #import "THCipherSet.h"
 #import "NSData+Hexstring.h"
+#import "THTransport.h"
+#import "THPath.h"
 
 #include <arpa/inet.h>
 
@@ -45,16 +47,19 @@
     NSLog(@"2a fingerprint %@", [cs2a.fingerprint hexString]);
     thSwitch.identity = baseIdentity;
     NSLog(@"Hashname: %@", [thSwitch.identity hashname]);
-    NSArray* netPaths = [THIPV4Path gatherAvailableInterfacesApprovedBy:^BOOL(NSString *interface) {
+    THIPv4Transport* ipTransport = [THIPv4Transport new];
+    [thSwitch addTransport:ipTransport];
+    ipTransport.delegate = thSwitch;
+    NSArray* paths = [ipTransport gatherAvailableInterfacesApprovedBy:^BOOL(NSString *interface) {
         if ([interface isEqualToString:@"lo0"]) return YES;
         if ([interface isEqualToString:@"en0"]) return YES;
         return NO;
     }];
-    for (THIPV4Path* path in netPaths) {
-        path.delegate = thSwitch;
-        [baseIdentity addPath:path];
-        [path startOnPort:42424];
+    for (THIPV4Path* ipPath in paths) {
+        [baseIdentity addPath:ipPath];
     }
+    
+    [thSwitch start];
     
     NSString* filePath = [[NSBundle mainBundle] pathForResource:@"seeds" ofType:@"json"];
     NSData* seedData = [NSData dataWithContentsOfFile:filePath];

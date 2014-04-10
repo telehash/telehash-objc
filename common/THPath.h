@@ -12,41 +12,27 @@
 
 @class THPacket;
 @class THUnreliableChannel;
-
+@class THTransport;
 @class THPath;
 
-typedef BOOL(^THInterfaceApproverBlock)(NSString* interface);
-
-@protocol THPathDelegate <NSObject>
--(void)handlePath:(THPath*)path packet:(THPacket*)packet;
--(void)pathDidChangeActive:(THPath*)path;
-@end
-
 @interface THPath : NSObject
-@property (nonatomic, assign) id<THPathDelegate> delegate;
 @property (readonly) NSString* typeName;
-@property (assign) BOOL available;
+@property (assign, nonatomic) THTransport* transport;
 -(void)sendPacket:(THPacket*)packet;
--(THPath*)returnPathTo:(NSData*)address;
 -(NSDictionary*)information;
--(NSDictionary*)informationTo:(NSData*)address;
 @end
 
 @interface THIPV4Path : THPath<GCDAsyncUdpSocketDelegate>
 @property (readonly) NSString* ip;
 @property (readonly) NSUInteger port;
 +(NSData*)addressTo:(NSString*)ip port:(NSUInteger)port;
--(id)init;
--(id)initWithInterface:(NSString*)interface;
--(id)initWithSocket:(GCDAsyncUdpSocket*)socket toAddress:(NSData*)address;
--(id)initWithSocket:(GCDAsyncUdpSocket*)socket ip:(NSString*)ip port:(NSUInteger)port;
--(void)start;
--(void)startOnPort:(unsigned short)port;
+-(id)initWithTransport:(THTransport*)transport toAddress:(NSData*)address;
+-(id)initWithTransport:(THTransport*)transport ip:(NSString*)ip port:(NSUInteger)port;
 -(void)sendPacket:(THPacket *)packet;
-+(NSArray*)gatherAvailableInterfacesApprovedBy:(THInterfaceApproverBlock)approver;
 @end
 
 @interface THRelayPath : THPath<THChannelDelegate>
+@property (nonatomic, retain) THPath* relayedPath;
 @property (nonatomic, assign) THUnreliableChannel* peerChannel;
 -(void)sendPacket:(THPacket *)packet;
 @end

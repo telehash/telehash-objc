@@ -16,7 +16,7 @@
 #import "THChannel.h"
 #import "CTRAES256.h"
 #import "THCipherSet.h"
-
+#import "THPath.h"
 #include <arpa/inet.h>
 
 static NSMutableDictionary* identityCache;

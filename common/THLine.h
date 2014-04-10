@@ -21,7 +21,6 @@
 @property THPath* activePath;
 @property NSString* outLineId;
 @property NSString* inLineId;
-@property NSData* address;
 @property BOOL isOpen;
 @property NSUInteger lastActitivy;
 @property NSUInteger lastInActivity;

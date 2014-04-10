@@ -54,6 +54,9 @@
 		8231EC1B1836F37F00BC41C1 /* THLine.h in Headers */ = {isa = PBXBuildFile; fileRef = 8231EC191836F37F00BC41C1 /* THLine.h */; };
 		8231EC1C1836F37F00BC41C1 /* THLine.m in Sources */ = {isa = PBXBuildFile; fileRef = 8231EC1A1836F37F00BC41C1 /* THLine.m */; };
 		8231EC1D1836F37F00BC41C1 /* THLine.m in Sources */ = {isa = PBXBuildFile; fileRef = 8231EC1A1836F37F00BC41C1 /* THLine.m */; };
+		8236E1A718F5EDB600169201 /* THTransport.h in Headers */ = {isa = PBXBuildFile; fileRef = 8236E1A518F5EDB600169201 /* THTransport.h */; };
+		8236E1A818F5EDB600169201 /* THTransport.m in Sources */ = {isa = PBXBuildFile; fileRef = 8236E1A618F5EDB600169201 /* THTransport.m */; };
+		8236E1A918F5EDB600169201 /* THTransport.m in Sources */ = {isa = PBXBuildFile; fileRef = 8236E1A618F5EDB600169201 /* THTransport.m */; };
 		8251ADB418C02349005CB9E2 /* libcryptopp-osx.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8263D95B18BD16F000DED8E5 /* libcryptopp-osx.a */; };
 		8251ADBA18C023DC005CB9E2 /* open.pkt in Resources */ = {isa = PBXBuildFile; fileRef = 8251ADB918C023DC005CB9E2 /* open.pkt */; };
 		8251ADBD18C05A26005CB9E2 /* THCipherSet.h in Headers */ = {isa = PBXBuildFile; fileRef = 8251ADBB18C05A26005CB9E2 /* THCipherSet.h */; };
@@ -225,6 +228,8 @@
 		8231EC081836C60D00BC41C1 /* Telehash Playground.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "Telehash Playground.xcodeproj"; path = "Telehash Playground/Telehash Playground.xcodeproj"; sourceTree = "<group>"; };
 		8231EC191836F37F00BC41C1 /* THLine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THLine.h; sourceTree = "<group>"; };
 		8231EC1A1836F37F00BC41C1 /* THLine.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THLine.m; sourceTree = "<group>"; };
+		8236E1A518F5EDB600169201 /* THTransport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THTransport.h; sourceTree = "<group>"; };
+		8236E1A618F5EDB600169201 /* THTransport.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THTransport.m; sourceTree = "<group>"; };
 		8251ADB918C023DC005CB9E2 /* open.pkt */ = {isa = PBXFileReference; lastKnownFileType = file; path = open.pkt; sourceTree = "<group>"; };
 		8251ADBB18C05A26005CB9E2 /* THCipherSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THCipherSet.h; sourceTree = "<group>"; };
 		8251ADBC18C05A26005CB9E2 /* THCipherSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THCipherSet.m; sourceTree = "<group>"; };
@@ -257,7 +262,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6522195D18BD2F89003C077B /* libcryptopp-osx.a in Frameworks */,
 				8218D17117FA6E8A0053AFAC /* Cocoa.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -483,6 +487,8 @@
 				820BADF218D77EFA003D7CBA /* THPeerRelay.m */,
 				820BADFA18D81476003D7CBA /* THPath.h */,
 				820BADFB18D81476003D7CBA /* THPath.m */,
+				8236E1A518F5EDB600169201 /* THTransport.h */,
+				8236E1A618F5EDB600169201 /* THTransport.m */,
 			);
 			path = common;
 			sourceTree = "<group>";
@@ -515,6 +521,7 @@
 				8251ADBD18C05A26005CB9E2 /* THCipherSet.h in Headers */,
 				82DB2375187C83E4002C74C9 /* THPendingJob.h in Headers */,
 				820BADF318D77EFA003D7CBA /* THPeerRelay.h in Headers */,
+				8236E1A718F5EDB600169201 /* THTransport.h in Headers */,
 				82B70ACE18404D4900E819F3 /* THPacketBuffer.h in Headers */,
 				82DB236B187C8343002C74C9 /* THMeshBuckets.h in Headers */,
 				822C6D2F17FCCD0C008C04BA /* ECDH.h in Headers */,
@@ -740,6 +747,7 @@
 				82DB236C187C8343002C74C9 /* THMeshBuckets.m in Sources */,
 				82B1720717FDE90600C29EAF /* THSwitch.m in Sources */,
 				822C6D3517FCD3F6008C04BA /* CTRAES256.mm in Sources */,
+				8236E1A818F5EDB600169201 /* THTransport.m in Sources */,
 				82DB2376187C83E4002C74C9 /* THPendingJob.m in Sources */,
 				8231EBC61836BD3600BC41C1 /* NSString+HexString.m in Sources */,
 				820BADFD18D81476003D7CBA /* THPath.m in Sources */,
@@ -776,6 +784,7 @@
 				82DB236D187C8343002C74C9 /* THMeshBuckets.m in Sources */,
 				82B1720817FDE90600C29EAF /* THSwitch.m in Sources */,
 				822C6D3617FCD3F6008C04BA /* CTRAES256.mm in Sources */,
+				8236E1A918F5EDB600169201 /* THTransport.m in Sources */,
 				82DB2377187C83E4002C74C9 /* THPendingJob.m in Sources */,
 				8231EBC71836BD3600BC41C1 /* NSString+HexString.m in Sources */,
 				820BADFE18D81476003D7CBA /* THPath.m in Sources */,

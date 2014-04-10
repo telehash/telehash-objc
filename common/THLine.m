@@ -52,11 +52,10 @@
     self.outLineId = [openPacket.json objectForKey:@"line"];
     self.createdAt = [[openPacket.json objectForKey:@"at"] unsignedIntegerValue];
     self.lastInActivity = time(NULL);
-    self.address = openPacket.fromAddress;
     if ([self.toIdentity.activePath class] == [THRelayPath class]){
         self.activePath = self.toIdentity.activePath;
     } else {
-        self.activePath = [openPacket.path returnPathTo:openPacket.fromAddress];
+        self.activePath = openPacket.returnPath;
     }
 }
 
@@ -180,8 +179,7 @@
             [closePacket.json setObject:@YES forKey:@"end"];
             [closePacket.json setObject:[innerPacket.json objectForKey:@"c"] forKey:@"c"];
             
-            THPath* returnPath = [packet.path returnPathTo:packet.fromAddress];
-            [returnPath sendPacket:closePacket];
+            [packet.returnPath sendPacket:closePacket];
             return;
         }
         
@@ -190,8 +188,9 @@
         [thSwitch openChannel:peerChannel firstPacket:nil];
         
         THRelayPath* relayPath = [THRelayPath new];
+        relayPath.relayedPath = packet.returnPath;
+        relayPath.transport = packet.returnPath.transport;
         relayPath.peerChannel = peerChannel;
-        relayPath.delegate = thSwitch;
         peerChannel.delegate = relayPath;
         
         [peerIdentity.availablePaths addObject:relayPath];
@@ -204,12 +203,12 @@
         [pathPacket.json setObject:@"path" forKey:@"type"];
         [pathPacket.json setObject:@YES forKey:@"end"];
         [pathPacket.json setObject:[innerPacket.json objectForKey:@"c"] forKey:@"c"];
-        NSDictionary* returnPathInfo = [packet.path informationTo:packet.fromAddress];
+        NSDictionary* returnPathInfo = [packet.returnPath information];
         if (returnPathInfo) {
-            [pathPacket.json setObject:[packet.path informationTo:packet.fromAddress] forKey:@"path"];
+            [pathPacket.json setObject:returnPathInfo forKey:@"path"];
         }
         
-        [self.toIdentity sendPacket:pathPacket path:[packet.path returnPathTo:packet.fromAddress]];
+        [self.toIdentity sendPacket:pathPacket path:packet.returnPath];
     } else {
         NSNumber* seq = [innerPacket.json objectForKey:@"seq"];
         // Let the channel instance handle it
