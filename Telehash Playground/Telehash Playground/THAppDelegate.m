@@ -11,7 +11,7 @@
 #import <THPacket.h>
 #import "THSwitch.h"
 #import "THCipherSet.h"
-#import "NSData+Hexstring.h"
+#import "NSData+HexString.h"
 #import "THTransport.h"
 #import "THPath.h"
 #import "THChannel.h"
@@ -31,18 +31,7 @@
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
     [tableView setDataSource:self];
-    self.identityPath = [NSURL fileURLWithPath:@"/tmp/telehash"];
-}
-
--(void)findIdentityPath:(id)sender
-{
-    NSOpenPanel *panel = [NSOpenPanel openPanel];
-    [panel setAllowsMultipleSelection:NO];
-    [panel setCanChooseDirectories:YES];
-    [panel setCanChooseFiles:NO];
-
-    if ([panel runModal] != NSFileHandlingPanelOKButton) return;
-    self.identityPath = [[panel URLs] lastObject];
+    self.identityPath = @"/tmp/telehash2";
 }
 
 -(void)startSwitch:(id)sender
@@ -51,16 +40,17 @@
     thSwitch = [THSwitch defaultSwitch];
     thSwitch.delegate = self;
     THIdentity* baseIdentity = [THIdentity new];
-    THCipherSet2a* cs2a = [[THCipherSet2a alloc] initWithPublicKeyPath:[NSString stringWithFormat:@"%@/server.pder", self.identityPath.path] privateKeyPath:[NSString stringWithFormat:@"%@/server.der", self.identityPath.path]];
+    self.identityPath = pathField.value;
+    THCipherSet2a* cs2a = [[THCipherSet2a alloc] initWithPublicKeyPath:[NSString stringWithFormat:@"%@/server.pder", self.identityPath] privateKeyPath:[NSString stringWithFormat:@"%@/server.der", self.identityPath]];
     if (!cs2a) {
         /*
         NSFileManager* fm = [NSFileManager defaultManager];
         NSError* err;
         [fm createDirectoryAtPath:@"/tmp/telehash" withIntermediateDirectories:NO attributes:nil error:&err];
         */
-        THCipherSet2a* cs2a = [THCipherSet2a new];
+        cs2a = [THCipherSet2a new];
         [cs2a generateKeys];
-        [cs2a.rsaKeys savePublicKey:[NSString stringWithFormat:@"%@/server.pder", self.identityPath.path] privateKey:[NSString stringWithFormat:@"%@/server.der", self.identityPath.path]];
+        [cs2a.rsaKeys savePublicKey:[NSString stringWithFormat:@"%@/server.pder", self.identityPath] privateKey:[NSString stringWithFormat:@"%@/server.der", self.identityPath]];
     }
     [baseIdentity addCipherSet:cs2a];
     NSLog(@"2a fingerprint %@", [cs2a.fingerprint hexString]);

@@ -16,10 +16,11 @@
     IBOutlet NSTextField* addressField;
     IBOutlet NSTextField* portField;
     IBOutlet NSTextField* keyField;
+    IBOutlet NSTextField* pathField;
     THSwitch* thSwitch;
 }
 
-@property NSURL* identityPath;
+@property NSString* identityPath;
 @property (assign) IBOutlet NSWindow *window;
 
 -(void)channelReady:(THChannel *)channel type:(THChannelType)type firstPacket:(THPacket *)packet;
@@ -29,6 +30,5 @@
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex;
 
 -(IBAction)connectToHashname:(id)sender;
--(IBAction)findIdentityPath:(id)sender;
 -(IBAction)startSwitch:(id)sender;
 @end

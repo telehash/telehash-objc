@@ -115,7 +115,7 @@
             }
         }
         
-        [self openLine:seedIdentity];
+        if (seedIdentity) [self openLine:seedIdentity];
     }];
 }
 
