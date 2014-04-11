@@ -14,6 +14,7 @@
 #import "NSData+Hexstring.h"
 #import "THTransport.h"
 #import "THPath.h"
+#import "THChannel.h"
 
 #include <arpa/inet.h>
 
@@ -21,6 +22,7 @@
 
 @interface THAppDelegate () {
     NSString* startChannelId;
+    THReliableChannel* pingChannel;
 }
 @end
 
@@ -29,19 +31,36 @@
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
     [tableView setDataSource:self];
-    
+    self.identityPath = [NSURL fileURLWithPath:@"/tmp/telehash"];
+}
+
+-(void)findIdentityPath:(id)sender
+{
+    NSOpenPanel *panel = [NSOpenPanel openPanel];
+    [panel setAllowsMultipleSelection:NO];
+    [panel setCanChooseDirectories:YES];
+    [panel setCanChooseFiles:NO];
+
+    if ([panel runModal] != NSFileHandlingPanelOKButton) return;
+    self.identityPath = [[panel URLs] lastObject];
+}
+
+-(void)startSwitch:(id)sender
+{
     // Insert code here to initialize your application
     thSwitch = [THSwitch defaultSwitch];
     thSwitch.delegate = self;
     THIdentity* baseIdentity = [THIdentity new];
-    THCipherSet2a* cs2a = [[THCipherSet2a alloc] initWithPublicKeyPath:@"/tmp/telehash/server.pder" privateKeyPath:@"/tmp/telehash/server.der"];
+    THCipherSet2a* cs2a = [[THCipherSet2a alloc] initWithPublicKeyPath:[NSString stringWithFormat:@"%@/server.pder", self.identityPath.path] privateKeyPath:[NSString stringWithFormat:@"%@/server.der", self.identityPath.path]];
     if (!cs2a) {
+        /*
         NSFileManager* fm = [NSFileManager defaultManager];
         NSError* err;
         [fm createDirectoryAtPath:@"/tmp/telehash" withIntermediateDirectories:NO attributes:nil error:&err];
+        */
         THCipherSet2a* cs2a = [THCipherSet2a new];
         [cs2a generateKeys];
-        [cs2a.rsaKeys savePublicKey:@"/tmp/telehash/server.pder" privateKey:@"/tmp/telehash/server.der"];
+        [cs2a.rsaKeys savePublicKey:[NSString stringWithFormat:@"%@/server.pder", self.identityPath.path] privateKey:[NSString stringWithFormat:@"%@/server.der", self.identityPath.path]];
     }
     [baseIdentity addCipherSet:cs2a];
     NSLog(@"2a fingerprint %@", [cs2a.fingerprint hexString]);
@@ -64,7 +83,7 @@
     NSString* filePath = [[NSBundle mainBundle] pathForResource:@"seeds" ofType:@"json"];
     NSData* seedData = [NSData dataWithContentsOfFile:filePath];
     if (seedData) [thSwitch loadSeeds:seedData];
-
+    
     //[thSwitch loadSeeds:[NSData dataWithContentsOfFile:@"/tmp/telehash/seeds.json"]];
 }
 
@@ -120,14 +139,14 @@
 -(void)thSwitch:(THSwitch *)thSwitch status:(THSwitchStatus)status
 {
     NSLog(@"Switch status is now %d", status);
-    if (status == THSwitchOnline) {
+    if (status == THSwitchOnline && !pingChannel) {
         THPacket* crapPacket = [THPacket new];
-        [crapPacket.json setObject:@"crap" forKey:@"type"];
+        [crapPacket.json setObject:@"ping" forKey:@"type"];
         
-        THUnreliableChannel* chan = [[THUnreliableChannel alloc] initToIdentity:[THIdentity identityFromHashname:@"d3da6b886d827dd221f80ffefba99e800e0ce6d3b51f4eedb5373c9bbf9e5956"]];
-        chan.delegate = self;
+        pingChannel = [[THReliableChannel alloc] initToIdentity:[THIdentity identityFromHashname:@"d3da6b886d827dd221f80ffefba99e800e0ce6d3b51f4eedb5373c9bbf9e5956"]];
+        pingChannel.delegate = self;
         
-        [thSwitch openChannel:chan firstPacket:crapPacket];
+        [thSwitch openChannel:pingChannel firstPacket:crapPacket];
     }
 }
 

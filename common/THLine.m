@@ -99,7 +99,7 @@
     THPacket* innerPacket = [THPacket packetData:packet.body];
     //NSLog(@"Packet is type %@", [innerPacket.json objectForKey:@"type"]);
     NSLog(@"Line from %@ line id %@ handling %@\n%@", self.toIdentity.hashname, self.outLineId, innerPacket.json, innerPacket.body);
-    NSString* channelId = [innerPacket.json objectForKey:@"c"];
+    NSNumber* channelId = [innerPacket.json objectForKey:@"c"];
     NSString* channelType = [innerPacket.json objectForKey:@"type"];
     
     THSwitch* thSwitch = [THSwitch defaultSwitch];
@@ -198,6 +198,11 @@
         
         [thSwitch openLine:peerIdentity];
     } else if ([channelType isEqualToString:@"path"]) {
+        if ([[innerPacket.json objectForKey:@"priority"] integerValue] == 1) {
+            // This came in on the new path we want to use!
+            self.toIdentity.activePath = packet.returnPath;
+            self.activePath = packet.returnPath;
+        }
         THPacket* pathPacket = [THPacket new];
         [pathPacket.json setObject:[thSwitch.identity pathInformation] forKey:@"paths"];
         [pathPacket.json setObject:@"path" forKey:@"type"];
@@ -245,7 +250,7 @@
                 newChannel = [[THUnreliableChannel alloc] initToIdentity:self.toIdentity];
                 newChannelType = UnreliableChannel;
             }
-            newChannel.channelId = [NSNumber numberWithUnsignedInteger:self.nextChannelId];
+            newChannel.channelId = channelId;
             [newChannel setState:THChannelOpen];
             newChannel.type = channelType;
             THSwitch* defaultSwitch = [THSwitch defaultSwitch];
