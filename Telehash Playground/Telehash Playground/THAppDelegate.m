@@ -120,5 +120,19 @@
 -(void)thSwitch:(THSwitch *)thSwitch status:(THSwitchStatus)status
 {
     NSLog(@"Switch status is now %d", status);
+    if (status == THSwitchOnline) {
+        THPacket* crapPacket = [THPacket new];
+        [crapPacket.json setObject:@"crap" forKey:@"type"];
+        
+        THUnreliableChannel* chan = [[THUnreliableChannel alloc] initToIdentity:[THIdentity identityFromHashname:@"d3da6b886d827dd221f80ffefba99e800e0ce6d3b51f4eedb5373c9bbf9e5956"]];
+        chan.delegate = self;
+        
+        [thSwitch openChannel:chan firstPacket:crapPacket];
+    }
+}
+
+-(void)channel:(THChannel *)channel didFailWithError:(NSError *)error
+{
+    NSLog(@"Got an error: %@", error);
 }
 @end

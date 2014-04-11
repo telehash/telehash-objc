@@ -58,6 +58,12 @@
 -(void)handlePacket:(THPacket *)packet;
 {
     self.lastInActivity = time(NULL);
+    NSString* err = [packet.json objectForKey:@"err"];
+    if (err) {
+        [self.delegate channel:self didFailWithError:[NSError errorWithDomain:@"telehash" code:100 userInfo:@{NSLocalizedDescriptionKey:err}]];
+        self.state = THChannelErrored;
+        [self.toIdentity.channels removeObjectForKey:self.channelId];
+    }
 }
 
 -(void)close
@@ -92,7 +98,9 @@
     NSString* packetType = [packet.json objectForKey:@"type"];
     if (!self.type && packetType) self.type = packetType;
     
-    [self.delegate channel:self handlePacket:packet];
+    if ([self.delegate respondsToSelector:@selector(channel:handlePacket:)]) {
+        [self.delegate channel:self handlePacket:packet];
+    }
     if ([[packet.json objectForKey:@"end"] boolValue] == YES) {
         self.state = THChannelEnded;
         [self close];
