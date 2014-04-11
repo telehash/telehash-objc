@@ -82,6 +82,7 @@ static NSMutableDictionary* identityCache;
 {
     self = [super init];
     if (self) {
+        [self commonInit];
         _hashnameCache = hashname;
     }
     return self;

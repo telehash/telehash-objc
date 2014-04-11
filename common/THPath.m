@@ -35,6 +35,14 @@
     NSData* toAddress;
 }
 
++(void)initialize
+{
+    if (THPathTypeRegistry == nil) {
+        THPathTypeRegistry = [NSMutableArray array];
+    }
+    [THPathTypeRegistry addObject:@"ipv4"];
+}
+
 +(NSData*)addressTo:(NSString*)ip port:(NSUInteger)port
 {
     struct sockaddr_in ipAddress;
@@ -123,6 +131,17 @@
 @end
 
 @implementation THRelayPath
+-(id)initOnChannel:(THUnreliableChannel *)channel
+{
+    self = [super init];
+    if (self) {
+        self.relayedPath = channel.toIdentity.activePath;
+        self.transport = self.relayedPath.transport;
+        self.peerChannel = channel;
+    }
+    return self;
+}
+
 -(NSString*)typeName
 {
     return @"relay";

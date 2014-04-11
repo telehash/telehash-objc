@@ -15,6 +15,8 @@
 @class THTransport;
 @class THPath;
 
+NSMutableArray* THPathTypeRegistry;
+
 @interface THPath : NSObject
 @property (readonly) NSString* typeName;
 @property (assign, nonatomic) THTransport* transport;
@@ -34,5 +36,6 @@
 @interface THRelayPath : THPath<THChannelDelegate>
 @property (nonatomic, retain) THPath* relayedPath;
 @property (nonatomic, assign) THUnreliableChannel* peerChannel;
+-(id)initOnChannel:(THUnreliableChannel*)channel;
 -(void)sendPacket:(THPacket *)packet;
 @end

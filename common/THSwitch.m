@@ -207,6 +207,8 @@
         
         THRelayPath* relayPath = [THRelayPath new];
         relayPath.peerChannel = peerChannel;
+        relayPath.transport = viaIdentity.activePath.transport;
+        relayPath.relayedPath = viaIdentity.activePath;
         peerChannel.delegate = relayPath;
         
         toIdentity.activePath = relayPath;
