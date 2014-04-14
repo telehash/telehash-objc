@@ -161,20 +161,22 @@
     // XXX: Make sure we're pinging every second
     [self checkAckPing:time(NULL)];
     
+    NSString* packetType = [packet.json objectForKey:@"type"];
+    if (!self.type && packetType) self.type = packetType;
+    
+    if ([curSeq integerValue] == 0) {
+        self.nextExpectedSequence = 1;
+        return;
+    }
+    
     // If this is a new seq object we'll need to pass it off
     if ([packet.json objectForKey:@"seq"]) {
         NSLog(@"Putting on the buffer: %@ ", packet.json);
         [inPacketBuffer push:packet];
     }
     
-    NSString* packetType = [packet.json objectForKey:@"type"];
-    if (!self.type && packetType) self.type = packetType;
-    
     missing = [inPacketBuffer missingSeq];
-    if ([curSeq integerValue] == 0) {
-        self.nextExpectedSequence = 1;
-        return;
-    }
+
     [self delegateHandlePackets];
 }
 
