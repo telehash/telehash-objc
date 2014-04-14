@@ -244,11 +244,7 @@
                 // This is a reliable channel, let's make sure we're in a good state
                 THReliableChannel* reliableChannel = (THReliableChannel*)channel;
                 if (seq.unsignedIntegerValue == 0 && [[innerPacket.json objectForKey:@"ack"] unsignedIntegerValue] == 0) {
-                    [reliableChannel setState:THChannelOpen];
-                    THSwitch* defaultSwitch = [THSwitch defaultSwitch];
-                    if ([defaultSwitch.delegate respondsToSelector:@selector(channelReady:type:firstPacket:)]) {
-                        [defaultSwitch.delegate channelReady:reliableChannel type:ReliableChannel firstPacket:innerPacket];
-                    }
+                    reliableChannel.state = THChannelOpen;
                 }
             }
             [channel handlePacket:innerPacket];
