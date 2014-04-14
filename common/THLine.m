@@ -106,6 +106,7 @@
     //NSLog(@"Going to handle a packet");
     [self.cipherSetInfo decryptLinePacket:packet];
     THPacket* innerPacket = [THPacket packetData:packet.body];
+    innerPacket.returnPath = packet.returnPath;
     //NSLog(@"Packet is type %@", [innerPacket.json objectForKey:@"type"]);
     NSLog(@"Line from %@ line id %@ handling %@\n%@", self.toIdentity.hashname, self.outLineId, innerPacket.json, innerPacket.body);
     NSNumber* channelId = [innerPacket.json objectForKey:@"c"];
