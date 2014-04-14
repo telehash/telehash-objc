@@ -25,15 +25,21 @@
 
 #include <arpa/inet.h>
 
+@interface THPathHandler : NSObject<THChannelDelegate>
+@property THLine* line;
+@end
+
 @implementation THLine
 {
     NSUInteger _nextChannelId;
+    NSMutableArray* channelHandlers;
 }
 
 -(id)init;
 {
     self = [super init];
     if (self) {
+        channelHandlers = [NSMutableArray array];
         self.isOpen = NO;
         self.lastActitivy = time(NULL);
     }
@@ -44,7 +50,10 @@
 {
     THSwitch* defaultSwitch = [THSwitch defaultSwitch];
     THPacket* openPacket = [defaultSwitch generateOpen:self];
-    [self.activePath sendPacket:openPacket];
+    for (THPath* path in self.toIdentity.availablePaths) {
+        NSLog(@"Sending open on %@ to %@", path, self.toIdentity.hashname);
+        [path sendPacket:openPacket];
+    }
 }
 
 -(void)handleOpen:(THPacket *)openPacket
@@ -107,6 +116,8 @@
     // if the switch is handling it bail
     if ([thSwitch findPendingSeek:innerPacket]) return;
     
+    THChannel* channel = [self.toIdentity.channels objectForKey:channelId];
+    
     if ([channelType isEqualToString:@"seek"]) {
         // On a seek we send back what we know about
         THPacket* response = [THPacket new];
@@ -120,22 +131,21 @@
         [response.json setObject:[sees valueForKey:@"seekString"] forKey:@"see"];
         
         [self sendPacket:response];
-    } else if ([channelType isEqualToString:@"link"]) {
+    } else if ([channelType isEqualToString:@"link"] && !channel) {
         THSwitch* defaultSwitch = [THSwitch defaultSwitch];
         
         [defaultSwitch.meshBuckets addIdentity:self.toIdentity];
         
-        THUnreliableChannel* linkChannel = [THUnreliableChannel new];
-        linkChannel.toIdentity = self.toIdentity;
+        THUnreliableChannel* linkChannel = [[THUnreliableChannel alloc] initToIdentity:self.toIdentity];
         linkChannel.channelId = [innerPacket.json objectForKey:@"c"];
-        [linkChannel setState:THChannelOpen];
+        linkChannel.type = @"link";
+        linkChannel.delegate = defaultSwitch.meshBuckets;
         
         THUnreliableChannel* curChannel = (THUnreliableChannel*)[self.toIdentity channelForType:@"link"];
         if (curChannel) {
             [self.toIdentity.channels removeObjectForKey:curChannel.channelId];
         }
-        [self.toIdentity.channels setObject:linkChannel forKey:linkChannel.channelId];
-        linkChannel.delegate = defaultSwitch.meshBuckets;
+        [defaultSwitch openChannel:linkChannel firstPacket:nil];
         [defaultSwitch.meshBuckets channel:linkChannel handlePacket:innerPacket];
     } else if ([channelType isEqualToString:@"peer"]) {
         // TODO:  Check this logic in association with the move to channels on identity
@@ -183,6 +193,15 @@
             return;
         }
         
+        // Add the available paths
+        NSArray* paths = [innerPacket.json objectForKey:@"paths"];
+        for (NSDictionary* pathInfo in paths) {
+            if ([[pathInfo objectForKey:@"type"] isEqualToString:@"ipv4"]) {
+                THIPV4Path* newPath = [[THIPV4Path alloc] initWithTransport:packet.returnPath.transport ip:[pathInfo objectForKey:@"ip"] port:[[pathInfo objectForKey:@"port"] unsignedIntegerValue]];
+                [peerIdentity addPath:newPath];
+            }
+        }
+        
         THUnreliableChannel* peerChannel = [[THUnreliableChannel alloc] initToIdentity:self.toIdentity];
         peerChannel.channelId = [innerPacket.json objectForKey:@"c"];
         [thSwitch openChannel:peerChannel firstPacket:nil];
@@ -194,10 +213,10 @@
         peerChannel.delegate = relayPath;
         
         [peerIdentity.availablePaths addObject:relayPath];
-        peerIdentity.activePath = relayPath;
+        if (!peerIdentity.activePath) peerIdentity.activePath = relayPath;
         
         [thSwitch openLine:peerIdentity];
-    } else if ([channelType isEqualToString:@"path"]) {
+    } else if ([channelType isEqualToString:@"path"] && !channel) {
         if ([[innerPacket.json objectForKey:@"priority"] integerValue] == 1) {
             // This came in on the new path we want to use!
             self.toIdentity.activePath = packet.returnPath;
@@ -205,7 +224,6 @@
         }
         THPacket* pathPacket = [THPacket new];
         [pathPacket.json setObject:[thSwitch.identity pathInformation] forKey:@"paths"];
-        [pathPacket.json setObject:@"path" forKey:@"type"];
         [pathPacket.json setObject:@YES forKey:@"end"];
         [pathPacket.json setObject:[innerPacket.json objectForKey:@"c"] forKey:@"c"];
         NSDictionary* returnPathInfo = [packet.returnPath information];
@@ -213,11 +231,13 @@
             [pathPacket.json setObject:returnPathInfo forKey:@"path"];
         }
         
+        if (packet.returnPath.transport.priority > 0) {
+            [pathPacket.json setObject:@(packet.returnPath.transport.priority) forKey:@"priority"];
+        }
         [self.toIdentity sendPacket:pathPacket path:packet.returnPath];
     } else {
         NSNumber* seq = [innerPacket.json objectForKey:@"seq"];
         // Let the channel instance handle it
-        THChannel* channel = [self.toIdentity.channels objectForKey:channelId];
         if (channel) {
             if (seq) {
                 // This is a reliable channel, let's make sure we're in a good state
@@ -251,15 +271,18 @@
                 newChannelType = UnreliableChannel;
             }
             newChannel.channelId = channelId;
-            [newChannel setState:THChannelOpen];
+            // Opening state for initial processing
+            newChannel.state = THChannelOpening;
             newChannel.type = channelType;
             THSwitch* defaultSwitch = [THSwitch defaultSwitch];
+            NSLog(@"Adding a channel");
+            [self.toIdentity.channels setObject:newChannel forKey:channelId];
+            [newChannel handlePacket:innerPacket];
+            // Now we're full open and ready to roll
+            newChannel.state = THChannelOpen;
             if ([defaultSwitch.delegate respondsToSelector:@selector(channelReady:type:firstPacket:)]) {
                 [defaultSwitch.delegate channelReady:newChannel type:newChannelType firstPacket:innerPacket];
             }
-            NSLog(@"Adding a channel");
-            [self.toIdentity.channels setObject:newChannel forKey:channelId];
-            //[newChannel handlePacket:innerPacket];
         }
         
     }
@@ -290,4 +313,83 @@
 {
     [[THSwitch defaultSwitch] closeLine:self];
 }
+
+-(void)negotiatePath
+{
+    THSwitch* thSwitch = [THSwitch defaultSwitch];
+    
+    for (THPath* path in self.toIdentity.availablePaths) {
+
+        THUnreliableChannel* pathChannel = [[THUnreliableChannel alloc] initToIdentity:self.toIdentity];
+        
+        THPathHandler* handler = [THPathHandler new];
+        handler.line = self;
+        pathChannel.delegate = handler;
+        pathChannel.type = @"path";
+        
+        [self addChannelHandler:handler];
+
+        THPacket* pathPacket = [THPacket new];
+        NSDictionary* info = path.information;
+        if (info) [pathPacket.json setObject:path.information forKey:@"path"];
+        [pathPacket.json setObject:[thSwitch.identity pathInformation] forKey:@"paths"];
+        [pathPacket.json setObject:@"path" forKey:@"type"];
+        if (![path.typeName isEqualToString:@"relay"] && path.transport.priority > 0) {
+            [pathPacket.json setObject:@(path.transport.priority) forKey:@"priority"];
+        }
+        /*
+        NSDictionary* returnPathInfo = [pathPacket.returnPath information];
+        if (returnPathInfo) {
+            [pathPacket.json setObject:returnPathInfo forKey:@"path"];
+        }
+         */
+        [thSwitch openChannel:pathChannel firstPacket:nil];
+        [pathPacket.json setObject:pathChannel.channelId forKey:@"c"];
+        
+        NSLog(@"Sending a path negotiation over %@: %@", path.information, pathPacket.json);
+        [self sendPacket:pathPacket path:path];
+        //[self.toIdentity sendPacket:pathPacket path:packet.returnPath];
+    }
+}
+
+-(void)addChannelHandler:(id)handler
+{
+    [channelHandlers addObject:handler];
+}
+
+-(void)removeChannelHandler:(id)handler
+{
+    [channelHandlers removeObject:handler];
+}
+@end
+
+@implementation THPathHandler
+
+-(BOOL)channel:(THChannel *)channel handlePacket:(THPacket *)packet
+{
+
+    NSUInteger priority = [[packet.json objectForKey:@"priority"] unsignedIntegerValue];
+    for (NSDictionary* ipInfo in [packet.json objectForKey:@"paths"]) {
+        if ([[ipInfo objectForKey:@"type"] isEqualToString:@"ipv4"] && priority > 0) {
+            THIPV4Path* newPath = [[THIPV4Path alloc] initWithTransport:packet.returnPath.transport ip:[ipInfo objectForKey:@"ip"] port:[[ipInfo objectForKey:@"port"] unsignedIntegerValue]];
+                
+            [self.line.toIdentity.availablePaths insertObject:newPath atIndex:0];
+            self.line.toIdentity.activePath = newPath;
+            self.line.activePath = newPath;
+        }
+    }
+    
+    [self.line removeChannelHandler:self];
+    
+    return YES;
+}
+
+-(void)channel:(THChannel *)channel didChangeStateTo:(THChannelState)channelState
+{
+}
+
+-(void)channel:(THChannel *)channel didFailWithError:(NSError *)error
+{
+}
+
 @end

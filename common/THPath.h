@@ -27,6 +27,7 @@ NSMutableArray* THPathTypeRegistry;
 @interface THIPV4Path : THPath<GCDAsyncUdpSocketDelegate>
 @property (readonly) NSString* ip;
 @property (readonly) NSUInteger port;
+@property NSUInteger priority;
 +(NSData*)addressTo:(NSString*)ip port:(NSUInteger)port;
 -(id)initWithTransport:(THTransport*)transport toAddress:(NSData*)address;
 -(id)initWithTransport:(THTransport*)transport ip:(NSString*)ip port:(NSUInteger)port;

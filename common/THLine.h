@@ -8,6 +8,8 @@
 
 #import <Foundation/Foundation.h>
 #import "THIdentity.h"
+#import "THSwitch.h"
+#import "THChannel.h"
 
 @class THPacket;
 @class THChannel;
@@ -36,5 +38,8 @@
 -(void)sendPacket:(THPacket *)packet path:(THPath*)path;
 -(void)close;
 -(void)handleOpen:(THPacket*)openPacket;
+-(void)negotiatePath;
+-(void)addChannelHandler:(id)handler;
+-(void)removeChannelHandler:(id)handler;
 
 @end

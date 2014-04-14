@@ -180,7 +180,7 @@
     
 
     // We have everything we need to direct request
-    if (toIdentity.activePath && [toIdentity.cipherParts objectForKey:@"2a"]) {
+    if (toIdentity.availablePaths.count > 0 && [toIdentity.cipherParts objectForKey:@"2a"]) {
         THLine* channelLine = [THLine new];
         channelLine.toIdentity = toIdentity;
         channelLine.activePath = toIdentity.activePath;
@@ -262,6 +262,7 @@
 
 -(void)processOpen:(THPacket*)incomingPacket
 {
+    NSLog(@"Processing an open from %@", incomingPacket.returnPath);
     THCipherSet* cipherSet = [self.identity.cipherParts objectForKey:[[incomingPacket.body subdataWithRange:NSMakeRange(0, 1)] hexString]];
     if (!cipherSet) {
         NSLog(@"Invalid cipher set requested %@", [[incomingPacket.body subdataWithRange:NSMakeRange(0, 1)] hexString]);
@@ -271,6 +272,11 @@
     if (!newLine) {
         NSLog(@"Unable to process open packet");
         return;
+    }
+    
+    // Add the incoming path to the
+    if (newLine.toIdentity.availablePaths.count == 0) {
+        [newLine.toIdentity addPath:incomingPacket.returnPath];
     }
     
     // remove any existing lines to this hashname
@@ -304,6 +310,7 @@
         if (pendingLineJob) pendingLineJob.handler(newLine);
         
         [self.meshBuckets linkToIdentity:newLine.toIdentity];
+        [newLine negotiatePath];
     } else {
         [newLine sendOpen];
         [newLine openLine];

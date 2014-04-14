@@ -98,7 +98,7 @@
     NSString* packetType = [packet.json objectForKey:@"type"];
     if (!self.type && packetType) self.type = packetType;
     
-    if ([self.delegate respondsToSelector:@selector(channel:handlePacket:)]) {
+    if (self.state != THChannelOpening && [self.delegate respondsToSelector:@selector(channel:handlePacket:)]) {
         [self.delegate channel:self handlePacket:packet];
     }
     if ([[packet.json objectForKey:@"end"] boolValue] == YES) {
@@ -171,6 +171,10 @@
     if (!self.type && packetType) self.type = packetType;
     
     missing = [inPacketBuffer missingSeq];
+    if ([curSeq integerValue] == 0) {
+        self.nextExpectedSequence = 1;
+        return;
+    }
     [self delegateHandlePackets];
 }
 
@@ -179,7 +183,7 @@
     double delayInSeconds = 1.0;
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
     dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-        if (lastAck < (nextExpectedSequence - 1)) {
+        if (lastAck < (self.nextExpectedSequence - 1)) {
             [self sendPacket:[THPacket new]];
         }
     });
@@ -190,7 +194,10 @@
     
     // Save the type
     NSString* packetType = [packet.json objectForKey:@"type"];
-    if (!self.type && packetType) self.type = packetType;
+    if (!self.type && packetType) {
+        self.type = packetType;
+        NSLog(@"Channel type set to %@", self.type);
+    }
     
     // If the packet has a body or other json we increment the seq
     if ([packet.json count] > 0 || packet.body != nil) {
@@ -205,7 +212,7 @@
     // Append channel id
     [packet.json setObject:self.channelId forKey:@"c"];
     // Append ack
-    [packet.json setObject:[NSNumber numberWithUnsignedLong:(nextExpectedSequence - 1)] forKey:@"ack"];
+    [packet.json setObject:[NSNumber numberWithUnsignedLong:(self.nextExpectedSequence - 1)] forKey:@"ack"];
     lastAck = time(NULL);
     
     [outPacketBuffer push:packet];
@@ -221,7 +228,7 @@
     }
 
     while (inPacketBuffer.length > 0) {
-        if (inPacketBuffer.frontSeq != nextExpectedSequence) {
+        if (inPacketBuffer.frontSeq != self.nextExpectedSequence) {
             // XXX dispatch a missing queue?
             return;
         }
@@ -234,7 +241,7 @@
                 [self close];
                 return;
             }
-            nextExpectedSequence = [[curPacket.json objectForKey:@"seq"] unsignedIntegerValue] + 1;
+            self.nextExpectedSequence = [[curPacket.json objectForKey:@"seq"] unsignedIntegerValue] + 1;
         });
     }
 }

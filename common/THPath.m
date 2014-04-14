@@ -78,11 +78,10 @@
         self.transport = transport;
         
         struct sockaddr_in ipAddress;
-        ipAddress.sin_len = sizeof(ipAddress);
         ipAddress.sin_family = AF_INET;
         ipAddress.sin_port = htons(port);
-        inet_pton(AF_INET, [ip UTF8String], &ipAddress.sin_addr);
-        toAddress = [NSData dataWithBytes:&ipAddress length:ipAddress.sin_len];
+        inet_pton(AF_INET, [ip UTF8String], &(ipAddress.sin_addr));
+        toAddress = [NSData dataWithBytes:&ipAddress length:sizeof(struct sockaddr_in)];
     }
     return self;
 }
@@ -111,7 +110,7 @@
 {
     //TODO:  Evaluate using a timeout!
     NSData* packetData = [packet encode];
-    //NSLog(@"Sending %@", packetData);
+    NSLog(@"THIPV4Path Sending to %@: %@", self.information, packetData);
     [self.transport send:packetData to:toAddress];
 }
 
@@ -131,6 +130,10 @@
 @end
 
 @implementation THRelayPath
+-(void)dealloc
+{
+    NSLog(@"We lost a relay!");
+}
 -(id)initOnChannel:(THUnreliableChannel *)channel
 {
     self = [super init];

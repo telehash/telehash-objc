@@ -41,6 +41,10 @@ static NSMutableDictionary* identityCache;
         // Load the parts and validate the key
         identity = [[THIdentity alloc] initWithParts:parts key:cs];
         if (identity) [identityCache setObject:identity forKey:identity.hashname];
+    } else {
+        // Let's make sure we get it set
+        identity.cipherParts = @{cs.identifier:cs};
+        identity.parts = parts;
     }
     return identity;
 }

@@ -40,7 +40,7 @@
     thSwitch = [THSwitch defaultSwitch];
     thSwitch.delegate = self;
     THIdentity* baseIdentity = [THIdentity new];
-    self.identityPath = pathField.value;
+    self.identityPath = pathField.stringValue;
     THCipherSet2a* cs2a = [[THCipherSet2a alloc] initWithPublicKeyPath:[NSString stringWithFormat:@"%@/server.pder", self.identityPath] privateKeyPath:[NSString stringWithFormat:@"%@/server.der", self.identityPath]];
     if (!cs2a) {
         /*
@@ -57,6 +57,7 @@
     thSwitch.identity = baseIdentity;
     NSLog(@"Hashname: %@", [thSwitch.identity hashname]);
     THIPv4Transport* ipTransport = [THIPv4Transport new];
+    ipTransport.priority = 1;
     [thSwitch addTransport:ipTransport];
     ipTransport.delegate = thSwitch;
     NSArray* paths = [ipTransport gatherAvailableInterfacesApprovedBy:^BOOL(NSString *interface) {
@@ -129,6 +130,7 @@
 -(void)thSwitch:(THSwitch *)thSwitch status:(THSwitchStatus)status
 {
     NSLog(@"Switch status is now %d", status);
+#if 0
     if (status == THSwitchOnline && !pingChannel) {
         THPacket* crapPacket = [THPacket new];
         [crapPacket.json setObject:@"ping" forKey:@"type"];
@@ -138,6 +140,7 @@
         
         [thSwitch openChannel:pingChannel firstPacket:crapPacket];
     }
+#endif
 }
 
 -(void)channel:(THChannel *)channel didFailWithError:(NSError *)error

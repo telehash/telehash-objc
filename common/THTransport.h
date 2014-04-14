@@ -22,6 +22,7 @@
 @property (readonly) NSString* typeName;
 @property (assign, nonatomic) id<THTransportDelegate> delegate;
 @property (assign, atomic) BOOL available;
+@property NSUInteger priority;
 -(void)start;
 -(THPath*)returnPathTo:(NSData*)address;
 -(void)send:(NSData*)data to:(NSData*)address;
