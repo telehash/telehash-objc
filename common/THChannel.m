@@ -158,22 +158,18 @@
         [outPacketBuffer clearThrough:[ack unsignedIntegerValue]];
         
     }
-    // XXX: Make sure we're pinging every second
-    [self checkAckPing:time(NULL)];
     
     NSString* packetType = [packet.json objectForKey:@"type"];
     if (!self.type && packetType) self.type = packetType;
     
-    if ([curSeq integerValue] == 0) {
-        self.nextExpectedSequence = 1;
-        return;
-    }
-    
     // If this is a new seq object we'll need to pass it off
     if ([packet.json objectForKey:@"seq"]) {
-        NSLog(@"Putting on the buffer: %@ ", packet.json);
+        NSLog(@"Putting on the incoming buffer: %@ ", packet.json);
         [inPacketBuffer push:packet];
     }
+    
+    // XXX: Make sure we're pinging every second
+    [self checkAckPing:time(NULL)];
     
     missing = [inPacketBuffer missingSeq];
 
@@ -214,8 +210,10 @@
     // Append channel id
     [packet.json setObject:self.channelId forKey:@"c"];
     // Append ack
-    [packet.json setObject:[NSNumber numberWithUnsignedLong:(self.nextExpectedSequence - 1)] forKey:@"ack"];
-    lastAck = time(NULL);
+    if (self.nextExpectedSequence > 0 && (self.nextExpectedSequence - 1 > lastAck)) {
+        [packet.json setObject:[NSNumber numberWithUnsignedLong:(self.nextExpectedSequence - 1)] forKey:@"ack"];
+        lastAck = self.nextExpectedSequence - 1;
+    }
     
     [outPacketBuffer push:packet];
     

@@ -100,6 +100,10 @@
 {
     NSLog(@"Channel is ready");
     NSLog(@"First packet is %@", packet.json);
+    if ([channel.type isEqualToString:@"ping"]) {
+        channel.delegate = self;
+        [self channel:channel handlePacket:packet];
+    }
     return;
 }
 
@@ -130,21 +134,35 @@
 -(void)thSwitch:(THSwitch *)thSwitch status:(THSwitchStatus)status
 {
     NSLog(@"Switch status is now %d", status);
-#if 0
     if (status == THSwitchOnline && !pingChannel) {
-        THPacket* crapPacket = [THPacket new];
-        [crapPacket.json setObject:@"ping" forKey:@"type"];
-        
-        pingChannel = [[THReliableChannel alloc] initToIdentity:[THIdentity identityFromHashname:@"d3da6b886d827dd221f80ffefba99e800e0ce6d3b51f4eedb5373c9bbf9e5956"]];
-        pingChannel.delegate = self;
-        
-        [thSwitch openChannel:pingChannel firstPacket:crapPacket];
+        if (![thSwitch.identity.hashname isEqualToString:@"ee5dc2630603638dfb980cbe7062378bdc70091947d9fa6dac5cf9b072296aad"]) {
+
+            THPacket* pingPacket = [THPacket new];
+            [pingPacket.json setObject:@"ping" forKey:@"type"];
+            
+            pingChannel = [[THReliableChannel alloc] initToIdentity:[THIdentity identityFromHashname:@"ee5dc2630603638dfb980cbe7062378bdc70091947d9fa6dac5cf9b072296aad"]];
+            pingChannel.delegate = self;
+            
+            [thSwitch openChannel:pingChannel firstPacket:pingPacket];
+        }
     }
-#endif
 }
 
 -(void)channel:(THChannel *)channel didFailWithError:(NSError *)error
 {
     NSLog(@"Got an error: %@", error);
+}
+
+-(BOOL)channel:(THChannel *)channel handlePacket:(THPacket *)packet
+{
+    NSLog(@"Handling packet on channel %@ (%@): %@", channel.channelId, channel.type, packet.json);
+    if ([channel.type isEqualToString:@"ping"]) {
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            THPacket* pingReply = [THPacket new];
+            [pingReply.json setObject:@(time(NULL)) forKey:@"at"];
+            [channel sendPacket:pingReply];
+        });
+    }
+    return YES;
 }
 @end
