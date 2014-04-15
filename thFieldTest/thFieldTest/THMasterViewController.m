@@ -11,6 +11,10 @@
 #import "THDetailViewController.h"
 
 #import <THIdentity.h>
+#import <THCipherSet.h>
+#import <NSData+HexString.h>
+#import <THPath.h>
+#import <THTransport.h>
 
 @interface THMasterViewController () {
     NSMutableArray *_objects;
@@ -49,13 +53,39 @@
     NSString* pubPath = [NSString stringWithFormat:@"%@/pubkey.der", documentPath];
     NSString* privPath = [NSString stringWithFormat:@"%@/privkey.der", documentPath];
     
-    THIdentity* ourIdentity = nil;
-    ourIdentity = [THIdentity identityFromPublicFile:pubPath privateFile:privPath];
-    if (!ourIdentity) {
-        ourIdentity = [THIdentity generateIdentity];
-
-        [ourIdentity.rsaKeys savePublicKey:pubPath privateKey:privPath];
+    // Insert code here to initialize your application
+    thSwitch = [THSwitch defaultSwitch];
+    thSwitch.delegate = self;
+    THIdentity* baseIdentity = [THIdentity new];
+    THCipherSet2a* cs2a = [[THCipherSet2a alloc] initWithPublicKeyPath:pubPath privateKeyPath:privPath];
+    if (!cs2a) {
+        cs2a = [THCipherSet2a new];
+        [cs2a generateKeys];
+        [cs2a.rsaKeys savePublicKey:pubPath privateKey:privPath];
     }
+    [baseIdentity addCipherSet:cs2a];
+    NSLog(@"2a fingerprint %@", [cs2a.fingerprint hexString]);
+    thSwitch.identity = baseIdentity;
+    NSLog(@"Hashname: %@", [thSwitch.identity hashname]);
+    THIPv4Transport* ipTransport = [THIPv4Transport new];
+    ipTransport.priority = 1;
+    [thSwitch addTransport:ipTransport];
+    ipTransport.delegate = thSwitch;
+    NSArray* paths = [ipTransport gatherAvailableInterfacesApprovedBy:^BOOL(NSString *interface) {
+        NSLog(@"Offered interface %@", interface);
+        //if ([interface isEqualToString:@"lo0"]) return YES;
+        if ([interface isEqualToString:@"en0"]) return YES;
+        return NO;
+    }];
+    for (THIPV4Path* ipPath in paths) {
+        [baseIdentity addPath:ipPath];
+    }
+    
+    [thSwitch start];
+    
+    NSString* filePath = [[NSBundle mainBundle] pathForResource:@"seeds" ofType:@"json"];
+    NSData* seedData = [NSData dataWithContentsOfFile:filePath];
+    if (seedData) [thSwitch loadSeeds:seedData];
     
 #if 0
     NSMutableDictionary* secQuery = [NSMutableDictionary dictionary];
@@ -82,16 +112,7 @@
         NSDictionary* outKeyAttrs = (__bridge_transfer NSDictionary*)outRef;
     }
 #endif
-    
-    thSwitch.identity = ourIdentity;
-    thSwitch.delegate = self;
-    
-    [thSwitch startOnPort:42424];
-    NSLog(@"Online as %@", ourIdentity.hashname);
-    
-    NSString* filePath = [[NSBundle mainBundle] pathForResource:@"seeds" ofType:@"json"];
-    NSData* seedData = [NSData dataWithContentsOfFile:filePath];
-    if (seedData) [thSwitch loadSeeds:seedData];
+
 }
 
 - (void)didReceiveMemoryWarning

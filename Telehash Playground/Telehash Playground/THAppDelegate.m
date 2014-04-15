@@ -131,11 +131,11 @@
     }
 }
 
--(void)thSwitch:(THSwitch *)thSwitch status:(THSwitchStatus)status
+-(void)thSwitch:(THSwitch *)inSwitch status:(THSwitchStatus)status
 {
     NSLog(@"Switch status is now %d", status);
     if (status == THSwitchOnline && !pingChannel) {
-        if (![thSwitch.identity.hashname isEqualToString:@"ee5dc2630603638dfb980cbe7062378bdc70091947d9fa6dac5cf9b072296aad"]) {
+        if (![inSwitch.identity.hashname isEqualToString:@"ee5dc2630603638dfb980cbe7062378bdc70091947d9fa6dac5cf9b072296aad"]) {
 
             THPacket* pingPacket = [THPacket new];
             [pingPacket.json setObject:@"ping" forKey:@"type"];
@@ -143,7 +143,7 @@
             pingChannel = [[THReliableChannel alloc] initToIdentity:[THIdentity identityFromHashname:@"ee5dc2630603638dfb980cbe7062378bdc70091947d9fa6dac5cf9b072296aad"]];
             pingChannel.delegate = self;
             
-            [thSwitch openChannel:pingChannel firstPacket:pingPacket];
+            [inSwitch openChannel:pingChannel firstPacket:pingPacket];
         }
     }
 }
