@@ -20,6 +20,7 @@ NSMutableArray* THPathTypeRegistry;
 @interface THPath : NSObject
 @property (readonly) NSString* typeName;
 @property (assign, nonatomic) THTransport* transport;
+@property (readonly) BOOL isLocal;
 -(void)sendPacket:(THPacket*)packet;
 -(NSDictionary*)information;
 @end

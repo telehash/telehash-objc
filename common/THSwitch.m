@@ -210,7 +210,9 @@
         relayPath.transport = viaIdentity.activePath.transport;
         relayPath.relayedPath = viaIdentity.activePath;
         peerChannel.delegate = relayPath;
+        peerChannel.type = @"peer";
         
+        [toIdentity addPath:relayPath];
         toIdentity.activePath = relayPath;
         
         // XXX FIXME TODO:  Hole punch packet on paths [self.udpSocket sendData:[NSData data] toAddress:toIdentity.address withTimeout:-1 tag:0];
@@ -278,6 +280,7 @@
     if (newLine.toIdentity.availablePaths.count == 0) {
         [newLine.toIdentity addPath:incomingPacket.returnPath];
     }
+    newLine.toIdentity.activePath = incomingPacket.returnPath;
     
     // remove any existing lines to this hashname
     [self.meshBuckets removeLine:newLine];

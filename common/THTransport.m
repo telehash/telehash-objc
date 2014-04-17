@@ -29,6 +29,20 @@ static void THReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
                 format:@"You must override %@ in a subclass", NSStringFromSelector(_cmd)];
     return nil;
 }
+
+-(THPath*)pathTo:(NSDictionary *)pathInformation
+{
+    [NSException raise:NSInternalInconsistencyException
+                format:@"You must override %@ in a subclass", NSStringFromSelector(_cmd)];
+
+    return nil;
+}
+
+-(void)start
+{
+    [NSException raise:NSInternalInconsistencyException
+                format:@"You must override %@ in a subclass", NSStringFromSelector(_cmd)];
+}
 @end
 
 @implementation THIPv4Transport
@@ -104,6 +118,16 @@ static void THReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     return returnPath;
 }
 
+-(THPath*)pathTo:(NSDictionary *)pathInformation
+{
+    NSString* ip = [pathInformation objectForKey:@"ip"];
+    NSUInteger port = [[pathInformation objectForKey:@"port"] unsignedIntegerValue];
+    if (!ip || port == 0) return nil;
+    
+    THIPV4Path* path = [[THIPV4Path alloc] initWithTransport:self ip:ip port:port];
+    return path;
+}
+
 -(void)send:(NSData*)data to:(NSData*)address
 {
     [udpSocket sendData:data toAddress:address withTimeout:-1 tag:0];
@@ -172,6 +196,26 @@ static void THReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 
 
+@end
+
+@implementation THRelayTransport
+{
+    THPath* _path;
+}
+
+-(id)initWithPath:(THPath *)path
+{
+    self = [super init];
+    if (self) {
+        _path = path;
+    }
+    return self;
+}
+
+-(THPath*)returnPathTo:(NSData *)address
+{
+    return _path;
+}
 @end
 
 static void THReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReachabilityFlags flags, void* info)

@@ -205,6 +205,7 @@
         
         THUnreliableChannel* peerChannel = [[THUnreliableChannel alloc] initToIdentity:self.toIdentity];
         peerChannel.channelId = [innerPacket.json objectForKey:@"c"];
+        peerChannel.type = @"connect";
         [thSwitch openChannel:peerChannel firstPacket:nil];
         
         THRelayPath* relayPath = [THRelayPath new];
@@ -223,18 +224,26 @@
             self.toIdentity.activePath = packet.returnPath;
             self.activePath = packet.returnPath;
         }
+        
+        // Make sure that the externally visible path is on our identity
+        NSDictionary* externalPathInfo = [innerPacket.json objectForKey:@"path"];
+        if (externalPathInfo && ![thSwitch.identity checkForPath:externalPathInfo]) {
+            [thSwitch.identity addPath:[packet.returnPath.transport pathTo:externalPathInfo]];
+        }
+        
         THPacket* pathPacket = [THPacket new];
-        [pathPacket.json setObject:[thSwitch.identity pathInformation] forKey:@"paths"];
+        [pathPacket.json setObject:[thSwitch.identity pathInformationTo:packet.returnPath] forKey:@"paths"];
         [pathPacket.json setObject:@YES forKey:@"end"];
         [pathPacket.json setObject:[innerPacket.json objectForKey:@"c"] forKey:@"c"];
-        NSDictionary* returnPathInfo = [packet.returnPath information];
-        if (returnPathInfo) {
-            [pathPacket.json setObject:returnPathInfo forKey:@"path"];
+        NSDictionary* pathInfo = [packet.returnPath information];
+        if (pathInfo) {
+            [pathPacket.json setObject:pathInfo forKey:@"path"];
         }
         
         if (packet.returnPath.transport.priority > 0) {
             [pathPacket.json setObject:@(packet.returnPath.transport.priority) forKey:@"priority"];
         }
+        
         [self.toIdentity sendPacket:pathPacket path:packet.returnPath];
     } else {
         NSNumber* seq = [innerPacket.json objectForKey:@"seq"];
@@ -329,7 +338,7 @@
         THPacket* pathPacket = [THPacket new];
         NSDictionary* info = path.information;
         if (info) [pathPacket.json setObject:path.information forKey:@"path"];
-        [pathPacket.json setObject:[thSwitch.identity pathInformation] forKey:@"paths"];
+        [pathPacket.json setObject:[thSwitch.identity pathInformationTo:path] forKey:@"paths"];
         [pathPacket.json setObject:@"path" forKey:@"type"];
         if (![path.typeName isEqualToString:@"relay"] && path.transport.priority > 0) {
             [pathPacket.json setObject:@(path.transport.priority) forKey:@"priority"];

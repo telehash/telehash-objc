@@ -135,6 +135,7 @@
 {
     NSLog(@"Switch status is now %d", status);
     if (status == THSwitchOnline && !pingChannel) {
+#if 0
         if (![inSwitch.identity.hashname isEqualToString:@"ee5dc2630603638dfb980cbe7062378bdc70091947d9fa6dac5cf9b072296aad"]) {
 
             THPacket* pingPacket = [THPacket new];
@@ -145,6 +146,7 @@
             
             [inSwitch openChannel:pingChannel firstPacket:pingPacket];
         }
+#endif
     }
 }
 

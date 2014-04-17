@@ -14,6 +14,14 @@
 #import "THTransport.h"
 #include <arpa/inet.h>
 
+#define PRIVATE_192_FIRST   0x0000a8c0
+#define PRIVATE_C_MASK    0x0000ffff
+#define PRIVATE_172_FIRST   0x000010ac
+#define PRIVATE_B_MASK    0x00000fff
+#define PRIVATE_127_FIRST   0x0000007f
+#define PRIVATE_10_FIRST    0x000000a0
+#define PRIVATE_A_MASK     0x000000ff
+
 @implementation THPath
 -(void)sendPacket:(THPacket*)packet
 {
@@ -26,6 +34,11 @@
     [NSException raise:NSInternalInconsistencyException
                 format:@"You must override %@ in a subclass", NSStringFromSelector(_cmd)];
     return nil;
+}
+
+-(BOOL)isLocal
+{
+    return NO;
 }
 @end
 
@@ -86,6 +99,20 @@
     return self;
 }
 
+-(BOOL)isLocal
+{
+    struct sockaddr_in* saddr = (struct sockaddr_in*)[toAddress bytes];
+    
+    in_addr_t addr = saddr->sin_addr.s_addr;
+    
+    if ((addr & PRIVATE_C_MASK) == PRIVATE_192_FIRST) return YES;
+    if ((addr & PRIVATE_B_MASK) == PRIVATE_172_FIRST) return YES;
+    if ((addr & PRIVATE_A_MASK) == PRIVATE_127_FIRST) return YES;
+    if ((addr & PRIVATE_A_MASK) == PRIVATE_10_FIRST) return YES;
+
+    return NO;
+}
+
 -(NSString*)ip
 {
     return [GCDAsyncUdpSocket hostFromAddress:toAddress];
@@ -129,20 +156,29 @@
 }
 @end
 
-@implementation THRelayPath
+@implementation THRelayPath {
+    THRelayTransport* _relayTransport;
+}
+
 -(void)dealloc
 {
     NSLog(@"We lost a relay!");
 }
+
 -(id)initOnChannel:(THUnreliableChannel *)channel
 {
     self = [super init];
     if (self) {
+        _relayTransport = [[THRelayTransport alloc] initWithPath:self];
         self.relayedPath = channel.toIdentity.activePath;
-        self.transport = self.relayedPath.transport;
         self.peerChannel = channel;
     }
     return self;
+}
+
+-(THTransport*)transport
+{
+    return _relayTransport;
 }
 
 -(NSString*)typeName

@@ -216,13 +216,45 @@ int nlz(unsigned long x) {
     if (!self.activePath) self.activePath = path;
 }
 
--(NSArray*)pathInformation
+-(NSArray*)pathInformationTo:(THPath *)toPath
 {
+    BOOL allowLocal = NO;
+    if ([toPath class] == [THIPV4Path class]) {
+        THIPV4Path* ipPath = (THIPV4Path*)toPath;
+        if (ipPath.isLocal) {
+            allowLocal = YES;
+        } else {
+            // Check our external facing paths, if any of them match the IP that's coming we'll allow local paths
+            THSwitch* thSwitch = [THSwitch defaultSwitch];
+            for (THPath* switchPath in thSwitch.identity.availablePaths) {
+                if ([switchPath class] == [THIPV4Path class]) {
+                    THIPV4Path* ipSwitchPath = (THIPV4Path*)switchPath;
+                    if ([ipSwitchPath.ip isEqualToString:ipPath.ip]) {
+                        allowLocal = YES;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    
     NSMutableArray* paths = [NSMutableArray arrayWithCapacity:self.availablePaths.count];
     for(THPath* path in self.availablePaths) {
+        if (path.isLocal && !allowLocal) continue;
         [paths addObject:[path information]];
     }
     return paths;
+}
+
+-(BOOL)checkForPath:(NSDictionary*)pathInfo
+{
+    for (THPath* path in self.availablePaths) {
+        if ([path.information isEqualToDictionary:pathInfo]) {
+            return YES;
+        }
+    }
+
+    return NO;
 }
 
 +(NSString*)hashnameForParts:(NSDictionary*)parts

@@ -12,6 +12,8 @@
 #import "THIdentity.h"
 #import "THPacketBuffer.h"
 #import "THCipherSet.h"
+#import "THPath.h"
+#include <arpa/inet.h>
 
 @interface telehashTests : XCTestCase
 

@@ -25,6 +25,7 @@
 @property NSUInteger priority;
 -(void)start;
 -(THPath*)returnPathTo:(NSData*)address;
+-(THPath*)pathTo:(NSDictionary*)pathInformation;
 -(void)send:(NSData*)data to:(NSData*)address;
 @end
 
@@ -35,4 +36,8 @@ typedef BOOL(^THInterfaceApproverBlock)(NSString* interface);
 -(void)startOnPort:(unsigned short)port;
 -(NSArray*)gatherAvailableInterfacesApprovedBy:(THInterfaceApproverBlock)approver;
 @property (readonly) NSUInteger port;
+@end
+
+@interface THRelayTransport : THTransport
+-(id)initWithPath:(THPath*)path;
 @end

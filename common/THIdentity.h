@@ -48,8 +48,8 @@
 
 -(THChannel*)channelForType:(NSString*)type;
 
--(NSArray*)pathInformation;
-
+-(NSArray*)pathInformationTo:(THPath*)toPath;
+-(BOOL)checkForPath:(NSDictionary*)pathInfo;
 
 +(NSString*)hashnameForParts:(NSDictionary*)parts;
 @end
