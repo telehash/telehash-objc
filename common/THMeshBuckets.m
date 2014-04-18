@@ -311,15 +311,11 @@
             // this is it!
             self.seekingIdentity.via = channel.toIdentity;
             if (seeParts.count > 2) {
-                THIPv4Transport* localTransport;
-                for (THTransport* transport in self.localSwitch.transports) {
-                    if ([transport.typeName isEqualToString:@"ipv4"]) {
-                        localTransport = (THIPv4Transport*)transport;
-                        break;
-                    }
+                THIPv4Transport* localTransport = [self.localSwitch.transports objectForKey:@"ipv4"];
+                if (localTransport) {
+                    NSData* remoteAddress = [THIPV4Path addressTo:[seeParts objectAtIndex:2] port:[[seeParts objectAtIndex:3] integerValue]];
+                    [self.seekingIdentity addPath:[localTransport returnPathTo:remoteAddress]];
                 }
-                NSData* remoteAddress = [THIPV4Path addressTo:[seeParts objectAtIndex:2] port:[[seeParts objectAtIndex:3] integerValue]];
-                [self.seekingIdentity addPath:[localTransport returnPathTo:remoteAddress]];
             }
             foundIt = YES;
             *stop = YES;

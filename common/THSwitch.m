@@ -55,7 +55,7 @@
         self.meshBuckets.localSwitch = self;
         self.openLines = [NSMutableDictionary dictionary];
         self.pendingJobs = [NSMutableArray array];
-        self.transports = [NSMutableArray array];
+        self.transports = [NSMutableDictionary dictionary];
         self.status = THSWitchOffline;
     }
     return self;
@@ -76,15 +76,15 @@
 {
     self.meshBuckets.localIdentity = self.identity;
     // XXX TODO FIXME For each path start it
-    for (THTransport* transport in self.transports) {
-        [transport start];
+    for (NSString* key in self.transports) {
+        [[self.transports objectForKey:key] start];
     }
     [self updateStatus:THSwitchListening];
 }
 
 -(void)addTransport:(THTransport *)transport
 {
-    [self.transports addObject:transport];
+    [self.transports setObject:transport forKey:transport.typeName];
 }
 
 -(void)loadSeeds:(NSData *)seedData;
@@ -103,14 +103,10 @@
         THIdentity* seedIdentity = [THIdentity identityFromParts:parts key:cs];
         for (NSDictionary* path in paths) {
             if ([[path objectForKey:@"type"] isEqualToString:@"ipv4"]) {
-                NSUInteger idx = [self.transports indexOfObjectPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
-                    THTransport* transport = (THTransport*)obj;
-                    return [transport.typeName isEqualToString:@"ipv4"];
-                }];
-                if (idx == NSNotFound) continue;
-                THTransport* transport = [self.transports objectAtIndex:idx];
+                THIPv4Transport* ipTransport = [self.transports objectForKey:@"ipv4"];
+                if (!ipTransport) continue;
                 NSData* address = [THIPV4Path addressTo:[path objectForKey:@"ip"] port:[[path objectForKey:@"port"] unsignedIntegerValue]];
-                [seedIdentity addPath:[transport returnPathTo:address]];
+                [seedIdentity addPath:[ipTransport returnPathTo:address]];
                 //seedIdentity.activePath = [transport returnPathTo:address];
             }
         }
@@ -183,7 +179,7 @@
     if (toIdentity.availablePaths.count > 0 && [toIdentity.cipherParts objectForKey:@"2a"]) {
         THLine* channelLine = [THLine new];
         channelLine.toIdentity = toIdentity;
-        channelLine.activePath = toIdentity.activePath;
+        //channelLine.activePath = toIdentity.activePath;
         toIdentity.currentLine = channelLine;
         
         [channelLine sendOpen];
@@ -398,10 +394,11 @@
 
 -(void)transportDidChangeActive:(THTransport *)transport;
 {
-    NSUInteger availableCount = [[self.transports indexesOfObjectsPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
-        THTransport* transport = (THTransport*)obj;
-        return transport.available;
-    }] count];
+    NSUInteger availableCount = 0;
+    for (NSString* key in self.transports) {
+        THTransport* transport = [self.transports objectForKey:key];
+        if (transport.available) ++availableCount;
+    }
     if (availableCount <= 0) {
         NSLog(@"Oh no, we're offline!");
         // XXX TODO:  What to do?

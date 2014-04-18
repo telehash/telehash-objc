@@ -40,6 +40,11 @@
 {
     return NO;
 }
+
+-(BOOL)pathIsLocalTo:(THPath *)path
+{
+    return NO;
+}
 @end
 
 
@@ -153,6 +158,17 @@
         @"ip":self.ip,
         @"port":@(self.port)
     };
+}
+
+-(BOOL)pathIsLocalTo:(THPath *)path
+{
+    // We can only compare our own type
+    if ([path class] != [self class]) return NO;
+    
+    THIPV4Path* toPath = (THIPV4Path*)path;
+    
+    if ([toPath.ip isEqualToString:self.ip]) return YES;
+    return NO;
 }
 @end
 

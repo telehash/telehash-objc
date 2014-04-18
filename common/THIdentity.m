@@ -94,6 +94,7 @@ static NSMutableDictionary* identityCache;
 
 -(void)commonInit
 {
+    self.isLocal = NO;
     self.cipherParts = [NSMutableDictionary dictionary];
     self.availablePaths = [NSMutableArray array];
     self.channels = [NSMutableDictionary dictionary];
@@ -212,35 +213,39 @@ int nlz(unsigned long x) {
 
 -(void)addPath:(THPath *)path
 {
+    // See if this path matches any of ours and flag it as local
+    THSwitch* thSwitch = [THSwitch defaultSwitch];
+    for (THPath* switchPath in thSwitch.identity.availablePaths) {
+        if ([switchPath pathIsLocalTo:path]) {
+            self.isLocal = YES;
+            break;
+        }
+    }
     [self.availablePaths addObject:path];
     if (!self.activePath) self.activePath = path;
 }
 
--(NSArray*)pathInformationTo:(THPath *)toPath
+-(NSArray*)pathInformationTo:(THIdentity *)toIdentity
 {
+#if 0
     BOOL allowLocal = NO;
-    if ([toPath class] == [THIPV4Path class]) {
-        THIPV4Path* ipPath = (THIPV4Path*)toPath;
-        if (ipPath.isLocal) {
-            allowLocal = YES;
-        } else {
-            // Check our external facing paths, if any of them match the IP that's coming we'll allow local paths
-            THSwitch* thSwitch = [THSwitch defaultSwitch];
-            for (THPath* switchPath in thSwitch.identity.availablePaths) {
-                if ([switchPath class] == [THIPV4Path class]) {
-                    THIPV4Path* ipSwitchPath = (THIPV4Path*)switchPath;
-                    if ([ipSwitchPath.ip isEqualToString:ipPath.ip]) {
-                        allowLocal = YES;
-                        break;
-                    }
-                }
+    if (toPath.isLocal) {
+        allowLocal = YES;
+    } else {
+        // Check our external facing paths, if any of them match the IP that's coming we'll allow local paths
+        THSwitch* thSwitch = [THSwitch defaultSwitch];
+        for (THPath* switchPath in thSwitch.identity.availablePaths) {
+            if ([toPath pathIsLocalTo:switchPath]) {
+                allowLocal =  YES;
+                break;
             }
         }
     }
+#endif
     
     NSMutableArray* paths = [NSMutableArray arrayWithCapacity:self.availablePaths.count];
     for(THPath* path in self.availablePaths) {
-        if (path.isLocal && !allowLocal) continue;
+        if (path.isLocal && !toIdentity.isLocal) continue;
         [paths addObject:[path information]];
     }
     return paths;

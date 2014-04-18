@@ -23,6 +23,7 @@ NSMutableArray* THPathTypeRegistry;
 @property (readonly) BOOL isLocal;
 -(void)sendPacket:(THPacket*)packet;
 -(NSDictionary*)information;
+-(BOOL)pathIsLocalTo:(THPath*)path;
 @end
 
 @interface THIPV4Path : THPath<GCDAsyncUdpSocketDelegate>

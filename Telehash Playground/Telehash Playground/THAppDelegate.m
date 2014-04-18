@@ -61,7 +61,7 @@
     [thSwitch addTransport:ipTransport];
     ipTransport.delegate = thSwitch;
     NSArray* paths = [ipTransport gatherAvailableInterfacesApprovedBy:^BOOL(NSString *interface) {
-        if ([interface isEqualToString:@"lo0"]) return YES;
+        //if ([interface isEqualToString:@"lo0"]) return YES;
         if ([interface isEqualToString:@"en0"]) return YES;
         return NO;
     }];

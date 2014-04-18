@@ -20,7 +20,6 @@
 
 @property THIdentity* toIdentity;
 @property THCipherSetLineInfo* cipherSetInfo;
-@property THPath* activePath;
 @property NSString* outLineId;
 @property NSString* inLineId;
 @property BOOL isOpen;

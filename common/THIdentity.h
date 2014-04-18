@@ -33,6 +33,7 @@
 @property NSDictionary* parts;
 @property NSMutableArray* availablePaths;
 @property THPath* activePath;
+@property BOOL isLocal;
 
 -(void)addCipherSet:(THCipherSet*)cipherSet;
 -(void)addPath:(THPath*)path;
@@ -48,7 +49,7 @@
 
 -(THChannel*)channelForType:(NSString*)type;
 
--(NSArray*)pathInformationTo:(THPath*)toPath;
+-(NSArray*)pathInformationTo:(THIdentity*)toIdentity;
 -(BOOL)checkForPath:(NSDictionary*)pathInfo;
 
 +(NSString*)hashnameForParts:(NSDictionary*)parts;

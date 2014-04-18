@@ -61,11 +61,13 @@
     self.outLineId = [openPacket.json objectForKey:@"line"];
     self.createdAt = [[openPacket.json objectForKey:@"at"] unsignedIntegerValue];
     self.lastInActivity = time(NULL);
+#if 0
     if ([self.toIdentity.activePath class] == [THRelayPath class]){
         self.activePath = self.toIdentity.activePath;
     } else {
         self.activePath = openPacket.returnPath;
     }
+#endif
 }
 
 -(NSUInteger)nextChannelId
@@ -219,20 +221,30 @@
         
         [thSwitch openLine:peerIdentity];
     } else if ([channelType isEqualToString:@"path"] && !channel) {
-        if ([[innerPacket.json objectForKey:@"priority"] integerValue] == 1) {
-            // This came in on the new path we want to use!
-            self.toIdentity.activePath = packet.returnPath;
-            self.activePath = packet.returnPath;
-        }
-        
         // Make sure that the externally visible path is on our identity
         NSDictionary* externalPathInfo = [innerPacket.json objectForKey:@"path"];
         if (externalPathInfo && ![thSwitch.identity checkForPath:externalPathInfo]) {
             [thSwitch.identity addPath:[packet.returnPath.transport pathTo:externalPathInfo]];
         }
         
+        // Add the given paths to the identity
+        NSArray* offeredPaths = [innerPacket.json objectForKey:@"paths"];
+        for (NSDictionary* pathInfo in offeredPaths) {
+            if (![[pathInfo objectForKey:@"type"] isEqualToString:@"ipv4"]) continue;
+            THIPv4Transport* ipTransport = [thSwitch.transports objectForKey:@"ipv4"];
+            if (!ipTransport) continue;
+            NSData* address = [THIPV4Path addressTo:[pathInfo objectForKey:@"ip"] port:[[pathInfo objectForKey:@"port"] unsignedIntegerValue]];
+            [self.toIdentity addPath:[ipTransport returnPathTo:address]];
+        }
+        
+        if ([[innerPacket.json objectForKey:@"priority"] integerValue] > self.toIdentity.activePath.transport.priority) {
+            // This came in on the new path we want to use!
+            self.toIdentity.activePath = packet.returnPath;
+            //self.activePath = packet.returnPath;
+        }
+        
         THPacket* pathPacket = [THPacket new];
-        [pathPacket.json setObject:[thSwitch.identity pathInformationTo:packet.returnPath] forKey:@"paths"];
+        [pathPacket.json setObject:[thSwitch.identity pathInformationTo:self.toIdentity] forKey:@"paths"];
         [pathPacket.json setObject:@YES forKey:@"end"];
         [pathPacket.json setObject:[innerPacket.json objectForKey:@"c"] forKey:@"c"];
         NSDictionary* pathInfo = [packet.returnPath information];
@@ -241,7 +253,9 @@
         }
         
         if (packet.returnPath.transport.priority > 0) {
-            [pathPacket.json setObject:@(packet.returnPath.transport.priority) forKey:@"priority"];
+            NSUInteger priority = packet.returnPath.transport.priority;
+            if (self.toIdentity.isLocal && packet.returnPath.isLocal) ++priority;
+            [pathPacket.json setObject:@(priority) forKey:@"priority"];
         }
         
         [self.toIdentity sendPacket:pathPacket path:packet.returnPath];
@@ -306,7 +320,7 @@
     lineOutPacket.body = linePacketData;
     lineOutPacket.jsonLength = 0;
     
-    if (path == nil) path = self.activePath;
+    if (path == nil) path = self.toIdentity.activePath;
     [path sendPacket:lineOutPacket];
 }
 
@@ -338,7 +352,7 @@
         THPacket* pathPacket = [THPacket new];
         NSDictionary* info = path.information;
         if (info) [pathPacket.json setObject:path.information forKey:@"path"];
-        [pathPacket.json setObject:[thSwitch.identity pathInformationTo:path] forKey:@"paths"];
+        [pathPacket.json setObject:[thSwitch.identity pathInformationTo:self.toIdentity] forKey:@"paths"];
         [pathPacket.json setObject:@"path" forKey:@"type"];
         if (![path.typeName isEqualToString:@"relay"] && path.transport.priority > 0) {
             [pathPacket.json setObject:@(path.transport.priority) forKey:@"priority"];
@@ -356,6 +370,14 @@
         [self sendPacket:pathPacket path:path];
         //[self.toIdentity sendPacket:pathPacket path:packet.returnPath];
     }
+    
+    // Let's make sure we negotiated a valid path
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        if ([self.toIdentity.activePath class] != [THRelayPath class]) return;
+        // Uh oh, we're still on relay, please pick something else
+        [self negotiatePath];
+    });
+
 }
 
 -(void)addChannelHandler:(id)handler
@@ -373,17 +395,46 @@
 
 -(BOOL)channel:(THChannel *)channel handlePacket:(THPacket *)packet
 {
-
+    THSwitch* thSwitch = [THSwitch defaultSwitch];
+    
+    // Make sure that the externally visible path is on our identity
+    NSDictionary* externalPathInfo = [packet.json objectForKey:@"path"];
+    if (externalPathInfo && ![thSwitch.identity checkForPath:externalPathInfo]) {
+        [thSwitch.identity addPath:[packet.returnPath.transport pathTo:externalPathInfo]];
+    }
+    
+    // Add the given paths to the identity
+    NSArray* offeredPaths = [packet.json objectForKey:@"paths"];
+    for (NSDictionary* pathInfo in offeredPaths) {
+        if (![[pathInfo objectForKey:@"type"] isEqualToString:@"ipv4"]) continue;
+        THIPv4Transport* ipTransport = [thSwitch.transports objectForKey:@"ipv4"];
+        if (!ipTransport) continue;
+        NSData* address = [THIPV4Path addressTo:[pathInfo objectForKey:@"ip"] port:[[pathInfo objectForKey:@"port"] unsignedIntegerValue]];
+        [self.line.toIdentity addPath:[ipTransport returnPathTo:address]];
+    }
+    
+    if ([[packet.json objectForKey:@"priority"] integerValue] > self.line.toIdentity.activePath.transport.priority) {
+        // This came in on the new path we want to use!
+        self.line.toIdentity.activePath = packet.returnPath;
+        //self.activePath = packet.returnPath;
+    }
+    
+#if 0
     NSUInteger priority = [[packet.json objectForKey:@"priority"] unsignedIntegerValue];
+    if (priority > self.line.toIdentity.activePath.transport.priority) {
+        NSLog(@"Setting active path to %@", packet.returnPath);
+        self.line.toIdentity
+    }
     for (NSDictionary* ipInfo in [packet.json objectForKey:@"paths"]) {
-        if ([[ipInfo objectForKey:@"type"] isEqualToString:@"ipv4"] && priority > 0) {
+        if ([[ipInfo objectForKey:@"type"] isEqualToString:@"ipv4"] && ) {
             THIPV4Path* newPath = [[THIPV4Path alloc] initWithTransport:packet.returnPath.transport ip:[ipInfo objectForKey:@"ip"] port:[[ipInfo objectForKey:@"port"] unsignedIntegerValue]];
                 
             [self.line.toIdentity.availablePaths insertObject:newPath atIndex:0];
             self.line.toIdentity.activePath = newPath;
-            self.line.activePath = newPath;
+            //self.line.activePath = newPath;
         }
     }
+#endif
     
     [self.line removeChannelHandler:self];
     
