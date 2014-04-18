@@ -213,6 +213,10 @@ int nlz(unsigned long x) {
 
 -(void)addPath:(THPath *)path
 {
+    // Make sure we don't already have this path
+    for (THPath* curPath in self.availablePaths) {
+        if ([curPath.information isEqualToDictionary:path.information]) return;
+    }
     // See if this path matches any of ours and flag it as local
     THSwitch* thSwitch = [THSwitch defaultSwitch];
     for (THPath* switchPath in thSwitch.identity.availablePaths) {

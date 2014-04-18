@@ -371,9 +371,11 @@
         //[self.toIdentity sendPacket:pathPacket path:packet.returnPath];
     }
     
+    NSUInteger pathCount = self.toIdentity.availablePaths.count;
     // Let's make sure we negotiated a valid path
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        if ([self.toIdentity.activePath class] != [THRelayPath class]) return;
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        // If we got off the relay or we didn't change the paths to check, we can bail
+        if ([self.toIdentity.activePath class] != [THRelayPath class] || pathCount <= self.toIdentity.availablePaths.count) return;
         // Uh oh, we're still on relay, please pick something else
         [self negotiatePath];
     });
