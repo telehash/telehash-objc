@@ -259,6 +259,19 @@
         }
         
         [self.toIdentity sendPacket:pathPacket path:packet.returnPath];
+        
+        // If the incoming packet was on the lines activePath we'll set a timer and make sure we get off a relay
+        if ([self.toIdentity.activePath class] == [THRelayPath class] && [packet.returnPath class] == [THRelayPath class]) {
+            NSUInteger pathCount = self.toIdentity.availablePaths.count;
+            // Let's make sure we negotiated a valid pathpo
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                // If we got off the relay or we didn't change the paths to check, we can bail
+                if ([self.toIdentity.activePath class] != [THRelayPath class] || pathCount <= self.toIdentity.availablePaths.count) return;
+                // Uh oh, we're still on relay, please pick something else
+                [self negotiatePath];
+            });
+        }
+
     } else {
         NSNumber* seq = [innerPacket.json objectForKey:@"seq"];
         // Let the channel instance handle it

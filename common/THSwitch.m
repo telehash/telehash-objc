@@ -188,6 +188,10 @@
     
     // Let's do a peer request
     if (toIdentity.via) {
+        // If we have a pending relay path, we should bail here
+        for (THPath* path in toIdentity.availablePaths) {
+            if ([path class] == [THRelayPath class]) return;
+        }
         THIdentity* viaIdentity = [THIdentity identityFromHashname:toIdentity.via.hashname];
         
         THUnreliableChannel* peerChannel = [[THUnreliableChannel alloc] initToIdentity:viaIdentity];
