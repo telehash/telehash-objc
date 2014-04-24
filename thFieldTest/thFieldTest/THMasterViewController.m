@@ -15,6 +15,7 @@
 #import <NSData+HexString.h>
 #import <THPath.h>
 #import <THTransport.h>
+#import <THCipherSet2a.h>
 
 @implementation THMasterViewController
 

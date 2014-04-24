@@ -66,6 +66,7 @@
 		8207A0AE18562A5E009EF845 /* thFieldTestTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = thFieldTestTests.m; sourceTree = "<group>"; };
 		8207A0C718566C69009EF845 /* libtelehash-ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libtelehash-ios.a"; path = "../build/Debug-iphoneos/libtelehash-ios.a"; sourceTree = "<group>"; };
 		823652DB18FCE92D00F75308 /* libcryptopp-ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libcryptopp-ios.a"; path = "../cryptopp/cryptopp/build/Debug/libcryptopp-ios.a"; sourceTree = "<group>"; };
+		8249D64C1906DAE40009F03B /* libsodium.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsodium.a; path = "../libsodium/build-ios/lib/libsodium.a"; sourceTree = "<group>"; };
 		8263D95718BD16B600DED8E5 /* libcryptopp-ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libcryptopp-ios.a"; path = "../../../../../Library/Developer/Xcode/DerivedData/telehash-hdsfxjzmsvyqtyccnkdyjwfyzarx/Build/Products/Debug-iphoneos/libcryptopp-ios.a"; sourceTree = "<group>"; };
 		82835BD81857962800168C3B /* libc++.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libc++.dylib"; path = "usr/lib/libc++.dylib"; sourceTree = SDKROOT; };
 		82835BDE185798BB00168C3B /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
@@ -124,6 +125,7 @@
 		8207A07C18562A5E009EF845 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				8249D64C1906DAE40009F03B /* libsodium.a */,
 				823652DB18FCE92D00F75308 /* libcryptopp-ios.a */,
 				8263D95718BD16B600DED8E5 /* libcryptopp-ios.a */,
 				82D222CA1871E0F70015E7EA /* libcryptopp.a */,
@@ -444,6 +446,7 @@
 					"/Users/temas/Projects/telehash/objc/telehash/build/Debug-iphoneos",
 					"$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/telehash-hdsfxjzmsvyqtyccnkdyjwfyzarx/Build/Products/Debug-iphoneos",
 					/Users/temas/Projects/telehash/objc/telehash/cryptopp/cryptopp/build/Debug,
+					"$(SRCROOT)/../libsodium/build-ios/lib",
 				);
 				OTHER_LDFLAGS = (
 					"-Objc",
@@ -476,6 +479,7 @@
 					"/Users/temas/Projects/telehash/objc/telehash/build/Debug-iphoneos",
 					"$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/telehash-hdsfxjzmsvyqtyccnkdyjwfyzarx/Build/Products/Debug-iphoneos",
 					/Users/temas/Projects/telehash/objc/telehash/cryptopp/cryptopp/build/Debug,
+					"$(SRCROOT)/../libsodium/build-ios/lib",
 				);
 				OTHER_LDFLAGS = (
 					"-Objc",

@@ -15,6 +15,7 @@
 #import "THTransport.h"
 #import "THPath.h"
 #import "THChannel.h"
+#import "THCipherSet2a.h"
 
 #include <arpa/inet.h>
 

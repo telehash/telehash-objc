@@ -57,6 +57,14 @@
 		8236E1A718F5EDB600169201 /* THTransport.h in Headers */ = {isa = PBXBuildFile; fileRef = 8236E1A518F5EDB600169201 /* THTransport.h */; };
 		8236E1A818F5EDB600169201 /* THTransport.m in Sources */ = {isa = PBXBuildFile; fileRef = 8236E1A618F5EDB600169201 /* THTransport.m */; };
 		8236E1A918F5EDB600169201 /* THTransport.m in Sources */ = {isa = PBXBuildFile; fileRef = 8236E1A618F5EDB600169201 /* THTransport.m */; };
+		8249D63F1905F6640009F03B /* libsodium.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8249D63E1905F6640009F03B /* libsodium.a */; };
+		8249D6411905F6730009F03B /* libsodium.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8249D6401905F6730009F03B /* libsodium.a */; };
+		8249D6441906100C0009F03B /* THCipherSet3a.h in Headers */ = {isa = PBXBuildFile; fileRef = 8249D6421906100C0009F03B /* THCipherSet3a.h */; };
+		8249D6451906100C0009F03B /* THCipherSet3a.m in Sources */ = {isa = PBXBuildFile; fileRef = 8249D6431906100C0009F03B /* THCipherSet3a.m */; };
+		8249D6461906100C0009F03B /* THCipherSet3a.m in Sources */ = {isa = PBXBuildFile; fileRef = 8249D6431906100C0009F03B /* THCipherSet3a.m */; };
+		8249D649190627300009F03B /* THCipherSet2a.h in Headers */ = {isa = PBXBuildFile; fileRef = 8249D647190627300009F03B /* THCipherSet2a.h */; };
+		8249D64A190627300009F03B /* THCipherSet2a.m in Sources */ = {isa = PBXBuildFile; fileRef = 8249D648190627300009F03B /* THCipherSet2a.m */; };
+		8249D64B190627300009F03B /* THCipherSet2a.m in Sources */ = {isa = PBXBuildFile; fileRef = 8249D648190627300009F03B /* THCipherSet2a.m */; };
 		8251ADB418C02349005CB9E2 /* libcryptopp-osx.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8263D95B18BD16F000DED8E5 /* libcryptopp-osx.a */; };
 		8251ADBA18C023DC005CB9E2 /* open.pkt in Resources */ = {isa = PBXBuildFile; fileRef = 8251ADB918C023DC005CB9E2 /* open.pkt */; };
 		8251ADBD18C05A26005CB9E2 /* THCipherSet.h in Headers */ = {isa = PBXBuildFile; fileRef = 8251ADBB18C05A26005CB9E2 /* THCipherSet.h */; };
@@ -230,6 +238,12 @@
 		8231EC1A1836F37F00BC41C1 /* THLine.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THLine.m; sourceTree = "<group>"; };
 		8236E1A518F5EDB600169201 /* THTransport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THTransport.h; sourceTree = "<group>"; };
 		8236E1A618F5EDB600169201 /* THTransport.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THTransport.m; sourceTree = "<group>"; };
+		8249D63E1905F6640009F03B /* libsodium.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsodium.a; path = libsodium/build/lib/libsodium.a; sourceTree = "<group>"; };
+		8249D6401905F6730009F03B /* libsodium.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsodium.a; path = "libsodium/build-ios/lib/libsodium.a"; sourceTree = "<group>"; };
+		8249D6421906100C0009F03B /* THCipherSet3a.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THCipherSet3a.h; sourceTree = "<group>"; };
+		8249D6431906100C0009F03B /* THCipherSet3a.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THCipherSet3a.m; sourceTree = "<group>"; };
+		8249D647190627300009F03B /* THCipherSet2a.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THCipherSet2a.h; sourceTree = "<group>"; };
+		8249D648190627300009F03B /* THCipherSet2a.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THCipherSet2a.m; sourceTree = "<group>"; };
 		8251ADB918C023DC005CB9E2 /* open.pkt */ = {isa = PBXFileReference; lastKnownFileType = file; path = open.pkt; sourceTree = "<group>"; };
 		8251ADBB18C05A26005CB9E2 /* THCipherSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THCipherSet.h; sourceTree = "<group>"; };
 		8251ADBC18C05A26005CB9E2 /* THCipherSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THCipherSet.m; sourceTree = "<group>"; };
@@ -262,6 +276,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8249D63F1905F6640009F03B /* libsodium.a in Frameworks */,
 				8218D17117FA6E8A0053AFAC /* Cocoa.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -282,6 +297,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8249D6411905F6730009F03B /* libsodium.a in Frameworks */,
 				8218D19D17FA6EA50053AFAC /* Foundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -340,6 +356,8 @@
 		8218D16F17FA6E8A0053AFAC /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				8249D6401905F6730009F03B /* libsodium.a */,
+				8249D63E1905F6640009F03B /* libsodium.a */,
 				821874151836957400256DA3 /* libc++.dylib */,
 				8218D17017FA6E8A0053AFAC /* Cocoa.framework */,
 				8218D18117FA6E8B0053AFAC /* XCTest.framework */,
@@ -489,6 +507,10 @@
 				820BADFB18D81476003D7CBA /* THPath.m */,
 				8236E1A518F5EDB600169201 /* THTransport.h */,
 				8236E1A618F5EDB600169201 /* THTransport.m */,
+				8249D6421906100C0009F03B /* THCipherSet3a.h */,
+				8249D6431906100C0009F03B /* THCipherSet3a.m */,
+				8249D647190627300009F03B /* THCipherSet2a.h */,
+				8249D648190627300009F03B /* THCipherSet2a.m */,
 			);
 			path = common;
 			sourceTree = "<group>";
@@ -527,6 +549,7 @@
 				822C6D2F17FCCD0C008C04BA /* ECDH.h in Headers */,
 				8218D1C217FA6F410053AFAC /* THRSA.h in Headers */,
 				822C6D3417FCD3F6008C04BA /* CTRAES256.h in Headers */,
+				8249D649190627300009F03B /* THCipherSet2a.h in Headers */,
 				822C6D3E17FCD8C5008C04BA /* RNG.h in Headers */,
 				82B1721018009A6C00C29EAF /* GCDAsyncUdpSocket.h in Headers */,
 				8231EC1B1836F37F00BC41C1 /* THLine.h in Headers */,
@@ -534,6 +557,7 @@
 				822C6D4417FCDB31008C04BA /* THPacket.h in Headers */,
 				822C6D3917FCD754008C04BA /* SHA256.h in Headers */,
 				82B1720B180095B100C29EAF /* THChannel.h in Headers */,
+				8249D6441906100C0009F03B /* THCipherSet3a.h in Headers */,
 				82B172151800A51B00C29EAF /* THIdentity.h in Headers */,
 				8231EBC51836BD3600BC41C1 /* NSString+HexString.h in Headers */,
 				82A31BA3183457EB005077AD /* NSData+HexString.h in Headers */,
@@ -746,7 +770,9 @@
 				8231EC1C1836F37F00BC41C1 /* THLine.m in Sources */,
 				82DB236C187C8343002C74C9 /* THMeshBuckets.m in Sources */,
 				82B1720717FDE90600C29EAF /* THSwitch.m in Sources */,
+				8249D64A190627300009F03B /* THCipherSet2a.m in Sources */,
 				822C6D3517FCD3F6008C04BA /* CTRAES256.mm in Sources */,
+				8249D6451906100C0009F03B /* THCipherSet3a.m in Sources */,
 				8236E1A818F5EDB600169201 /* THTransport.m in Sources */,
 				82DB2376187C83E4002C74C9 /* THPendingJob.m in Sources */,
 				8231EBC61836BD3600BC41C1 /* NSString+HexString.m in Sources */,
@@ -783,7 +809,9 @@
 				8231EC1D1836F37F00BC41C1 /* THLine.m in Sources */,
 				82DB236D187C8343002C74C9 /* THMeshBuckets.m in Sources */,
 				82B1720817FDE90600C29EAF /* THSwitch.m in Sources */,
+				8249D64B190627300009F03B /* THCipherSet2a.m in Sources */,
 				822C6D3617FCD3F6008C04BA /* CTRAES256.mm in Sources */,
+				8249D6461906100C0009F03B /* THCipherSet3a.m in Sources */,
 				8236E1A918F5EDB600169201 /* THTransport.m in Sources */,
 				82DB2377187C83E4002C74C9 /* THPendingJob.m in Sources */,
 				8231EBC71836BD3600BC41C1 /* NSString+HexString.m in Sources */,
@@ -885,6 +913,10 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				ONLY_ACTIVE_ARCH = NO;
 				SDKROOT = macosx;
@@ -918,6 +950,10 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				SDKROOT = macosx;
 			};
@@ -933,7 +969,12 @@
 					"$(inherited)",
 					"CRYPTOPP_DISABLE_ASM=1",
 				);
-				HEADER_SEARCH_PATHS = "$(SRCROOT)/cryptopp";
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/cryptopp",
+					"$(PROJECT_DIR)/libsodium/build/include",
+				);
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/libsodium/build/lib";
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -944,7 +985,12 @@
 			buildSettings = {
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "telehash/telehash-Prefix.pch";
-				HEADER_SEARCH_PATHS = "$(SRCROOT)/cryptopp";
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/cryptopp",
+					"$(PROJECT_DIR)/libsodium/build/include",
+				);
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/libsodium/build/lib";
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -1015,10 +1061,14 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
-					"$(SRCROOT)/cryptopp",
+					"$(PROJECT_DIR)/cryptopp",
+					"$(PROJECT_DIR)/libsodium/build-ios/include",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
-				LIBRARY_SEARCH_PATHS = "$(inherited)";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/libsodium/build-ios/lib",
+				);
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1039,10 +1089,14 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
-					"$(SRCROOT)/cryptopp",
+					"$(PROJECT_DIR)/cryptopp",
+					"$(PROJECT_DIR)/libsodium/build-ios/include",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
-				LIBRARY_SEARCH_PATHS = "$(inherited)";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/libsodium/build-ios/lib",
+				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;

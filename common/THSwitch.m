@@ -19,6 +19,7 @@
 #import "THCipherSet.h"
 #import "THTransport.h"
 #import "THPath.h"
+#import "THCipherSet2a.h"
 
 @interface THSwitch()
 
@@ -313,7 +314,6 @@
         if (pendingLineJob) pendingLineJob.handler(newLine);
         
         [self.meshBuckets linkToIdentity:newLine.toIdentity];
-        [newLine negotiatePath];
     } else {
         [newLine sendOpen];
         [newLine openLine];
@@ -335,6 +335,7 @@
         });
         [self.meshBuckets addIdentity:newLine.toIdentity];
     }
+    [newLine negotiatePath];
     
     // Check the pending jobs for any lines or channels
     [self.pendingJobs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {

@@ -1,35 +1,23 @@
+
 {
-	"7bcc1a04bb6e866f2b239f7624c3dc0cf560784b07038cf3d7096c82038bd3d6": {
-		"paths": [
-				  {
-				  "type": "http",
-				  "http": "http://173.163.173.178:42425"
-				  },
-				  {
-				  "type": "ipv4",
-				  "ip": "173.163.173.178",
-				  "port": 42425
-				  },
-				  {
-				  "type": "ipv4",
-				  "ip": "172.18.0.203",
-				  "port": 42425
-				  },
-				  {
-				  "type": "ipv4",
-				  "ip": "172.20.0.203",
-				  "port": 42425
-				  }
-				  ],
-		"parts": {
-			"3a": "d19f0726c37e030cb40b37cbca491ec8492228f7b2643314a44898dd0d288e26",
-			"2a": "a8f47db04ab31174464d28c7b26bf188e69788bfbd7731a1d5dde9980b9e7dbe",
-			"1a": "eccd5ae9ed38dc5a25c861987b0711200bbb55a0"
-		},
-		"keys": {
-			"3a": "8zhNclld6wGjdqyWv6MZ4eElyybK+AywugGj6JI/yhw=",
-			"2a": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAndRcdGHvUDYFh8VZ7MZtZ9sFbpXIwxmgAzV/KM0lLfmZc60NE3Ui1uDf2SvNdVWes8ZyZu57EkzUTT3FhB6IMBBX9iJhAeAdtgVHP4pBmonXO4SSvGpAWJMzxzdOs475E5oLF8HIiqncwjLo1CwirTByQ395s7M7qyhw2KuljDAcuTZLTYREOwYmAdukXufCs3/fu+QriReduII+3FiT0jVEf4V9ZO3Hr3kqJaG9lEDlppXKpVz4hY7O5mApXeSdSu30gOyFAC0n56Aoe5O0OMiYYewm/xOg0lad3bPkRgH82cnx5PTGSPvOxQTq8mDmvfk7JQmetLme6zLlVHa/CQIDAQAB",
-			"1a": "Wj5PqObUMMZ9jfQ3R3annOAaDnCINFh9z/63IAd+qB8uUaFEVLBOFQ=="
-		}
-	}
+    "aaa6f83528b0cc0cd3bc3684198f0b7472c0afa70b1b6262ecf03982a05199ef": {
+        "paths": [
+        {
+        "type":"ipv4",
+                  "ip":"192.168.0.3",
+                  "port":52000
+        }
+        ],
+        "parts": {
+            "3a": "20b38db52df7728393d2ae3a3e768e0cf6795dd520f0707c286af1895af3aa79",
+            "2a": "e04111c4cf6e7c2d1c2296426fe0c6bbd33d788f66dcf8020152ea6e07c4bf6b",
+            "1a": "3c7500ca218cacddc675a5c1f02386001edc9de5"
+        },
+        "keys": {
+            "3a": "aOvLUb1dOk8uIxwr4RSVNb8GBQOFa+a2wVkbOmV+2UM=",
+            "2a": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAueJ0w+D2ef7vPzWqzfQqyUAjxh85+7mtgucj433tk25ZLLm7XnO0rhPdmI+CB9Qlvg1hq4NJCvJqYzXuxeiUQbtoiTySeqSg6RFDzcqezRzExa7K+tXTqQlQfW3m9O02oD6x+MDCZXRz8yL27ng3ngc5Jmsl8ptgwewvaS4M656VPLyEh24qrGdLr6sOEtum6Bp1PyNX7YyHne94i5afJo64l00yJ03sCzikaamYm8t7bVGbtD3jx/DAAwDh+RICxE5moC33vQOQ7XxQMASkKtd9VKBIaVzNJENaY3+aT8wTSxmGPrmbvWaV6Noj2kNSlLtl1xMwyOhBbzKGZiWBIQIDAQAB",
+            "1a": "V8jV0BETLgTOC38D/wiKuC5XDZmFT7/xtp08rjGxHc1FFGdREQM92w=="
+        },
+        "bridge": true
+    }
 }
