@@ -54,9 +54,3 @@
 
 +(NSString*)hashnameForParts:(NSDictionary*)parts;
 @end
-
-/*
-
-TODO: Category for personal identity that allows for listening for a channel type
-
-*/

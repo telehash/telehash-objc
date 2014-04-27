@@ -52,25 +52,3 @@ typedef enum {
 
 @end
 
-@interface THUnreliableChannel : THChannel
--(void)handlePacket:(THPacket *)packet;
--(void)sendPacket:(THPacket *)packet;
-@end
-
-@interface THReliableChannel : THChannel {
-    NSUInteger sequence;
-    NSMutableOrderedSet* inBuffer;
-    THPacketBuffer* inPacketBuffer;
-    THPacketBuffer* outPacketBuffer;
-    NSUInteger lastAck;
-}
-@property NSUInteger nextExpectedSequence;
-@property dispatch_queue_t dispatchQueue;
--(id)initToIdentity:(THIdentity*)identity;
--(void)handlePacket:(THPacket*)packet;
--(void)sendPacket:(THPacket*)packet;
--(void)flushOut;
-@end
-
-@interface THBulkTransferChannel : THChannel
-@end

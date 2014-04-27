@@ -20,6 +20,7 @@
 #import "THTransport.h"
 #import "THPath.h"
 #import "THCipherSet2a.h"
+#import "THUnreliableChannel.h"
 
 @interface THSwitch()
 

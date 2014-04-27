@@ -16,6 +16,7 @@
 #import "THPath.h"
 #import "THChannel.h"
 #import "THCipherSet2a.h"
+#import <THReliableChannel.h>
 
 #include <arpa/inet.h>
 

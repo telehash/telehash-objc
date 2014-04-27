@@ -16,6 +16,7 @@
 #import "THPendingJob.h"
 #import "THChannel.h"
 #import "THPath.h"
+#import "THUnreliableChannel.h"
 
 #define K_BUCKET_SIZE 8
 #define MAX_LINKS 256

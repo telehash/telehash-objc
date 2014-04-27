@@ -70,6 +70,12 @@
 		8251ADBD18C05A26005CB9E2 /* THCipherSet.h in Headers */ = {isa = PBXBuildFile; fileRef = 8251ADBB18C05A26005CB9E2 /* THCipherSet.h */; };
 		8251ADBE18C05A26005CB9E2 /* THCipherSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 8251ADBC18C05A26005CB9E2 /* THCipherSet.m */; };
 		8251ADBF18C05A26005CB9E2 /* THCipherSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 8251ADBC18C05A26005CB9E2 /* THCipherSet.m */; };
+		827CB8AB190C887F001EB8F9 /* THUnreliableChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = 827CB8A9190C887F001EB8F9 /* THUnreliableChannel.h */; };
+		827CB8AC190C8880001EB8F9 /* THUnreliableChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = 827CB8AA190C887F001EB8F9 /* THUnreliableChannel.m */; };
+		827CB8AD190C8880001EB8F9 /* THUnreliableChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = 827CB8AA190C887F001EB8F9 /* THUnreliableChannel.m */; };
+		827CB8B4190C8890001EB8F9 /* THReliableChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = 827CB8B2190C8890001EB8F9 /* THReliableChannel.h */; };
+		827CB8B5190C8890001EB8F9 /* THReliableChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = 827CB8B3190C8890001EB8F9 /* THReliableChannel.m */; };
+		827CB8B6190C8890001EB8F9 /* THReliableChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = 827CB8B3190C8890001EB8F9 /* THReliableChannel.m */; };
 		8298FF4918C5B5B0009CD379 /* GCMAES256.mm in Sources */ = {isa = PBXBuildFile; fileRef = 8298FF4718C5B5B0009CD379 /* GCMAES256.mm */; };
 		8298FF4A18C5B5B0009CD379 /* GCMAES256.h in Headers */ = {isa = PBXBuildFile; fileRef = 8298FF4818C5B5B0009CD379 /* GCMAES256.h */; };
 		8298FF4F18C5B5B4009CD379 /* GCMAES256.mm in Sources */ = {isa = PBXBuildFile; fileRef = 8298FF4718C5B5B0009CD379 /* GCMAES256.mm */; };
@@ -247,6 +253,10 @@
 		8251ADB918C023DC005CB9E2 /* open.pkt */ = {isa = PBXFileReference; lastKnownFileType = file; path = open.pkt; sourceTree = "<group>"; };
 		8251ADBB18C05A26005CB9E2 /* THCipherSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THCipherSet.h; sourceTree = "<group>"; };
 		8251ADBC18C05A26005CB9E2 /* THCipherSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THCipherSet.m; sourceTree = "<group>"; };
+		827CB8A9190C887F001EB8F9 /* THUnreliableChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THUnreliableChannel.h; sourceTree = "<group>"; };
+		827CB8AA190C887F001EB8F9 /* THUnreliableChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THUnreliableChannel.m; sourceTree = "<group>"; };
+		827CB8B2190C8890001EB8F9 /* THReliableChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THReliableChannel.h; sourceTree = "<group>"; };
+		827CB8B3190C8890001EB8F9 /* THReliableChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THReliableChannel.m; sourceTree = "<group>"; };
 		8298FF4718C5B5B0009CD379 /* GCMAES256.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = GCMAES256.mm; sourceTree = "<group>"; };
 		8298FF4818C5B5B0009CD379 /* GCMAES256.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCMAES256.h; sourceTree = "<group>"; };
 		8298FF5C18C83ECB009CD379 /* server.der */ = {isa = PBXFileReference; lastKnownFileType = file; path = server.der; sourceTree = "<group>"; };
@@ -511,6 +521,10 @@
 				8249D6431906100C0009F03B /* THCipherSet3a.m */,
 				8249D647190627300009F03B /* THCipherSet2a.h */,
 				8249D648190627300009F03B /* THCipherSet2a.m */,
+				827CB8A9190C887F001EB8F9 /* THUnreliableChannel.h */,
+				827CB8AA190C887F001EB8F9 /* THUnreliableChannel.m */,
+				827CB8B2190C8890001EB8F9 /* THReliableChannel.h */,
+				827CB8B3190C8890001EB8F9 /* THReliableChannel.m */,
 			);
 			path = common;
 			sourceTree = "<group>";
@@ -558,7 +572,9 @@
 				822C6D3917FCD754008C04BA /* SHA256.h in Headers */,
 				82B1720B180095B100C29EAF /* THChannel.h in Headers */,
 				8249D6441906100C0009F03B /* THCipherSet3a.h in Headers */,
+				827CB8B4190C8890001EB8F9 /* THReliableChannel.h in Headers */,
 				82B172151800A51B00C29EAF /* THIdentity.h in Headers */,
+				827CB8AB190C887F001EB8F9 /* THUnreliableChannel.h in Headers */,
 				8231EBC51836BD3600BC41C1 /* NSString+HexString.h in Headers */,
 				82A31BA3183457EB005077AD /* NSData+HexString.h in Headers */,
 				82B1720617FDE90600C29EAF /* THSwitch.h in Headers */,
@@ -769,6 +785,7 @@
 				8251ADBE18C05A26005CB9E2 /* THCipherSet.m in Sources */,
 				8231EC1C1836F37F00BC41C1 /* THLine.m in Sources */,
 				82DB236C187C8343002C74C9 /* THMeshBuckets.m in Sources */,
+				827CB8AC190C8880001EB8F9 /* THUnreliableChannel.m in Sources */,
 				82B1720717FDE90600C29EAF /* THSwitch.m in Sources */,
 				8249D64A190627300009F03B /* THCipherSet2a.m in Sources */,
 				822C6D3517FCD3F6008C04BA /* CTRAES256.mm in Sources */,
@@ -780,6 +797,7 @@
 				82B1720C180095B100C29EAF /* THChannel.m in Sources */,
 				82B70ACF18404D4900E819F3 /* THPacketBuffer.m in Sources */,
 				82B1721118009A6C00C29EAF /* GCDAsyncUdpSocket.m in Sources */,
+				827CB8B5190C8890001EB8F9 /* THReliableChannel.m in Sources */,
 				82A31BA4183457EB005077AD /* NSData+HexString.m in Sources */,
 				822C6D3F17FCD8C5008C04BA /* RNG.mm in Sources */,
 				822C6D3017FCCD0C008C04BA /* ECDH.mm in Sources */,
@@ -808,6 +826,7 @@
 				8251ADBF18C05A26005CB9E2 /* THCipherSet.m in Sources */,
 				8231EC1D1836F37F00BC41C1 /* THLine.m in Sources */,
 				82DB236D187C8343002C74C9 /* THMeshBuckets.m in Sources */,
+				827CB8AD190C8880001EB8F9 /* THUnreliableChannel.m in Sources */,
 				82B1720817FDE90600C29EAF /* THSwitch.m in Sources */,
 				8249D64B190627300009F03B /* THCipherSet2a.m in Sources */,
 				822C6D3617FCD3F6008C04BA /* CTRAES256.mm in Sources */,
@@ -819,6 +838,7 @@
 				82B1720D180095B100C29EAF /* THChannel.m in Sources */,
 				82B70AD018404D4900E819F3 /* THPacketBuffer.m in Sources */,
 				82B1721218009A6C00C29EAF /* GCDAsyncUdpSocket.m in Sources */,
+				827CB8B6190C8890001EB8F9 /* THReliableChannel.m in Sources */,
 				82A31BA5183457EB005077AD /* NSData+HexString.m in Sources */,
 				822C6D4017FCD8C5008C04BA /* RNG.mm in Sources */,
 				822C6D3117FCCD0C008C04BA /* ECDH.mm in Sources */,

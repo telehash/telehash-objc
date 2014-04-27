@@ -12,6 +12,7 @@
 #import "GCDAsyncUdpSocket.h"
 #import "THPacket.h"
 #import "THTransport.h"
+#import "THUnreliableChannel.h"
 #include <arpa/inet.h>
 
 #define PRIVATE_192_FIRST   0x0000a8c0

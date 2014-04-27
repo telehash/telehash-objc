@@ -23,6 +23,8 @@
 #import "THPeerRelay.h"
 #import "THPath.h"
 #import "THCipherSet2a.h"
+#import "THUnreliableChannel.h"
+#import "THReliableChannel.h"
 
 #include <arpa/inet.h>
 
@@ -195,6 +197,17 @@
             
             [packet.returnPath sendPacket:closePacket];
             return;
+        }
+        
+        // If we already have a line to them, we assume it's dead
+        if (peerIdentity.currentLine) {
+            // TODO:  This should really try and reuse the line first, then fall back to full redo
+            [peerIdentity.channels enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+                THChannel* curChannel = (THChannel*)obj;
+                curChannel.state = THChannelEnded;
+            }];
+            [peerIdentity.channels removeAllObjects];
+            peerIdentity.currentLine = nil;
         }
         
         // Add the available paths
