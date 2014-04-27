@@ -250,7 +250,7 @@
             [channel handlePacket:innerPacket];
         } else {
             // See if it's a reliable or unreliable channel
-            if (!channelType) {
+            if (!channelType && ![innerPacket.json objectForKey:@"err"]) {
                 THPacket* errPacket = [THPacket new];
                 [errPacket.json setObject:@"Unknown channel packet type." forKey:@"err"];
                 [errPacket.json setObject:channelId forKey:@"c"];
