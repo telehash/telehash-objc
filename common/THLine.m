@@ -121,6 +121,11 @@
     //NSLog(@"Packet is type %@", [innerPacket.json objectForKey:@"type"]);
     NSLog(@"Line from %@ line id %@ handling %@\n%@", self.toIdentity.hashname, self.outLineId, innerPacket.json, innerPacket.body);
     NSNumber* channelId = [innerPacket.json objectForKey:@"c"];
+    if (!channelId) {
+        // TODO:  XXX Make this less intrusive logging once we are ready to do something else and understand issues
+        NSLog(@"Why is there a packet with no channel id from %@", self.toIdentity.hashname);
+        return;
+    }
     NSString* channelType = [innerPacket.json objectForKey:@"type"];
     
     THSwitch* thSwitch = [THSwitch defaultSwitch];
