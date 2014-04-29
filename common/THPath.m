@@ -217,6 +217,10 @@
 -(BOOL)channel:(THChannel *)channel handlePacket:(THPacket *)packet
 {
     THPacket* relayedPacket = [THPacket packetData:packet.body];
+    if (!relayedPacket) {
+        NSLog(@"Garbage on the relay, invalid or unparseable packet.");
+        return YES;
+    }
     relayedPacket.returnPath = self;
     THTransport* transport = self.relayedPath.transport;
     if ([transport.delegate respondsToSelector:@selector(transport:handlePacket:)]) {
