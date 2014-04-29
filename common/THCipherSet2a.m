@@ -28,6 +28,9 @@ static unsigned char eccHeader[] = {0x04};
 @implementation  THCipherSetLineInfo2a
 -(NSData*)encryptLinePacket:(THPacket*)packet iv:(NSData*)iv
 {
+    // So broken...
+    if (!self.encryptorKey) return nil;
+    
     NSData* encodedPacket = [packet encode];
     GCMAES256Encryptor* encryptor = [GCMAES256Encryptor encryptPlaintext:encodedPacket key:self.encryptorKey iv:iv];
     NSMutableData* data = [NSMutableData dataWithCapacity:(iv.length + encryptor.cipherText.length + encryptor.mac.length)];

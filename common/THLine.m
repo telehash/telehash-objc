@@ -302,6 +302,11 @@
     NSLog(@"Sending %@\%@", packet.json, packet.body);
     NSData* innerPacketData = [self.cipherSetInfo encryptLinePacket:packet];
     NSMutableData* linePacketData = [NSMutableData dataWithCapacity:(innerPacketData.length + 16)];
+    if (!linePacketData) {
+        // TODO:  XXX Figure out why we couldn't encrypt, do we shutdown the line here?
+        NSLog(@"**** We couldn't encrypt a line packet to %@", self.toIdentity.hashname);
+        return;
+    }
     [linePacketData appendData:[self.outLineId dataFromHexString]];
     [linePacketData appendData:innerPacketData];
     THPacket* lineOutPacket = [THPacket new];
