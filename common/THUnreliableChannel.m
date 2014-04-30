@@ -8,6 +8,7 @@
 
 #import "THUnreliableChannel.h"
 #import "THPacket.h"
+#import "CLCLog.h"
 
 @implementation THUnreliableChannel
 {
@@ -17,7 +18,7 @@
 
 -(void)dealloc
 {
-    NSLog(@"gone for unreliable %@", self.channelId);
+    CLCLogDebug(@"gone for unreliable %@", self.channelId);
 }
 
 -(id)initToIdentity:(THIdentity *)identity;

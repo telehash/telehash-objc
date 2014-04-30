@@ -9,6 +9,7 @@
 #import "THReliableChannel.h"
 #import "THPacketBuffer.h"
 #import "THPacket.h"
+#import "CLCLog.h"
 
 @interface THReliableChannel() {
     dispatch_queue_t channelQueue;
@@ -51,7 +52,7 @@
     
     // If this is a new seq object we'll need to pass it off
     if ([packet.json objectForKey:@"seq"]) {
-        NSLog(@"Putting on the incoming buffer: %@ ", packet.json);
+        CLCLogInfo(@"Putting on the incoming buffer: %@ ", packet.json);
         [inPacketBuffer push:packet];
     }
     
@@ -83,7 +84,7 @@
     NSString* packetType = [packet.json objectForKey:@"type"];
     if (!self.type && packetType) {
         self.type = packetType;
-        NSLog(@"Channel type set to %@", self.type);
+        CLCLogInfo(@"Channel type set to %@", self.type);
     }
     
     // If the packet has a body or other json we increment the seq
@@ -139,7 +140,7 @@
 -(void)flushOut;
 {
     [outPacketBuffer forEach:^(THPacket *packet) {
-        NSLog(@"Sending packet on %@ %@", self.line, packet.json);
+        CLCLogDebug(@"Sending packet on %@ %@", self.line, packet.json);
         [self.toIdentity sendPacket:packet];
     }];
 }

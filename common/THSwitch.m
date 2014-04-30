@@ -21,6 +21,7 @@
 #import "THPath.h"
 #import "THCipherSet2a.h"
 #import "THUnreliableChannel.h"
+#import "CLCLog.h"
 
 @interface THSwitch()
 
@@ -109,7 +110,6 @@
                 if (!ipTransport) continue;
                 NSData* address = [THIPV4Path addressTo:[path objectForKey:@"ip"] port:[[path objectForKey:@"port"] unsignedIntegerValue]];
                 [seedIdentity addPath:[ipTransport returnPathTo:address]];
-                //seedIdentity.activePath = [transport returnPathTo:address];
             }
         }
         
@@ -121,7 +121,6 @@
 {
     // XXX: If we don't have a line should we do an open here?
     // XXX: This is a common lookup, should we cache this another way as well?
-    //NSLog(@"looking for %@", hashname);
     __block THLine* ret = nil;
     [self.openLines enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
         THLine* line = (THLine*)obj;
@@ -130,7 +129,7 @@
             *stop = YES;
         }
     }];
-    //NSLog(@"We found line to hashname %@ %@", ret.toIdentity.hashname, ret);
+    //CLCLogInfo(@"We found line to hashname %@ %@", ret.toIdentity.hashname, ret);
     return ret;
 }
 
@@ -266,23 +265,25 @@
 
 -(void)processOpen:(THPacket*)incomingPacket
 {
-    NSLog(@"Processing an open from %@", incomingPacket.returnPath);
+    CLCLogInfo(@"Processing an open from %@", incomingPacket.returnPath);
     THCipherSet* cipherSet = [self.identity.cipherParts objectForKey:[[incomingPacket.body subdataWithRange:NSMakeRange(0, 1)] hexString]];
     if (!cipherSet) {
-        NSLog(@"Invalid cipher set requested %@", [[incomingPacket.body subdataWithRange:NSMakeRange(0, 1)] hexString]);
+        CLCLogInfo(@"Invalid cipher set requested %@", [[incomingPacket.body subdataWithRange:NSMakeRange(0, 1)] hexString]);
         return;
     }
     THLine* newLine = [cipherSet processOpen:incomingPacket];
     if (!newLine) {
-        NSLog(@"Unable to process open packet");
+        CLCLogInfo(@"Unable to process open packet");
         return;
     }
     
     // Add the incoming path to the
-    if (newLine.toIdentity.availablePaths.count == 0) {
-        [newLine.toIdentity addPath:incomingPacket.returnPath];
+    THPath* path = [newLine.toIdentity pathMatching:incomingPacket.returnPath.information];
+    if (!path) {
+        path = incomingPacket.returnPath;
+        [newLine.toIdentity addPath:path];
     }
-    newLine.toIdentity.activePath = incomingPacket.returnPath;
+    newLine.toIdentity.activePath = path;
     
     // remove any existing lines to this hashname
     [self.meshBuckets removeLine:newLine];
@@ -303,7 +304,7 @@
     if (pendingLineJob && newLine.inLineId) {
         THIdentity* pendingIdentity = (THIdentity*)pendingLineJob.pending;
         newLine = pendingIdentity.currentLine;
-        NSLog(@"Finish open on %@", newLine);
+        CLCLogInfo(@"Finish open on %@", newLine);
         [newLine openLine];
         
         [self.openLines setObject:newLine forKey:newLine.inLineId];
@@ -319,7 +320,7 @@
         [newLine sendOpen];
         [newLine openLine];
         
-        NSLog(@"Line setup for %@", newLine.inLineId);
+        CLCLogInfo(@"Line setup for %@", newLine.inLineId);
         
         [self.openLines setObject:newLine forKey:newLine.inLineId];
         if ([self.delegate respondsToSelector:@selector(openedLine:)]) {
@@ -368,7 +369,7 @@
     NSMutableSet* ourIDs = [NSMutableSet setWithArray:[self.identity.cipherParts allKeys]];
     [ourIDs intersectSet:[NSSet setWithArray:[toLine.toIdentity.cipherParts allKeys]]];
     if (ourIDs.count <= 0) {
-        NSLog(@"Unable to find a matching csid for open.");
+        CLCLogInfo(@"Unable to find a matching csid for open.");
         return nil;
     }
     NSSortDescriptor *sort = [NSSortDescriptor sortDescriptorWithKey:@"description" ascending:NO];
@@ -384,7 +385,7 @@
     } else if(packet.jsonLength == 0) {
         // Validate the line id then process it
         NSString* lineId = [[packet.body subdataWithRange:NSMakeRange(0, 16)] hexString];
-        //NSLog(@"Received a line packet for %@", lineId);
+        //CLCLogInfo(@"Received a line packet for %@", lineId);
         // Process a line packet
         THLine* line = [self.openLines objectForKey:lineId];
         // If there is no line to handle this dump it
@@ -393,7 +394,7 @@
         }
         [line handlePacket:packet];
     } else {
-        NSLog(@"Dropping an unknown packet");
+        CLCLogInfo(@"Dropping an unknown packet");
     }
 
 }
@@ -406,7 +407,7 @@
         if (transport.available) ++availableCount;
     }
     if (availableCount <= 0) {
-        NSLog(@"Oh no, we're offline!");
+        CLCLogInfo(@"Oh no, we're offline!");
         // XXX TODO:  What to do?
     }
 }

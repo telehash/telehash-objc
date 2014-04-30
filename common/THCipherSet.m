@@ -12,6 +12,7 @@
 #import "THLine.h"
 #import "THCipherSet2a.h"
 #import "THCipherSet3a.h"
+#import "CLCLog.h"
 
 @implementation THCipherSet
 +(THCipherSet*)cipherSetForOpen:(THPacket *)openPacket
@@ -27,7 +28,7 @@
 
 -(THLine*)processOpen:(THPacket*)openPacket switch:(THSwitch*)thSwitch
 {
-    NSLog(@"Not implemented");
+    CLCLogError(@"Not implemented");
     return nil;
 }
 
@@ -39,20 +40,20 @@
 
 -(void)finalizeLineKeys:(THLine *)line
 {
-    NSLog(@"Not implemented THCipherSet finalizeKeys");
+    CLCLogError(@"Not implemented THCipherSet finalizeKeys");
 }
 @end
 
 @implementation THCipherSetLineInfo
 -(NSData*)encryptLinePacket:(THPacket*)packet
 {
-    NSLog(@"Not implemented THCipherSetLineInfo encryptLinePacket:");
+    CLCLogError(@"Not implemented THCipherSetLineInfo encryptLinePacket:");
     return nil;
 }
 
 -(void)decryptLinePacket:(THPacket *)packet
 {
-    NSLog(@"Not implemented THCipherSetLineInfo decryptLinePacket:");
+    CLCLogError(@"Not implemented THCipherSetLineInfo decryptLinePacket:");
 }
 @end
 

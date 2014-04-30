@@ -7,6 +7,7 @@
 //
 
 #import "THPacket.h"
+#import "CLCLog.h"
 
 @implementation THPacket
 
@@ -16,12 +17,12 @@
     [packetData getBytes:&jsonLength length:sizeof(short)];
     jsonLength = ntohs(jsonLength);
     if (jsonLength > packetData.length) {
-        NSLog(@"Invalid JSON header length");
+        CLCLogError(@"Invalid JSON header length");
         return nil;
     }
     
     if (packetData.length == 0 || (packetData.length == 2 && jsonLength == 0)) {
-        NSLog(@"ignoring a poke packet");
+        CLCLogError(@"ignoring a poke packet");
         return nil;
     }
     
@@ -30,7 +31,7 @@
     if (jsonLength >= 2) {
         parsedJson = [NSJSONSerialization JSONObjectWithData:[packetData subdataWithRange:NSMakeRange(2, jsonLength)] options:0 error:&parserError];
         if (parsedJson == nil || ![parsedJson isKindOfClass:[NSDictionary class]]) {
-            NSLog(@"Something went wrong parsing: %@", parserError);
+            CLCLogError(@"Something went wrong parsing: %@", parserError);
             return nil;
         }
     }

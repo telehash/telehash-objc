@@ -126,7 +126,6 @@
 {
     THPacketNode* curNode = firstNode;
     while (curNode) {
-        NSLog(@"Applying block for %@", curNode.packet.json);
         block(curNode.packet);
         curNode = curNode.next;
     }

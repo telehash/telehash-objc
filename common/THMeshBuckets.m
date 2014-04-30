@@ -17,6 +17,7 @@
 #import "THChannel.h"
 #import "THPath.h"
 #import "THUnreliableChannel.h"
+#import "CLCLog.h"
 
 #define K_BUCKET_SIZE 8
 #define MAX_LINKS 256
@@ -178,7 +179,6 @@
 
 -(NSArray*)nearby:(THIdentity*)seekIdentity;
 {
-    //NSLog(@"Nearby for %@", seekIdentity.hashname);
     NSMutableArray* entries = [NSMutableArray array];
     NSInteger initialBucketIndex = [self.localIdentity distanceFrom:seekIdentity];
     // First get the closest
@@ -210,7 +210,7 @@
 
 -(void)seek:(THIdentity*)toIdentity completion:(SeekCompletionBlock)completion
 {
-    NSLog(@"Seeking for %@", toIdentity.hashname);
+    CLCLogDebug(@"Seeking for %@", toIdentity.hashname);
     
     PendingSeekJob* seekJob = [PendingSeekJob new];
     seekJob.localSwitch = self.localSwitch;
@@ -299,16 +299,16 @@
 
     NSArray* sees = [packet.json objectForKey:@"see"];
     __block BOOL foundIt = NO;
-    NSLog(@"Checking for %@ in sees %@",  self.seekingIdentity.hashname, sees);
+    CLCLogDebug(@"Checking for %@ in sees %@",  self.seekingIdentity.hashname, sees);
     [sees enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         NSString* seeString = (NSString*)obj;
         NSArray* seeParts = [seeString componentsSeparatedByString:@","];
         if (seeParts.count == 0) {
-            NSLog(@"Invalid see parts: %@", seeParts);
+            CLCLogDebug(@"Invalid see parts: %@", seeParts);
             return;
         }
         if ([[seeParts objectAtIndex:0] isEqualToString:self.seekingIdentity.hashname]) {
-            NSLog(@"We found %@!", self.seekingIdentity.hashname);
+            CLCLogDebug(@"We found %@!", self.seekingIdentity.hashname);
             // this is it!
             self.seekingIdentity.via = channel.toIdentity;
             if (seeParts.count > 2) {

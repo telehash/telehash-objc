@@ -25,6 +25,7 @@
 #import "THCipherSet2a.h"
 #import "THUnreliableChannel.h"
 #import "THReliableChannel.h"
+#import "CLCLog.h"
 
 #include <arpa/inet.h>
 
@@ -54,7 +55,7 @@
     THSwitch* defaultSwitch = [THSwitch defaultSwitch];
     THPacket* openPacket = [defaultSwitch generateOpen:self];
     for (THPath* path in self.toIdentity.availablePaths) {
-        NSLog(@"Sending open on %@ to %@", path, self.toIdentity.hashname);
+        CLCLogInfo(@"Sending open on %@ to %@", path, self.toIdentity.hashname);
         [path sendPacket:openPacket];
     }
 }
@@ -64,13 +65,6 @@
     self.outLineId = [openPacket.json objectForKey:@"line"];
     self.createdAt = [[openPacket.json objectForKey:@"at"] unsignedIntegerValue];
     self.lastInActivity = time(NULL);
-#if 0
-    if ([self.toIdentity.activePath class] == [THRelayPath class]){
-        self.activePath = self.toIdentity.activePath;
-    } else {
-        self.activePath = openPacket.returnPath;
-    }
-#endif
 }
 
 -(NSUInteger)nextChannelId
@@ -89,14 +83,12 @@
     }
     [self.cipherSetInfo.cipherSet finalizeLineKeys:self];
     [self.toIdentity.channels enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-        NSLog(@"Checking %@ as %@", obj, [obj class]);
         // Get all our pending reliable channels spun out
         if ([obj class] != [THReliableChannel class]) return;
         THReliableChannel* channel = (THReliableChannel*)obj;
         // If the channel already thinks it's good, we'll just ignore it's state
         if (channel.state == THChannelOpen) return;
 
-        NSLog(@"Going to flush");
         [channel flushOut];
     }];
     
@@ -108,22 +100,21 @@
     self.lastInActivity = time(NULL);
     self.lastActitivy = time(NULL);
     
-    //NSLog(@"Going to handle a packet");
     [self.cipherSetInfo decryptLinePacket:packet];
     THPacket* innerPacket = [THPacket packetData:packet.body];
     
     if (!innerPacket) {
-        NSLog(@"Unexpected or unparseable inner packet on line from %@", self.toIdentity.hashname);
+        CLCLogWarning(@"Unexpected or unparseable inner packet on line from %@", self.toIdentity.hashname);
         return;
     }
     
     innerPacket.returnPath = packet.returnPath;
-    //NSLog(@"Packet is type %@", [innerPacket.json objectForKey:@"type"]);
-    NSLog(@"Line from %@ line id %@ handling %@\n%@", self.toIdentity.hashname, self.outLineId, innerPacket.json, innerPacket.body);
+    //CLCLogInfo(@"Packet is type %@", [innerPacket.json objectForKey:@"type"]);
+    CLCLogDebug(@"Line from %@ line id %@ handling %@\n%@", self.toIdentity.hashname, self.outLineId, innerPacket.json, innerPacket.body);
     NSNumber* channelId = [innerPacket.json objectForKey:@"c"];
     if (!channelId) {
         // TODO:  XXX Make this less intrusive logging once we are ready to do something else and understand issues
-        NSLog(@"Why is there a packet with no channel id from %@", self.toIdentity.hashname);
+        CLCLogWarning(@"Why is there a packet with no channel id from %@", self.toIdentity.hashname);
         return;
     }
     NSString* channelType = [innerPacket.json objectForKey:@"type"];
@@ -283,7 +274,6 @@
             newChannel.state = THChannelOpening;
             newChannel.type = channelType;
             THSwitch* defaultSwitch = [THSwitch defaultSwitch];
-            NSLog(@"Adding a channel");
             [self.toIdentity.channels setObject:newChannel forKey:channelId];
             [newChannel handlePacket:innerPacket];
             // Now we're full open and ready to roll
@@ -299,12 +289,12 @@
 -(void)sendPacket:(THPacket *)packet path:(THPath*)path
 {
     self.lastOutActivity = time(NULL);
-    NSLog(@"Sending %@\%@", packet.json, packet.body);
+    CLCLogDebug(@"Sending %@\%@", packet.json, packet.body);
     NSData* innerPacketData = [self.cipherSetInfo encryptLinePacket:packet];
     NSMutableData* linePacketData = [NSMutableData dataWithCapacity:(innerPacketData.length + 16)];
     if (!linePacketData) {
         // TODO:  XXX Figure out why we couldn't encrypt, do we shutdown the line here?
-        NSLog(@"**** We couldn't encrypt a line packet to %@", self.toIdentity.hashname);
+        CLCLogWarning(@"**** We couldn't encrypt a line packet to %@", self.toIdentity.hashname);
         return;
     }
     [linePacketData appendData:[self.outLineId dataFromHexString]];
@@ -385,6 +375,7 @@
     THPacket* pathPacket = [THPacket new];
     [pathPacket.json setObject:[packet.json objectForKey:@"c"] forKey:@"c"];
     for (THPath* path in self.toIdentity.availablePaths) {
+        if (path.isRelay) continue;
         path.priority = 0;
         NSDictionary* pathInfo = path.information;
         if (pathInfo) {
@@ -392,11 +383,9 @@
         }
         [self sendPacket:pathPacket path:path];
         
-        // Local paths are preferred
-        if (self.toIdentity.isLocal && path.isLocal) ++path.priority;
-        // IP Paths give us better bandwidth usually, prefer them
-        if ([path class] == [THIPV4Path class]) ++path.priority;
+
     }
+    
 }
 @end
 
@@ -404,24 +393,29 @@
 
 -(BOOL)channel:(THChannel *)channel handlePacket:(THPacket *)packet
 {
-    NSUInteger index = [self.line.toIdentity.availablePaths indexOfObjectPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
-        THPath* path = (THPath*)obj;
-        if ([path.information isEqualToDictionary:packet.returnPath.information]) {
-            *stop = YES;
-            return YES;
+    THSwitch* thSwitch = [THSwitch defaultSwitch];
+    NSDictionary* returnPath = [packet.json objectForKey:@"path"];
+    
+    // See if our switch has this identity, we can learn our public IP this way
+    if (![thSwitch.identity pathMatching:returnPath]) {
+        if ([[returnPath objectForKey:@"type"] isEqualToString:@"ipv4"]) {
+            THIPv4Transport* ipTransport = [thSwitch.transports objectForKey:@"ipv4"];
+            if (ipTransport) {
+                THIPV4Path* newPath = [[THIPV4Path alloc] initWithTransport:ipTransport ip:[returnPath objectForKey:@"ip"] port:[[returnPath objectForKey:@"port"] unsignedIntegerValue]];
+                newPath.available = YES;
+                [thSwitch.identity addPath:newPath];
+            }
         }
-        return NO;
-    }];
-
-    if (index == NSNotFound) return YES;
-    
-    THPath* path = [self.line.toIdentity.availablePaths objectAtIndex:index];
-    path.available = YES;
-    
-    // If the active path is preferred, go ahead and switch
-    if (path.priority > self.line.toIdentity.activePath.priority) {
-        self.line.toIdentity.activePath = path;
     }
+    
+    // Flag the sending path as alive
+    THPath* path = [self.line.toIdentity pathMatching:packet.returnPath.information];
+    if (!path) {
+        [self.line.toIdentity addPath:packet.returnPath];
+        path = packet.returnPath;
+    }
+    
+    [self.line.toIdentity checkPriorityPath:path];
     
     return YES;
 }

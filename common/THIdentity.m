@@ -17,6 +17,7 @@
 #import "CTRAES256.h"
 #import "THCipherSet.h"
 #import "THPath.h"
+#import "CLCLog.h"
 #include <arpa/inet.h>
 
 static NSMutableDictionary* identityCache;
@@ -197,7 +198,7 @@ int nlz(unsigned long x) {
 {
     NSMutableDictionary* newParts = [NSMutableDictionary dictionaryWithDictionary:_cipherParts];
     if ([newParts objectForKey:cipherSet.identifier] != nil) {
-        NSLog(@"Tried to add an already existing cipher set.");
+        CLCLogInfo(@"Tried to add an already existing cipher set.");
         return;
     }
     [newParts setObject:cipherSet forKey:cipherSet.identifier];
@@ -214,9 +215,9 @@ int nlz(unsigned long x) {
 -(void)addPath:(THPath *)path
 {
     // Make sure we don't already have this path
-    for (THPath* curPath in self.availablePaths) {
-        if ([curPath.information isEqualToDictionary:path.information]) return;
-    }
+    THPath* existingPath = [self pathMatching:path.information];
+    if (existingPath) return;
+    
     // See if this path matches any of ours and flag it as local
     THSwitch* thSwitch = [THSwitch defaultSwitch];
     for (THPath* switchPath in thSwitch.identity.availablePaths) {
@@ -225,45 +226,47 @@ int nlz(unsigned long x) {
             break;
         }
     }
+    
     [self.availablePaths addObject:path];
     if (!self.activePath) self.activePath = path;
 }
 
 -(NSArray*)pathInformationTo:(THIdentity *)toIdentity
 {
-#if 0
-    BOOL allowLocal = NO;
-    if (toPath.isLocal) {
-        allowLocal = YES;
-    } else {
-        // Check our external facing paths, if any of them match the IP that's coming we'll allow local paths
-        THSwitch* thSwitch = [THSwitch defaultSwitch];
-        for (THPath* switchPath in thSwitch.identity.availablePaths) {
-            if ([toPath pathIsLocalTo:switchPath]) {
-                allowLocal =  YES;
-                break;
-            }
-        }
-    }
-#endif
-    
     NSMutableArray* paths = [NSMutableArray arrayWithCapacity:self.availablePaths.count];
     for(THPath* path in self.availablePaths) {
+        if (path.isRelay) continue;
         if (path.isLocal && !toIdentity.isLocal) continue;
         [paths addObject:[path information]];
     }
     return paths;
 }
 
--(BOOL)checkForPath:(NSDictionary*)pathInfo
+-(THPath*)pathMatching:(NSDictionary *)pathInfo
 {
     for (THPath* path in self.availablePaths) {
         if ([path.information isEqualToDictionary:pathInfo]) {
-            return YES;
+            return path;
         }
     }
 
-    return NO;
+    return nil;
+}
+
+-(void)checkPriorityPath:(THPath *)path
+{
+    path.priority = 0;
+    
+    // Local paths are preferred
+    if (self.isLocal && path.isLocal) ++path.priority;
+    // IP Paths give us better bandwidth usually, prefer them
+    if ([path class] == [THIPV4Path class]) ++path.priority;
+    
+    // If the active path is preferred, go ahead and switch
+    if (path.priority > self.activePath.priority) {
+        CLCLogInfo(@"Setting active path to %@ to %@", self.hashname, path.information);
+        self.activePath = path;
+    }
 }
 
 +(NSString*)hashnameForParts:(NSDictionary*)parts

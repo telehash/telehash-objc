@@ -14,6 +14,7 @@
 #import "THLine.h"
 #import "NSString+HexString.h"
 #import "RNG.h"
+#import "CLCLog.h"
 
 static unsigned char csId3a[] = {0x3a};
 static uint8_t nonce3a[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
@@ -45,26 +46,26 @@ static uint8_t nonce3a[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     
     NSMutableData* messageOut = [NSMutableData dataWithLength:(encryptedPacket.length - crypto_secretbox_MACBYTES)];
     if (crypto_secretbox_open_easy([messageOut mutableBytes], [encryptedPacket bytes], encryptedPacket.length, nonce3a, agreedKey) == -1) {
-        NSLog(@"Unable to decrypt the incoming packet.");
+        CLCLogInfo(@"Unable to decrypt the incoming packet.");
         return nil;
     }
     
     THPacket* innerPacket = [THPacket packetData:messageOut];
     if (!innerPacket) {
-        NSLog(@"Invalid inner packet");
+        CLCLogInfo(@"Invalid inner packet");
         return nil;
     }
     innerPacket.returnPath = openPacket.returnPath;
     
     THCipherSet3a* incomingCS = [[THCipherSet3a alloc] initWithPublicKey:innerPacket.body privateKey:nil];
     if (!incomingCS) {
-        NSLog(@"Unable to create cipher set for incoming key.");
+        CLCLogInfo(@"Unable to create cipher set for incoming key.");
         return nil;
     }
     
     NSString* incomingKeyFingerprint = [[SHA256 hashWithData:innerPacket.body] hexString];
     if (![[incomingCS.fingerprint hexString] isEqualToString:incomingKeyFingerprint]) {
-        NSLog(@"Unable to verify the incoming key fingerprint");
+        CLCLogInfo(@"Unable to verify the incoming key fingerprint");
         return nil;
     }
     
@@ -74,13 +75,13 @@ static uint8_t nonce3a[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     
     // Use the shared line key to validate the packet
     if (crypto_onetimeauth_verify([openPacket.body bytes], [openPacket.body bytes] + crypto_onetimeauth_BYTES, openPacket.body.length - crypto_onetimeauth_BYTES, [sharedLineKey bytes]) != 0) {
-        NSLog(@"Unable to authenticate the packet body.");
+        CLCLogInfo(@"Unable to authenticate the packet body.");
         return nil;
     }
     
     THIdentity* senderIdentity = [THIdentity identityFromParts:[innerPacket.json objectForKey:@"from"] key:incomingCS];
     if (!senderIdentity) {
-        NSLog(@"Unable to validate and verify identity");
+        CLCLogInfo(@"Unable to validate and verify identity");
         return nil;
     }
     
@@ -90,14 +91,14 @@ static uint8_t nonce3a[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     
     // If the new line is older than the current one bail
     if (senderIdentity.currentLine && senderIdentity.currentLine.createdAt > [[innerPacket.json objectForKey:@"at"] unsignedIntegerValue]) {
-        NSLog(@"Dumped a line that is older than current");
+        CLCLogInfo(@"Dumped a line that is older than current");
         return nil;
     }
     
     // If this is an attempt to reopen the original, just dump it and keep using it
     if ([senderIdentity.currentLine.outLineId isEqualToString:[innerPacket.json objectForKey:@"line"]] &&
         senderIdentity.currentLine.createdAt == [[innerPacket.json objectForKey:@"at"] unsignedIntegerValue]) {
-        NSLog(@"Attempted to reopen the line for %@ line id: %@", senderIdentity.hashname, senderIdentity.currentLine.outLineId);
+        CLCLogWarning(@"Attempted to reopen the line for %@ line id: %@", senderIdentity.hashname, senderIdentity.currentLine.outLineId);
         return nil;
     } else if (senderIdentity.currentLine.createdAt > 0 && senderIdentity.currentLine.createdAt < [[innerPacket.json objectForKey:@"at"] unsignedIntegerValue]) {
         [senderIdentity.channels removeAllObjects];
@@ -138,12 +139,12 @@ static uint8_t nonce3a[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     [keyingMaterial replaceBytesInRange:NSMakeRange(agreedKey.length, 16) withBytes:[[line.outLineId dataFromHexString] bytes] length:16];
     [keyingMaterial replaceBytesInRange:NSMakeRange(keyingMaterial.length - 16, 16) withBytes:[[line.inLineId dataFromHexString] bytes] length:16];
     lineInfo.decryptorKey = [SHA256 hashWithData:keyingMaterial];
-    //NSLog(@"decryptor key %@", lineInfo.decryptorKey);
+    //CLCLogInfo(@"decryptor key %@", lineInfo.decryptorKey);
     
     [keyingMaterial replaceBytesInRange:NSMakeRange(agreedKey.length, 16) withBytes:[[line.inLineId dataFromHexString] bytes] length:16];
     [keyingMaterial replaceBytesInRange:NSMakeRange(keyingMaterial.length - 16, 16) withBytes:[[line.outLineId dataFromHexString] bytes] length:16];
     lineInfo.encryptorKey = [SHA256 hashWithData:keyingMaterial];
-    //NSLog(@"Encryptor key %@",  lineInfo.encryptorKey);
+    //CLCLogInfo(@"Encryptor key %@",  lineInfo.encryptorKey);
     
 }
 -(THPacket*)generateOpen:(THLine*)line from:(THIdentity*)fromIdentity
@@ -160,7 +161,7 @@ static uint8_t nonce3a[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     [innerPacket.json setObject:line.toIdentity.hashname forKey:@"to"];
     NSDate* now = [NSDate date];
     NSUInteger at = (NSInteger)([now timeIntervalSince1970]) * 1000;
-    NSLog(@"Open timestamp is %ld", at);
+    CLCLogInfo(@"Open timestamp is %ld", at);
     [innerPacket.json setObject:[NSNumber numberWithInteger:at] forKey:@"at"];
     NSMutableDictionary* fingerprints = [NSMutableDictionary dictionaryWithCapacity:fromIdentity.cipherParts.count];
     for (NSString* csId in fromIdentity.cipherParts) {
@@ -193,7 +194,7 @@ static uint8_t nonce3a[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     
     [openBody replaceBytesInRange:NSMakeRange(1, crypto_onetimeauth_BYTES) withBytes:[authData bytes]];
     
-    NSLog(@"%@", openBody);
+    CLCLogInfo(@"%@", openBody);
     openPacket.body = openBody;
     openPacket.jsonLength = 1;
     

@@ -1,30 +1,16 @@
 {
-    "7bcc1a04bb6e866f2b239f7624c3dc0cf560784b07038cf3d7096c82038bd3d6": {
+    "3f6a490113612938979129ea8a6d37f28deeda3b4932cd8f63e5b45244c18035": {
         "paths": [
-                  {
-                  "type": "http",
-                  "http": "http://173.163.173.178:42425"
-                  },
                   {
                   "type": "ipv4",
                   "ip": "173.163.173.178",
-                  "port": 42425
-                  },
-                  {
-                  "type": "ipv4",
-                  "ip": "172.18.0.203",
-                  "port": 42425
-                  },
-                  {
-                  "type": "ipv4",
-                  "ip": "172.20.0.203",
                   "port": 42425
                   }
                   ],
         "parts": {
             "3a": "d19f0726c37e030cb40b37cbca491ec8492228f7b2643314a44898dd0d288e26",
             "2a": "a8f47db04ab31174464d28c7b26bf188e69788bfbd7731a1d5dde9980b9e7dbe",
-            "1a": "eccd5ae9ed38dc5a25c861987b0711200bbb55a0"
+            "1a": "444ef0a594a54c258ed89197d3a5d673b9eb1933e6531c0e1f0b69fc7ee7ab5c"
         },
         "keys": {
             "3a": "8zhNclld6wGjdqyWv6MZ4eElyybK+AywugGj6JI/yhw=",

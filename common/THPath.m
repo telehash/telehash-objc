@@ -13,15 +13,16 @@
 #import "THPacket.h"
 #import "THTransport.h"
 #import "THUnreliableChannel.h"
+#import "CLCLog.h"
 #include <arpa/inet.h>
 
 #define PRIVATE_192_FIRST   0x0000a8c0
-#define PRIVATE_C_MASK    0x0000ffff
+#define PRIVATE_C_MASK      0x0000ffff
 #define PRIVATE_172_FIRST   0x000010ac
-#define PRIVATE_B_MASK    0x00000fff
+#define PRIVATE_B_MASK      0x00000fff
 #define PRIVATE_127_FIRST   0x0000007f
 #define PRIVATE_10_FIRST    0x000000a0
-#define PRIVATE_A_MASK     0x000000ff
+#define PRIVATE_A_MASK      0x000000ff
 
 @implementation THPath
 -(void)sendPacket:(THPacket*)packet
@@ -43,6 +44,11 @@
 }
 
 -(BOOL)pathIsLocalTo:(THPath *)path
+{
+    return NO;
+}
+
+-(BOOL)isRelay
 {
     return NO;
 }
@@ -136,14 +142,14 @@
 -(void)dealloc
 {
     
-    NSLog(@"Path go bye bye for %@ %d", [GCDAsyncUdpSocket hostFromAddress:toAddress], [GCDAsyncUdpSocket portFromAddress:toAddress]);
+    CLCLogDebug(@"Path go bye bye for %@ %d", [GCDAsyncUdpSocket hostFromAddress:toAddress], [GCDAsyncUdpSocket portFromAddress:toAddress]);
 }
 
 -(void)sendPacket:(THPacket *)packet
 {
     //TODO:  Evaluate using a timeout!
     NSData* packetData = [packet encode];
-    NSLog(@"THIPV4Path Sending to %@: %@", self.information, packetData);
+    CLCLogDebug(@"THIPV4Path Sending to %@: %@", self.information, packetData);
     [self.transport send:packetData to:toAddress];
 }
 
@@ -179,7 +185,7 @@
 
 -(void)dealloc
 {
-    NSLog(@"We lost a relay!");
+    CLCLogDebug(@"We lost a relay!");
 }
 
 -(id)initOnChannel:(THUnreliableChannel *)channel
@@ -198,6 +204,11 @@
     return _relayTransport;
 }
 
+-(BOOL)isRelay
+{
+    return YES;
+}
+
 -(NSString*)typeName
 {
     return @"relay";
@@ -210,7 +221,7 @@
     THPacket* relayPacket = [THPacket new];
     relayPacket.body = [packet encode];
     
-    NSLog(@"Relay sending %@", packet.json);
+    CLCLogDebug(@"Relay sending %@", packet.json);
     [self.peerChannel sendPacket:relayPacket];
 }
 
@@ -218,7 +229,7 @@
 {
     THPacket* relayedPacket = [THPacket packetData:packet.body];
     if (!relayedPacket) {
-        NSLog(@"Garbage on the relay, invalid or unparseable packet.");
+        CLCLogInfo(@"Garbage on the relay, invalid or unparseable packet.");
         return YES;
     }
     relayedPacket.returnPath = self;
@@ -242,7 +253,7 @@
 
 -(NSDictionary*)information
 {
-    return nil;
+    return @{@"type":@"relay", @"to":self.peerChannel.toIdentity.hashname};
 }
 
 -(NSDictionary*)informationTo:(NSData *)address

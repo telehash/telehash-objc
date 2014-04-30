@@ -9,17 +9,18 @@
 #import "THPeerRelay.h"
 #import "THIdentity.h"
 #import "THPacket.h"
+#import "CLCLog.h"
 
 @implementation THPeerRelay
 
 -(void)dealloc
 {
-    NSLog(@"THPeerRelay went away");
+    CLCLogDebug(@"THPeerRelay went away");
 }
 
 -(BOOL)channel:(THChannel *)channel handlePacket:(THPacket *)packet
 {
-    NSLog(@"Relay got %@", packet.body);
+    CLCLogDebug(@"Relay got %@", packet.body);
     THPacket* outPacket = [THPacket new];
     outPacket.body = packet.body;
     outPacket.jsonLength = packet.jsonLength;

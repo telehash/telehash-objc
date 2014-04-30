@@ -65,6 +65,9 @@
 		8249D649190627300009F03B /* THCipherSet2a.h in Headers */ = {isa = PBXBuildFile; fileRef = 8249D647190627300009F03B /* THCipherSet2a.h */; };
 		8249D64A190627300009F03B /* THCipherSet2a.m in Sources */ = {isa = PBXBuildFile; fileRef = 8249D648190627300009F03B /* THCipherSet2a.m */; };
 		8249D64B190627300009F03B /* THCipherSet2a.m in Sources */ = {isa = PBXBuildFile; fileRef = 8249D648190627300009F03B /* THCipherSet2a.m */; };
+		824F74B3191061D300B4E807 /* CLCLog.h in Headers */ = {isa = PBXBuildFile; fileRef = 824F74B1191061D300B4E807 /* CLCLog.h */; };
+		824F74B4191061D300B4E807 /* CLCLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 824F74B2191061D300B4E807 /* CLCLog.m */; };
+		824F74B5191061D300B4E807 /* CLCLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 824F74B2191061D300B4E807 /* CLCLog.m */; };
 		8251ADB418C02349005CB9E2 /* libcryptopp-osx.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8263D95B18BD16F000DED8E5 /* libcryptopp-osx.a */; };
 		8251ADBA18C023DC005CB9E2 /* open.pkt in Resources */ = {isa = PBXBuildFile; fileRef = 8251ADB918C023DC005CB9E2 /* open.pkt */; };
 		8251ADBD18C05A26005CB9E2 /* THCipherSet.h in Headers */ = {isa = PBXBuildFile; fileRef = 8251ADBB18C05A26005CB9E2 /* THCipherSet.h */; };
@@ -250,6 +253,8 @@
 		8249D6431906100C0009F03B /* THCipherSet3a.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THCipherSet3a.m; sourceTree = "<group>"; };
 		8249D647190627300009F03B /* THCipherSet2a.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THCipherSet2a.h; sourceTree = "<group>"; };
 		8249D648190627300009F03B /* THCipherSet2a.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THCipherSet2a.m; sourceTree = "<group>"; };
+		824F74B1191061D300B4E807 /* CLCLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CLCLog.h; sourceTree = "<group>"; };
+		824F74B2191061D300B4E807 /* CLCLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CLCLog.m; sourceTree = "<group>"; };
 		8251ADB918C023DC005CB9E2 /* open.pkt */ = {isa = PBXFileReference; lastKnownFileType = file; path = open.pkt; sourceTree = "<group>"; };
 		8251ADBB18C05A26005CB9E2 /* THCipherSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THCipherSet.h; sourceTree = "<group>"; };
 		8251ADBC18C05A26005CB9E2 /* THCipherSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THCipherSet.m; sourceTree = "<group>"; };
@@ -487,6 +492,8 @@
 		822C6D4117FCDAA5008C04BA /* common */ = {
 			isa = PBXGroup;
 			children = (
+				824F74B1191061D300B4E807 /* CLCLog.h */,
+				824F74B2191061D300B4E807 /* CLCLog.m */,
 				82B1720E18009A6C00C29EAF /* GCDAsyncUdpSocket.h */,
 				82B1720F18009A6C00C29EAF /* GCDAsyncUdpSocket.m */,
 				822C6D4217FCDB31008C04BA /* THPacket.h */,
@@ -568,6 +575,7 @@
 				82B1721018009A6C00C29EAF /* GCDAsyncUdpSocket.h in Headers */,
 				8231EC1B1836F37F00BC41C1 /* THLine.h in Headers */,
 				8298FF4A18C5B5B0009CD379 /* GCMAES256.h in Headers */,
+				824F74B3191061D300B4E807 /* CLCLog.h in Headers */,
 				822C6D4417FCDB31008C04BA /* THPacket.h in Headers */,
 				822C6D3917FCD754008C04BA /* SHA256.h in Headers */,
 				82B1720B180095B100C29EAF /* THChannel.h in Headers */,
@@ -800,6 +808,7 @@
 				827CB8B5190C8890001EB8F9 /* THReliableChannel.m in Sources */,
 				82A31BA4183457EB005077AD /* NSData+HexString.m in Sources */,
 				822C6D3F17FCD8C5008C04BA /* RNG.mm in Sources */,
+				824F74B4191061D300B4E807 /* CLCLog.m in Sources */,
 				822C6D3017FCCD0C008C04BA /* ECDH.mm in Sources */,
 				8218D17B17FA6E8A0053AFAC /* telehash.m in Sources */,
 				82B172161800A51B00C29EAF /* THIdentity.m in Sources */,
@@ -841,6 +850,7 @@
 				827CB8B6190C8890001EB8F9 /* THReliableChannel.m in Sources */,
 				82A31BA5183457EB005077AD /* NSData+HexString.m in Sources */,
 				822C6D4017FCD8C5008C04BA /* RNG.mm in Sources */,
+				824F74B5191061D300B4E807 /* CLCLog.m in Sources */,
 				822C6D3117FCCD0C008C04BA /* ECDH.mm in Sources */,
 				8218D1A417FA6EA50053AFAC /* telehash_ios.m in Sources */,
 				82B172171800A51B00C29EAF /* THIdentity.m in Sources */,
@@ -925,6 +935,7 @@
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
+					"CLCDEBUG=1",
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;

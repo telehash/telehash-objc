@@ -17,6 +17,7 @@
 #import "THChannel.h"
 #import "THCipherSet2a.h"
 #import <THReliableChannel.h>
+#import <CLCLog.h>
 
 #include <arpa/inet.h>
 
@@ -33,7 +34,10 @@
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
     [tableView setDataSource:self];
-    self.identityPath = @"/tmp/telehash2";
+    self.identityPath = @"/var/tmp/telehash2";
+    
+    CLCLogger* logger = [CLCLogger defaultLogger];
+    logger.filter = CLC_LEVEL_INFO;
 }
 
 -(void)startSwitch:(id)sender

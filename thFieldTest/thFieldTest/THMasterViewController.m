@@ -174,7 +174,7 @@
     [keys sortUsingSelector:@selector(compare:)];
     THChannel* channel = [line.toIdentity.channels objectForKey:[keys objectAtIndex:indexPath.row]];
     
-    self.detailViewController.detailItem = channel;
+    self.detailViewController.detailItem = line.toIdentity.activePath.information;
 }
 
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
@@ -189,7 +189,7 @@
         [keys sortUsingSelector:@selector(compare:)];
         THChannel* channel = [line.toIdentity.channels objectForKey:[keys objectAtIndex:indexPath.row]];
 
-        [[segue destinationViewController] setDetailItem:channel];
+        [[segue destinationViewController] setDetailItem:line.toIdentity.activePath.information];
     }
 }
 

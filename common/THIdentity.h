@@ -37,6 +37,7 @@
 
 -(void)addCipherSet:(THCipherSet*)cipherSet;
 -(void)addPath:(THPath*)path;
+-(void)checkPriorityPath:(THPath*)path;
 
 // TODO:  Method to create a channel for a type
 
@@ -50,7 +51,7 @@
 -(THChannel*)channelForType:(NSString*)type;
 
 -(NSArray*)pathInformationTo:(THIdentity*)toIdentity;
--(BOOL)checkForPath:(NSDictionary*)pathInfo;
+-(THPath*)pathMatching:(NSDictionary*)pathInfo;
 
 +(NSString*)hashnameForParts:(NSDictionary*)parts;
 @end

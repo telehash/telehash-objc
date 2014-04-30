@@ -9,6 +9,7 @@
 #import "THTransport.h"
 #import "THPacket.h"
 #import "THPath.h"
+#import "CLCLog.h"
 #import <SystemConfiguration/SystemConfiguration.h>
 #include <arpa/inet.h>
 #include <ifaddrs.h>
@@ -73,7 +74,7 @@ static void THReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         SCNetworkReachabilitySetCallback(reachability, NULL, NULL);
         CFRelease(reachability);
     }
-    NSLog(@"Listener is gone!");
+    CLCLogInfo(@"Listener is gone!");
 }
 
 -(void)start;
@@ -87,7 +88,7 @@ static void THReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 
     if (bindError != nil) {
         // TODO:  How do we show errors?!
-        NSLog(@"%@", bindError);
+        CLCLogError(@"%@", bindError);
         return;
     }
     reachability = SCNetworkReachabilityCreateWithAddress(NULL, [udpSocket.localAddress_IPv4 bytes]);
@@ -103,7 +104,7 @@ static void THReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
     NSError* recvError;
     [udpSocket beginReceiving:&recvError];
-    NSLog(@"Now listening on %d", udpSocket.localPort);
+    CLCLogInfo(@"Now listening on %d", udpSocket.localPort);
     // TODO: Needs more error handling
 }
 
@@ -174,13 +175,13 @@ static void THReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 
 -(void)udpSocket:(GCDAsyncUdpSocket *)sock didReceiveData:(NSData *)data fromAddress:(NSData *)address withFilterContext:(id)filterContext
 {
-    //NSLog(@"Incoming data from %@", [NSString stringWithUTF8String:inet_ntoa(addr->sin_addr)]);
+    //CLCLogInfo(@"Incoming data from %@", [NSString stringWithUTF8String:inet_ntoa(addr->sin_addr)]);
     THPacket* incomingPacket = [THPacket packetData:data];
     if (!incomingPacket) {
         NSString* host;
         uint16_t port;
         [GCDAsyncUdpSocket getHost:&host port:&port fromAddress:address];
-        NSLog(@"Unexpected or unparseable packet from %@:%d: %@", host, port, [data base64EncodedStringWithOptions:0]);
+        CLCLogInfo(@"Unexpected or unparseable packet from %@:%d: %@", host, port, [data base64EncodedStringWithOptions:0]);
         return;
     }
     incomingPacket.returnPath = [self returnPathTo:address];
@@ -226,5 +227,5 @@ static void THReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     if ([transport.delegate respondsToSelector:@selector(transportDidChangeActive:)]) {
         [transport.delegate transportDidChangeActive:transport];
     }
-    NSLog(@"Interface changed!");
+    CLCLogInfo(@"Interface changed!");
 }
