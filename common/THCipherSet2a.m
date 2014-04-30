@@ -21,6 +21,7 @@
 #import "NSData+HexString.h"
 #import "THRSA.h"
 #import "CLCLog.h"
+#import "THPath.h"
 
 static unsigned char iv2a[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
 static unsigned char csId2a[] = {0x2a};
@@ -141,7 +142,11 @@ static unsigned char eccHeader[] = {0x04};
     // If this is an attempt to reopen the original, just dump it and keep using it
     if ([senderIdentity.currentLine.outLineId isEqualToString:[innerPacket.json objectForKey:@"line"]] &&
         senderIdentity.currentLine.createdAt == [[innerPacket.json objectForKey:@"at"] unsignedIntegerValue]) {
+        // Add the route then bail
         CLCLogInfo(@"Attempted to reopen the line for %@ line id: %@", senderIdentity.hashname, senderIdentity.currentLine.outLineId);
+        if (![senderIdentity pathMatching:openPacket.returnPath.information]) {
+            [senderIdentity addPath:openPacket.returnPath];
+        }
         return nil;
     } else if (senderIdentity.currentLine.createdAt > 0 && senderIdentity.currentLine.createdAt < [[innerPacket.json objectForKey:@"at"] unsignedIntegerValue]) {
         [senderIdentity.channels removeAllObjects];

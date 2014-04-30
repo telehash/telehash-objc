@@ -33,6 +33,7 @@ NSMutableArray* THPathTypeRegistry;
 @property (readonly) NSString* ip;
 @property (readonly) NSUInteger port;
 @property NSUInteger priority;
+@property (readonly) NSData* address;
 +(NSData*)addressTo:(NSString*)ip port:(NSUInteger)port;
 -(id)initWithTransport:(THTransport*)transport toAddress:(NSData*)address;
 -(id)initWithTransport:(THTransport*)transport ip:(NSString*)ip port:(NSUInteger)port;

@@ -39,7 +39,7 @@ static BOOL isMultithreaded = NO;
 static NSMutableSet *threads = nil;
 static NSMutableSet *loggers = nil;
 
-static NSString *CLC_DEF_CLI_KEY = @"com.colacode.CLCLog.default_client";
+static NSString *CLC_DEF_CLI_KEY = @"org.telehash.objc";
 
 #define CLC_LEVEL_DEFAULT	CLC_LEVEL_DEBUG
 

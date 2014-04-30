@@ -209,6 +209,8 @@
                 curChannel.state = THChannelEnded;
             }];
             [peerIdentity.channels removeAllObjects];
+            [peerIdentity.availablePaths removeAllObjects];
+            peerIdentity.activePath = nil;
             peerIdentity.currentLine = nil;
         }
         
@@ -219,6 +221,11 @@
                 THIPV4Path* newPath = [[THIPV4Path alloc] initWithTransport:packet.returnPath.transport ip:[pathInfo objectForKey:@"ip"] port:[[pathInfo objectForKey:@"port"] unsignedIntegerValue]];
                 [peerIdentity addPath:newPath];
             }
+        }
+        
+        // Add a bridge route
+        if ([innerPacket.json objectForKey:@"bridge"]) {
+            [peerIdentity addPath:packet.returnPath];
         }
         
         THUnreliableChannel* peerChannel = [[THUnreliableChannel alloc] initToIdentity:self.toIdentity];
@@ -324,6 +331,8 @@
     THPacket* pathPacket = [THPacket new];
     [pathPacket.json setObject:[thSwitch.identity pathInformationTo:self.toIdentity] forKey:@"paths"];
     [pathPacket.json setObject:@"path" forKey:@"type"];
+    
+    NSLog(@"Offering paths %@ to %@", [thSwitch.identity pathInformationTo:self.toIdentity], self.toIdentity.hashname);
     
     THPathHandler* handler = [THPathHandler new];
     handler.line = self;

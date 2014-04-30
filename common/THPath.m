@@ -111,6 +111,11 @@
     return self;
 }
 
+-(NSData*)address
+{
+    return toAddress;
+}
+
 -(BOOL)isLocal
 {
     struct sockaddr_in* saddr = (struct sockaddr_in*)[toAddress bytes];

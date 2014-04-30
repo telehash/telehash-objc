@@ -216,7 +216,13 @@
         [toIdentity addPath:relayPath];
         toIdentity.activePath = relayPath;
         
-        // XXX FIXME TODO:  Hole punch packet on paths [self.udpSocket sendData:[NSData data] toAddress:toIdentity.address withTimeout:-1 tag:0];
+        // FW helper
+        for (THPath* punchPath in toIdentity.availablePaths) {
+            if ([punchPath class] == [THIPV4Path class]) {
+                THIPV4Path* ipPath = (THIPV4Path*)punchPath;
+                [punchPath.transport send:[NSData data] to:ipPath.address];
+            }
+        }
         
         // We blind send this and hope for the best!
         [viaIdentity sendPacket:peerPacket];
