@@ -245,7 +245,6 @@ int nlz(unsigned long x) {
 -(THPath*)pathMatching:(NSDictionary *)pathInfo
 {
     for (THPath* path in self.availablePaths) {
-        if (path.isRelay) continue;
         if ([path.information isEqualToDictionary:pathInfo]) {
             return path;
         }
