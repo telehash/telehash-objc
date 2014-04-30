@@ -211,6 +211,9 @@
             [peerIdentity.channels removeAllObjects];
             [peerIdentity.availablePaths removeAllObjects];
             peerIdentity.activePath = nil;
+            
+            [thSwitch closeLine:peerIdentity.currentLine];
+            
             peerIdentity.currentLine = nil;
         }
         
