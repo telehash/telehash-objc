@@ -414,7 +414,7 @@
         [self.line.toIdentity addPath:packet.returnPath];
         path = packet.returnPath;
     }
-    
+    path.available = YES;
     [self.line.toIdentity checkPriorityPath:path];
     
     return YES;
