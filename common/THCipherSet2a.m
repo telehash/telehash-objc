@@ -69,6 +69,11 @@ static unsigned char eccHeader[] = {0x04};
     return [SHA256 hashWithData:self.rsaKeys.DERPublicKey];
 }
 
+-(NSData *)publicKey
+{
+    return self.rsaKeys.DERPublicKey;
+}
+
 -(THLine*)processOpen:(THPacket *)openPacket
 {
     // Process an open packet

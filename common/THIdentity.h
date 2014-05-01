@@ -34,6 +34,7 @@
 @property NSMutableArray* availablePaths;
 @property THPath* activePath;
 @property BOOL isLocal;
+@property NSString* suggestedCipherSet;
 
 -(void)addCipherSet:(THCipherSet*)cipherSet;
 -(void)addPath:(THPath*)path;

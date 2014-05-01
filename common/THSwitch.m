@@ -20,6 +20,7 @@
 #import "THTransport.h"
 #import "THPath.h"
 #import "THCipherSet2a.h"
+#import "THCipherSet3a.h"
 #import "THUnreliableChannel.h"
 #import "CLCLog.h"
 
@@ -99,11 +100,21 @@
     [json enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
         NSDictionary* entry = (NSDictionary*)obj;
         NSArray* paths = [entry objectForKey:@"paths"];
-        NSDictionary* parts = [entry objectForKey:@"parts"];
         NSDictionary* keys = [entry objectForKey:@"keys"];
+        // TODO:  XXX make this more generic
+        THIdentity* seedIdentity = [THIdentity new];
+        // 2a
         NSData* keyData = [[NSData alloc] initWithBase64EncodedString:[keys objectForKey:@"2a"] options:0];
-        THCipherSet2a* cs = [[THCipherSet2a alloc] initWithPublicKey:keyData privateKey:nil];
-        THIdentity* seedIdentity = [THIdentity identityFromParts:parts key:cs];
+        THCipherSet* cs = [[THCipherSet2a alloc] initWithPublicKey:keyData privateKey:nil];
+        [seedIdentity addCipherSet:cs];
+        // 3a
+        keyData = [[NSData alloc] initWithBase64EncodedString:[keys objectForKey:@"3a"] options:0];
+        if (keyData) {
+            cs = [[THCipherSet3a alloc] initWithPublicKey:keyData privateKey:nil];
+            [seedIdentity addCipherSet:cs];
+        }
+        seedIdentity.parts = [entry objectForKey:@"parts"];
+
         for (NSDictionary* path in paths) {
             if ([[path objectForKey:@"type"] isEqualToString:@"ipv4"]) {
                 THIPv4Transport* ipTransport = [self.transports objectForKey:@"ipv4"];
@@ -203,8 +214,13 @@
         [peerPacket.json setObject:toIdentity.hashname forKey:@"peer"];
         [peerPacket.json setObject:@"peer" forKey:@"type"];
         [peerPacket.json setObject:peerChannel.channelId forKey:@"c"];
-        THCipherSet2a* cs = [self.identity.cipherParts objectForKey:@"2a"];
-        peerPacket.body = cs.rsaKeys.DERPublicKey;
+        
+        THCipherSet* chosenCS = [self.identity.cipherParts objectForKey:toIdentity.suggestedCipherSet];
+        if (!chosenCS) {
+            CLCLogError(@"We did not actually have a key for the CS %@ to connect to %@", toIdentity.suggestedCipherSet, toIdentity.hashname);
+            return;
+        }
+        peerPacket.body = chosenCS.publicKey;
         
         THRelayPath* relayPath = [THRelayPath new];
         relayPath.peerChannel = peerChannel;
@@ -271,7 +287,7 @@
 
 -(void)processOpen:(THPacket*)incomingPacket
 {
-    CLCLogInfo(@"Processing an open from %@", incomingPacket.returnPath);
+    CLCLogInfo(@"Processing an open from %@ with type %@", incomingPacket.returnPath, [incomingPacket.body subdataWithRange:NSMakeRange(0, 1)]);
     THCipherSet* cipherSet = [self.identity.cipherParts objectForKey:[[incomingPacket.body subdataWithRange:NSMakeRange(0, 1)] hexString]];
     if (!cipherSet) {
         CLCLogInfo(@"Invalid cipher set requested %@", [[incomingPacket.body subdataWithRange:NSMakeRange(0, 1)] hexString]);

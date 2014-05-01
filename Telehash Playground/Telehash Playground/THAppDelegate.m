@@ -16,6 +16,7 @@
 #import "THPath.h"
 #import "THChannel.h"
 #import "THCipherSet2a.h"
+#import "THCipherSet3a.h"
 #import <THReliableChannel.h>
 #import <CLCLog.h>
 
@@ -34,10 +35,11 @@
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
     [tableView setDataSource:self];
+    [tableView setDelegate:self];
     self.identityPath = @"/var/tmp/telehash2";
     
     CLCLogger* logger = [CLCLogger defaultLogger];
-    logger.filter = CLC_LEVEL_DEBUG;
+    logger.filter = CLC_LEVEL_INFO;
 }
 
 -(void)startSwitch:(id)sender
@@ -47,6 +49,14 @@
     thSwitch.delegate = self;
     THIdentity* baseIdentity = [THIdentity new];
     self.identityPath = pathField.stringValue;
+    THCipherSet3a* cs3a = [[THCipherSet3a alloc] initWithPublicKeyPath:[NSString stringWithFormat:@"%@/server3.pkey", self.identityPath] privateKeyPath:[NSString stringWithFormat:@"%@/server3.key", self.identityPath]];
+    if (!cs3a) {
+        cs3a = [THCipherSet3a new];
+        [cs3a generateKeys];
+        [cs3a savePublicKeyPath:[NSString stringWithFormat:@"%@/server3.pkey", self.identityPath] privateKeyPath:[NSString stringWithFormat:@"%@/server3.key", self.identityPath]];
+    }
+    [baseIdentity addCipherSet:cs3a];
+    NSLog(@"3a fingerprint %@", [cs3a.fingerprint hexString]);
     THCipherSet2a* cs2a = [[THCipherSet2a alloc] initWithPublicKeyPath:[NSString stringWithFormat:@"%@/server.pder", self.identityPath] privateKeyPath:[NSString stringWithFormat:@"%@/server.der", self.identityPath]];
     if (!cs2a) {
         /*
@@ -96,6 +106,18 @@
     return line.toIdentity.hashname;
 }
 
+-(void)tableViewSelectionDidChange:(NSNotification *)notification
+{
+    NSArray* keys = [thSwitch.openLines allKeys];
+    THLine* line = [thSwitch.openLines objectForKey:[keys objectAtIndex:tableView.selectedRow]];
+    if (line) {
+        objController.content = line;
+        channelArrayController.content = line.toIdentity.channels.allValues;
+    } else {
+        objController.content = nil;
+        channelArrayController.content = nil;
+    }
+}
 
 -(void)openedLine:(THLine *)line;
 {

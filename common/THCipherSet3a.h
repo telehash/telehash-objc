@@ -16,6 +16,7 @@
 }
 -(id)initWithPublicKey:(NSData*)publicKey privateKey:(NSData *)privateKey;
 -(id)initWithPublicKeyPath:(NSString*)publicKeyPath privateKeyPath:(NSString*)privateKeyPath;
+-(void)savePublicKeyPath:(NSString*)publicKeyPath privateKeyPath:(NSString*)privateKeyPath;
 @end
 
 @interface THCipherSetLineInfo3a : THCipherSetLineInfo

@@ -21,6 +21,8 @@
     switch (bytes[0]) {
     case 0x2a:
         return [THCipherSet2a new];
+    case 0x3a:
+        return [THCipherSet3a new];
     default:
         return nil;
     }

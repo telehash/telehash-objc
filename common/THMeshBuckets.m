@@ -235,6 +235,36 @@
     if (defaultSwitch.status != THSwitchOnline) {
         [defaultSwitch updateStatus:THSwitchOnline];
     }
+    
+    THIPv4Transport* transport = [self.localSwitch.transports objectForKey:@"ipv4"];
+    for (NSString* seeLine in [packet.json objectForKey:@"see"]) {
+        NSArray* seeParts = [seeLine componentsSeparatedByString:@","];
+        if (seeParts.count == 4) {
+            if ([[seeParts objectAtIndex:0] isEqualToString:self.localIdentity.hashname]) continue;
+            THIdentity* seeIdentity = [THIdentity identityFromHashname:[seeParts objectAtIndex:0]];
+            NSInteger bucketIndex = [self.localIdentity distanceFrom:seeIdentity];
+            NSMutableArray* bucket = [self.buckets objectAtIndex:bucketIndex];
+            if (bucket == nil) {
+                bucket = [NSMutableArray array];
+            }
+            
+            // If we have a link channel already, just skip it
+            THChannel* linkChannel = [seeIdentity channelForType:@"link"];
+            if (linkChannel) continue;
+            
+            seeIdentity.suggestedCipherSet = [seeParts objectAtIndex:1];
+            
+            // TODO:  Check our hints for age on this entry, if it's older we should bump the newest from the bucket if it's full
+            if (linkTotal >= MAX_LINKS || bucket.count >= K_BUCKET_SIZE) {
+                break;
+            }
+
+            seeIdentity.via = channel.toIdentity;
+            [seeIdentity addPath:[[THIPV4Path alloc] initWithTransport:transport ip:[seeParts objectAtIndex:2] port:[[seeParts objectAtIndex:3] integerValue]]];
+            [self linkToIdentity:seeIdentity];
+        }
+    }
+    
     NSUInteger now = time(NULL);
     if (channel.lastOutActivity + 30 < now) {
         THPacket* pingPacket = [THPacket new];

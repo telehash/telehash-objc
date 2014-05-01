@@ -10,13 +10,15 @@
 #import <THSwitch.h>
 #import <THChannel.h>
 
-@interface THAppDelegate : NSObject <THSwitchDelegate, THChannelDelegate, NSTableViewDataSource> {
+@interface THAppDelegate : NSObject <THSwitchDelegate, THChannelDelegate, NSTableViewDataSource, NSTableViewDelegate> {
     IBOutlet NSTableView* tableView;
     IBOutlet NSTextField* hashnameField;
     IBOutlet NSTextField* addressField;
     IBOutlet NSTextField* portField;
     IBOutlet NSTextField* keyField;
     IBOutlet NSTextField* pathField;
+    IBOutlet NSObjectController* objController;
+    IBOutlet NSArrayController* channelArrayController;
     THSwitch* thSwitch;
 }
 

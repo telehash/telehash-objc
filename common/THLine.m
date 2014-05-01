@@ -26,6 +26,7 @@
 #import "THUnreliableChannel.h"
 #import "THReliableChannel.h"
 #import "CLCLog.h"
+#import "THCipherSet3a.h"
 
 #include <arpa/inet.h>
 
@@ -188,9 +189,17 @@
         [thSwitch openChannel:connectChannel firstPacket:connectPacket];
         // XXX FIXME TODO: check the connect channel timeout for going away?
     } else if ([channelType isEqualToString:@"connect"]) {
-        // XXX FIXME TODO: Find the correct cipher set here
-        THCipherSet2a* cs = [[THCipherSet2a alloc] initWithPublicKey:innerPacket.body privateKey:nil];
-        THIdentity* peerIdentity = [THIdentity identityFromParts:[innerPacket.json objectForKey:@"from"] key:cs];
+        // Find the highest from so we can start it up
+        // TODO:  XXX Can this become a function?  is it a generic pattern?
+        NSDictionary* fromParts = [innerPacket.json objectForKey:@"from"];
+        NSString* highestPart = [[fromParts.allKeys sortedArrayUsingSelector:@selector(compare:)] lastObject];
+        THCipherSet* cs;
+        if ([highestPart isEqualToString:@"3a"]) {
+            cs = [[THCipherSet3a alloc] initWithPublicKey:innerPacket.body privateKey:nil];
+        } else if ([highestPart isEqualToString:@"2a"]) {
+            cs = [[THCipherSet2a alloc] initWithPublicKey:innerPacket.body privateKey:nil];
+        }
+        THIdentity* peerIdentity = [THIdentity identityFromParts:fromParts key:cs];
         if (!peerIdentity) {
             // We couldn't verify the identity, so shut it down
             THPacket* closePacket = [THPacket new];

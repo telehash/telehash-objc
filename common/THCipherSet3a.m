@@ -16,13 +16,46 @@
 #import "RNG.h"
 #import "CLCLog.h"
 
-static unsigned char csId3a[] = {0x3a};
-static uint8_t nonce3a[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
+static unsigned char csId3a[1] = {0x3a};
+static uint8_t nonce3a[crypto_secretbox_NONCEBYTES] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
 
 @implementation THCipherSet3a
 -(NSString*)identifier
 {
     return @"3a";
+}
+
+-(NSData *)publicKey
+{
+    return [NSData dataWithBytesNoCopy:publicKey length:sizeof(publicKey) freeWhenDone:NO];
+}
+
+-(id)initWithPublicKey:(NSData *)publicKeyData privateKey:(NSData *)privateKeyData
+{
+    self = [super init];
+    if (self) {
+        if (publicKeyData) bcopy(publicKeyData.bytes, publicKey, sizeof(publicKey));
+        if (privateKeyData) bcopy(privateKeyData.bytes, secretKey, sizeof(secretKey));
+    }
+    return self;
+}
+
+-(id)initWithPublicKeyPath:(NSString *)publicKeyPath privateKeyPath:(NSString *)privateKeyPath
+{
+    self = [super init];
+    if (self) {
+        if (publicKeyPath) {
+            NSData* keyData = [NSData dataWithContentsOfFile:publicKeyPath];
+            if (!keyData) return nil;
+            bcopy(keyData.bytes, publicKey, sizeof(publicKey));
+        }
+        if (privateKeyPath) {
+            NSData* keyData = [NSData dataWithContentsOfFile:privateKeyPath];
+            if (!keyData) return nil;
+            bcopy(keyData.bytes, secretKey, sizeof(secretKey));
+        }
+    }
+    return self;
 }
 
 -(void)generateKeys
@@ -38,8 +71,9 @@ static uint8_t nonce3a[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 -(THLine*)processOpen:(THPacket*)openPacket;
 {
     // Process an open packet
-    NSData* pubLineKey = [openPacket.body subdataWithRange:NSMakeRange(33, 32)];
-    NSData* encryptedPacket = [openPacket.body subdataWithRange:NSMakeRange(65, openPacket.body.length - 65)];
+    NSData* pubLineKey = [openPacket.body subdataWithRange:NSMakeRange(crypto_onetimeauth_BYTES + 1, crypto_box_PUBLICKEYBYTES)];
+    int packetStart = (crypto_onetimeauth_BYTES + 1 + crypto_box_PUBLICKEYBYTES);
+    NSData* encryptedPacket = [openPacket.body subdataWithRange:NSMakeRange(packetStart, openPacket.body.length - packetStart)];
     
     uint8_t agreedKey[crypto_box_BEFORENMBYTES];
     crypto_box_beforenm(agreedKey, [pubLineKey bytes], secretKey);
@@ -74,7 +108,7 @@ static uint8_t nonce3a[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     crypto_box_beforenm([sharedLineKey mutableBytes], [innerPacket.body bytes], secretKey);
     
     // Use the shared line key to validate the packet
-    if (crypto_onetimeauth_verify([openPacket.body bytes], [openPacket.body bytes] + crypto_onetimeauth_BYTES, openPacket.body.length - crypto_onetimeauth_BYTES, [sharedLineKey bytes]) != 0) {
+    if (crypto_onetimeauth_verify([openPacket.body bytes] + 1, [openPacket.body bytes] + 1 + crypto_onetimeauth_BYTES, openPacket.body.length - crypto_onetimeauth_BYTES - 1, [sharedLineKey bytes]) != 0) {
         CLCLogInfo(@"Unable to authenticate the packet body.");
         return nil;
     }
@@ -109,7 +143,7 @@ static uint8_t nonce3a[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     if (newLine) {
         // This is a partially opened line
         THCipherSetLineInfo3a* lineInfo = (THCipherSetLineInfo3a*)newLine.cipherSetInfo;
-        lineInfo.remoteLineKey = innerPacket.body;
+        lineInfo.remoteLineKey = pubLineKey;
     } else {
         newLine = [THLine new];
         newLine.toIdentity = senderIdentity;
@@ -117,7 +151,7 @@ static uint8_t nonce3a[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
         
         THCipherSetLineInfo3a* lineInfo = [THCipherSetLineInfo3a new];
         lineInfo.cipherSet = incomingCS;
-        lineInfo.remoteLineKey = innerPacket.body;
+        lineInfo.remoteLineKey = pubLineKey;
         
         newLine.cipherSetInfo = lineInfo;
     }
@@ -133,18 +167,19 @@ static uint8_t nonce3a[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     
     NSMutableData* agreedKey = [NSMutableData dataWithLength:crypto_box_BEFORENMBYTES];
     crypto_box_beforenm([agreedKey mutableBytes], [lineInfo.remoteLineKey bytes], [lineInfo.secretLineKey bytes]);
+    CLCLogDebug(@"Agreed line key is %@", agreedKey);
     
     NSMutableData* keyingMaterial = [NSMutableData dataWithLength:32 + agreedKey.length];
     [keyingMaterial replaceBytesInRange:NSMakeRange(0, agreedKey.length) withBytes:[agreedKey bytes] length:agreedKey.length];
     [keyingMaterial replaceBytesInRange:NSMakeRange(agreedKey.length, 16) withBytes:[[line.outLineId dataFromHexString] bytes] length:16];
     [keyingMaterial replaceBytesInRange:NSMakeRange(keyingMaterial.length - 16, 16) withBytes:[[line.inLineId dataFromHexString] bytes] length:16];
     lineInfo.decryptorKey = [SHA256 hashWithData:keyingMaterial];
-    //CLCLogInfo(@"decryptor key %@", lineInfo.decryptorKey);
+    //CLCLogDebug(@"decryptor key %@", lineInfo.decryptorKey);
     
     [keyingMaterial replaceBytesInRange:NSMakeRange(agreedKey.length, 16) withBytes:[[line.inLineId dataFromHexString] bytes] length:16];
     [keyingMaterial replaceBytesInRange:NSMakeRange(keyingMaterial.length - 16, 16) withBytes:[[line.outLineId dataFromHexString] bytes] length:16];
     lineInfo.encryptorKey = [SHA256 hashWithData:keyingMaterial];
-    //CLCLogInfo(@"Encryptor key %@",  lineInfo.encryptorKey);
+    //CLCLogDebug(@"Encryptor key %@",  lineInfo.encryptorKey);
     
 }
 -(THPacket*)generateOpen:(THLine*)line from:(THIdentity*)fromIdentity
@@ -178,27 +213,45 @@ static uint8_t nonce3a[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     innerPacket.body = [NSData dataWithBytesNoCopy:publicKey length:crypto_box_PUBLICKEYBYTES freeWhenDone:NO];
     
     NSData* innerPacketData = [innerPacket encode];
+    NSMutableData* encryptedInner = [NSMutableData dataWithLength:innerPacketData.length + crypto_secretbox_MACBYTES];
+    uint8_t encryptionKey[crypto_box_BEFORENMBYTES];
+    crypto_box_beforenm(encryptionKey, remoteCS->publicKey, [lineInfo.secretLineKey bytes]);
+    CLCLogDebug(@"REmote public key is %@", [NSData dataWithBytesNoCopy:remoteCS->publicKey length:sizeof(remoteCS->publicKey) freeWhenDone:NO]);
+    CLCLogDebug(@"Line public key is %@", lineInfo.publicLineKey);
+    CLCLogDebug(@"Line secret is %@", [NSData dataWithBytesNoCopy:encryptionKey length:crypto_box_BEFORENMBYTES freeWhenDone:NO]);
+    crypto_secretbox_easy(encryptedInner.mutableBytes, innerPacketData.bytes, innerPacketData.length, nonce3a, encryptionKey);
+    
+    CLCLogDebug(@"Encrypted body is %@", encryptedInner);
     
     THPacket* openPacket = [THPacket new];
     
     NSMutableData* authData = [NSMutableData dataWithLength:crypto_onetimeauth_BYTES];
-    NSMutableData* openBody = [NSMutableData dataWithCapacity:(1 + crypto_onetimeauth_BYTES + crypto_box_PUBLICKEYBYTES + innerPacketData.length)];
+    NSMutableData* openBody = [NSMutableData dataWithCapacity:(1 + crypto_onetimeauth_BYTES + crypto_box_PUBLICKEYBYTES + encryptedInner.length)];
     [openBody appendBytes:csId3a length:1];
     [openBody appendData:authData];
     [openBody appendData:lineInfo.publicLineKey];
-    [openBody appendData:innerPacketData];
+    [openBody appendData:encryptedInner];
     
     NSMutableData* authKey = [NSMutableData dataWithLength:crypto_box_BEFORENMBYTES];
     crypto_box_beforenm([authKey mutableBytes], remoteCS->publicKey, secretKey);
-    crypto_onetimeauth([authData mutableBytes], [openBody bytes] + 1 + crypto_onetimeauth_BYTES, crypto_box_PUBLICKEYBYTES + innerPacketData.length, [authKey bytes]);
+    crypto_onetimeauth([authData mutableBytes], [openBody bytes] + 1 + crypto_onetimeauth_BYTES, crypto_box_PUBLICKEYBYTES + encryptedInner.length, [authKey bytes]);
     
     [openBody replaceBytesInRange:NSMakeRange(1, crypto_onetimeauth_BYTES) withBytes:[authData bytes]];
     
-    CLCLogInfo(@"%@", openBody);
+    CLCLogDebug(@"%@", openBody);
     openPacket.body = openBody;
     openPacket.jsonLength = 1;
     
     return openPacket;
+}
+
+-(void)savePublicKeyPath:(NSString *)publicKeyPath privateKeyPath:(NSString *)privateKeyPath
+{
+    NSData* keyData = [NSData dataWithBytesNoCopy:publicKey length:sizeof(publicKey) freeWhenDone:NO];
+    [keyData writeToFile:publicKeyPath atomically:YES];
+    
+    keyData = [NSData dataWithBytesNoCopy:secretKey length:sizeof(secretKey) freeWhenDone:NO];
+    [keyData writeToFile:privateKeyPath atomically:YES];
 }
 @end
 
@@ -218,7 +271,7 @@ static uint8_t nonce3a[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 {
     NSData* encodedPacket = [packet encode];
     NSData* nonce = [RNG randomBytesOfLength:crypto_secretbox_NONCEBYTES];
-    NSMutableData* encryptedData = [NSMutableData dataWithLength:(crypto_secretbox_NONCEBYTES + encodedPacket.length)];
+    NSMutableData* encryptedData = [NSMutableData dataWithLength:(crypto_secretbox_MACBYTES + crypto_secretbox_NONCEBYTES + encodedPacket.length)];
     crypto_secretbox_easy([encryptedData mutableBytes] + crypto_secretbox_NONCEBYTES, [encodedPacket bytes], encodedPacket.length, [nonce bytes], [self.encryptorKey bytes]);
     
     [encryptedData replaceBytesInRange:NSMakeRange(0, crypto_secretbox_NONCEBYTES) withBytes:[nonce bytes]];
@@ -228,9 +281,9 @@ static uint8_t nonce3a[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
 -(void)decryptLinePacket:(THPacket*)packet
 {
-    unsigned long long cipherTextLength = packet.body.length - crypto_secretbox_NONCEBYTES - 16;
+    unsigned long long cipherTextLength = packet.body.length - crypto_secretbox_NONCEBYTES - 16 - crypto_secretbox_MACBYTES;
     NSMutableData* message = [NSMutableData dataWithLength:cipherTextLength];
-    crypto_secretbox_open_easy([message mutableBytes], [message bytes] + 16 + crypto_secretbox_NONCEBYTES, cipherTextLength, [message bytes] + 16, [self.decryptorKey bytes]);
+    crypto_secretbox_open_easy([message mutableBytes], [packet.body bytes] + 16 + crypto_secretbox_NONCEBYTES, cipherTextLength + crypto_secretbox_MACBYTES, [packet.body bytes] + 16, [self.decryptorKey bytes]);
     packet.body = message;
 }
 @end

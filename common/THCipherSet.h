@@ -15,6 +15,7 @@
 
 @interface THCipherSet : NSObject
 @property (readonly) NSData* fingerprint;
+@property (readonly) NSData* publicKey;
 +(THCipherSet*)cipherSetForOpen:(THPacket*)openPacket;
 -(THLine*)processOpen:(THPacket*)openPacket;
 -(void)finalizeLineKeys:(THLine*)line;
