@@ -228,15 +228,15 @@ int nlz(unsigned long x) {
     }
     
     [self.availablePaths addObject:path];
-    if (!self.activePath) self.activePath = path;
 }
 
--(NSArray*)pathInformationTo:(THIdentity *)toIdentity
+-(NSArray*)pathInformationTo:(THIdentity *)toIdentity allowLocal:(BOOL)allowLocal
 {
     NSMutableArray* paths = [NSMutableArray arrayWithCapacity:self.availablePaths.count];
     for(THPath* path in self.availablePaths) {
         if (path.isRelay) continue;
         if (path.isLocal && !toIdentity.isLocal) continue;
+        if (path.isLocal && !allowLocal) continue;
         [paths addObject:[path information]];
     }
     return paths;
@@ -244,12 +244,15 @@ int nlz(unsigned long x) {
 
 -(THPath*)pathMatching:(NSDictionary *)pathInfo
 {
+    CLCLogDebug(@"Starting comparisons with %@ against %@", pathInfo, self.availablePaths);
     for (THPath* path in self.availablePaths) {
         if ([path.information isEqualToDictionary:pathInfo]) {
+            CLCLogDebug(@"Matched against %@", path.information);
             return path;
         }
     }
 
+    CLCLogDebug(@"Didn't match %@", pathInfo);
     return nil;
 }
 

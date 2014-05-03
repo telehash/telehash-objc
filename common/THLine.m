@@ -341,10 +341,10 @@
     THSwitch* thSwitch = [THSwitch defaultSwitch];
 
     THPacket* pathPacket = [THPacket new];
-    [pathPacket.json setObject:[thSwitch.identity pathInformationTo:self.toIdentity] forKey:@"paths"];
+    [pathPacket.json setObject:[thSwitch.identity pathInformationTo:self.toIdentity allowLocal:YES] forKey:@"paths"];
     [pathPacket.json setObject:@"path" forKey:@"type"];
     
-    NSLog(@"Offering paths %@ to %@", [thSwitch.identity pathInformationTo:self.toIdentity], self.toIdentity.hashname);
+    NSLog(@"Offering paths %@ to %@", [thSwitch.identity pathInformationTo:self.toIdentity allowLocal:YES], self.toIdentity.hashname);
     
     THPathHandler* handler = [THPathHandler new];
     handler.line = self;
@@ -356,6 +356,7 @@
     [self addChannelHandler:handler];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [self removeChannelHandler:handler];
+        [pathChannel close];
     });
 }
 
@@ -424,6 +425,7 @@
             if (ipTransport) {
                 THIPV4Path* newPath = [[THIPV4Path alloc] initWithTransport:ipTransport ip:[returnPath objectForKey:@"ip"] port:[[returnPath objectForKey:@"port"] unsignedIntegerValue]];
                 newPath.available = YES;
+                CLCLogInfo(@"Adding a local path: %@", newPath.information);
                 [thSwitch.identity addPath:newPath];
             }
         }
@@ -436,6 +438,7 @@
         path = packet.returnPath;
     }
     path.available = YES;
+    path.priority += 1; // Gets a +1 cause we know it's alive!
     [self.line.toIdentity checkPriorityPath:path];
     
     return YES;

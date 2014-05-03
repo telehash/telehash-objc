@@ -83,7 +83,7 @@
     }];
     
     if (!pendingPings) {
-        double delayInSeconds = 60.0;
+        double delayInSeconds = 10.0;
         dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
         dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
             pendingPings = NO;
@@ -261,7 +261,7 @@
 
             seeIdentity.via = channel.toIdentity;
             [seeIdentity addPath:[[THIPV4Path alloc] initWithTransport:transport ip:[seeParts objectAtIndex:2] port:[[seeParts objectAtIndex:3] integerValue]]];
-            [self linkToIdentity:seeIdentity];
+            [self.localSwitch openLine:seeIdentity];
         }
     }
     
@@ -347,6 +347,7 @@
                     NSData* remoteAddress = [THIPV4Path addressTo:[seeParts objectAtIndex:2] port:[[seeParts objectAtIndex:3] integerValue]];
                     [self.seekingIdentity addPath:[localTransport returnPathTo:remoteAddress]];
                 }
+                self.seekingIdentity.suggestedCipherSet = [seeParts objectAtIndex:1];
             }
             foundIt = YES;
             *stop = YES;

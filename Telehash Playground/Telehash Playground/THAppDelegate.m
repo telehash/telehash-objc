@@ -39,7 +39,7 @@
     self.identityPath = @"/var/tmp/telehash2";
     
     CLCLogger* logger = [CLCLogger defaultLogger];
-    logger.filter = CLC_LEVEL_INFO;
+    logger.filter = CLC_LEVEL_DEBUG;
 }
 
 -(void)startSwitch:(id)sender
@@ -84,6 +84,7 @@
     for (THIPV4Path* ipPath in paths) {
         [baseIdentity addPath:ipPath];
     }
+    baseIdentity.activePath = [baseIdentity.availablePaths objectAtIndex:0];
     
     [thSwitch start];
     

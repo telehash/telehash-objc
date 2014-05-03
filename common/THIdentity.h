@@ -51,7 +51,7 @@
 
 -(THChannel*)channelForType:(NSString*)type;
 
--(NSArray*)pathInformationTo:(THIdentity*)toIdentity;
+-(NSArray*)pathInformationTo:(THIdentity *)toIdentity allowLocal:(BOOL)allowLocal;
 -(THPath*)pathMatching:(NSDictionary*)pathInfo;
 
 +(NSString*)hashnameForParts:(NSDictionary*)parts;

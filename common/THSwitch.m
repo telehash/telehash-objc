@@ -181,20 +181,42 @@
         if (lineOpenCompletion) lineOpenCompletion(toIdentity);
         return;
     }
-
-    [self.pendingJobs addObject:[THPendingJob pendingJobFor:toIdentity completion:^(id result) {
-        if (lineOpenCompletion) lineOpenCompletion(toIdentity);
-    }]];
     
+    for (THPendingJob* pendingJob in self.pendingJobs) {
+        if (pendingJob.type == PendingIdentity) {
+            THIdentity* pendingIdentity = (THIdentity*)pendingJob.pending;
+            if ([pendingIdentity.hashname isEqualToString:toIdentity.hashname]) {
+                // We're already trying, bail on this one
+                CLCLogWarning(@"Tried to open another line while one pending");
+                lineOpenCompletion(nil);
+                return;
+            }
+        }
+    }
+
+    THPendingJob* pendingJob = [THPendingJob pendingJobFor:toIdentity completion:^(id result) {
+        if (lineOpenCompletion) lineOpenCompletion(toIdentity);
+    }];
+    [self.pendingJobs addObject:pendingJob];
 
     // We have everything we need to direct request
-    if (toIdentity.availablePaths.count > 0 && [toIdentity.cipherParts objectForKey:@"2a"]) {
+    if (toIdentity.availablePaths.count > 0 && toIdentity.cipherParts.count > 0) {
         THLine* channelLine = [THLine new];
         channelLine.toIdentity = toIdentity;
         //channelLine.activePath = toIdentity.activePath;
         toIdentity.currentLine = channelLine;
         
         [channelLine sendOpen];
+        
+        // TODO:  XXX Check this timeout length
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            if (!toIdentity.currentLine.inLineId) {
+                CLCLogWarning(@"Unable to finalize the line after 1s");
+                toIdentity.currentLine = nil;
+                [self.pendingJobs removeObject:pendingJob];
+                lineOpenCompletion(nil);
+            }
+        });
         return;
     };
     
@@ -214,6 +236,10 @@
         [peerPacket.json setObject:toIdentity.hashname forKey:@"peer"];
         [peerPacket.json setObject:@"peer" forKey:@"type"];
         [peerPacket.json setObject:peerChannel.channelId forKey:@"c"];
+        NSArray* paths = [self.identity pathInformationTo:toIdentity allowLocal:NO];
+        if (paths) {
+            [peerPacket.json setObject:paths forKey:@"paths"];
+        }
         
         THCipherSet* chosenCS = [self.identity.cipherParts objectForKey:toIdentity.suggestedCipherSet];
         if (!chosenCS) {
@@ -242,6 +268,15 @@
         
         // We blind send this and hope for the best!
         [viaIdentity sendPacket:peerPacket];
+        
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            if (!toIdentity.currentLine && toIdentity.currentLine.inLineId) {
+                CLCLogWarning(@"Unable to peer open to %@", toIdentity.hashname);
+                toIdentity.currentLine = nil;
+                [self.pendingJobs removeObject:pendingJob];
+                lineOpenCompletion(nil);
+            }
+        });
         
         return;
     }
