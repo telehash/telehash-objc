@@ -244,15 +244,15 @@ int nlz(unsigned long x) {
 
 -(THPath*)pathMatching:(NSDictionary *)pathInfo
 {
-    CLCLogDebug(@"Starting comparisons with %@ against %@", pathInfo, self.availablePaths);
+    //CLCLogDebug(@"Starting comparisons with %@ against %@", pathInfo, self.availablePaths);
     for (THPath* path in self.availablePaths) {
         if ([path.information isEqualToDictionary:pathInfo]) {
-            CLCLogDebug(@"Matched against %@", path.information);
+            //CLCLogDebug(@"Matched against %@", path.information);
             return path;
         }
     }
 
-    CLCLogDebug(@"Didn't match %@", pathInfo);
+    //CLCLogDebug(@"Didn't match %@", pathInfo);
     return nil;
 }
 

@@ -72,7 +72,7 @@
             }
             
             // 60s ping based on last activity
-            if (checkTime < identity.currentLine.lastOutActivity + 55) return;
+            if (checkTime < identity.currentLine.lastOutActivity + 25) return;
             
             THPacket* pingPacket = [THPacket new];
             [pingPacket.json setObject:@YES forKey:@"seed"];
@@ -83,7 +83,7 @@
     }];
     
     if (!pendingPings) {
-        double delayInSeconds = 10.0;
+        double delayInSeconds = 50.0;
         dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
         dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
             pendingPings = NO;
