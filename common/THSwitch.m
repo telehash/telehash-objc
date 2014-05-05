@@ -283,11 +283,11 @@
     
     // Find a way to it from the mesh
     [self.meshBuckets seek:toIdentity completion:^(BOOL found) {
+        [self.pendingJobs removeObject:pendingJob];
         if (found) {
             [self openLine:toIdentity completion:lineOpenCompletion];
         } else {
             toIdentity.currentLine = nil;
-            [self.pendingJobs removeObject:pendingJob];
             if (lineOpenCompletion) lineOpenCompletion(nil);
         }
     }];
