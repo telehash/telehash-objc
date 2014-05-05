@@ -177,6 +177,10 @@
 
 -(void)openLine:(THIdentity *)toIdentity completion:(LineOpenBlock)lineOpenCompletion
 {
+	if (![toIdentity.hashname isEqualToString:@"3f6a490113612938979129ea8a6d37f28deeda3b4932cd8f63e5b45244c18035"]) {
+		NSLog(@"anal");
+	}
+	
     if (toIdentity.currentLine) {
         if (lineOpenCompletion) lineOpenCompletion(toIdentity);
         return;
@@ -197,6 +201,17 @@
     THPendingJob* pendingJob = [THPendingJob pendingJobFor:toIdentity completion:^(id result) {
         if (lineOpenCompletion) lineOpenCompletion(toIdentity);
     }];
+	
+	// TODO:  XXX Check this timeout length
+	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+		if (!toIdentity.currentLine.inLineId) {
+			CLCLogWarning(@"Unable to finalize the line after 1s");
+			toIdentity.currentLine = nil;
+			[self.pendingJobs removeObject:pendingJob];
+			if (lineOpenCompletion) lineOpenCompletion(nil);
+		}
+	});
+	
     [self.pendingJobs addObject:pendingJob];
 
     // We have everything we need to direct request
@@ -207,16 +222,7 @@
         toIdentity.currentLine = channelLine;
         
         [channelLine sendOpen];
-        
-        // TODO:  XXX Check this timeout length
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            if (!toIdentity.currentLine.inLineId) {
-                CLCLogWarning(@"Unable to finalize the line after 1s");
-                toIdentity.currentLine = nil;
-                [self.pendingJobs removeObject:pendingJob];
-                if (lineOpenCompletion) lineOpenCompletion(nil);
-            }
-        });
+		
         return;
     };
     
@@ -268,16 +274,6 @@
         
         // We blind send this and hope for the best!
         [viaIdentity sendPacket:peerPacket];
-        
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            if (!toIdentity.currentLine && toIdentity.currentLine.inLineId) {
-                CLCLogWarning(@"Unable to peer open to %@", toIdentity.hashname);
-                toIdentity.currentLine = nil;
-                [self.pendingJobs removeObject:pendingJob];
-                if (lineOpenCompletion) lineOpenCompletion(nil);
-            }
-        });
-        
         return;
     }
     
