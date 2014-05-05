@@ -188,7 +188,7 @@
             if ([pendingIdentity.hashname isEqualToString:toIdentity.hashname]) {
                 // We're already trying, bail on this one
                 CLCLogWarning(@"Tried to open another line while one pending");
-                lineOpenCompletion(nil);
+                if (lineOpenCompletion) lineOpenCompletion(nil);
                 return;
             }
         }
@@ -274,7 +274,7 @@
                 CLCLogWarning(@"Unable to peer open to %@", toIdentity.hashname);
                 toIdentity.currentLine = nil;
                 [self.pendingJobs removeObject:pendingJob];
-                lineOpenCompletion(nil);
+                if (lineOpenCompletion) lineOpenCompletion(nil);
             }
         });
         
