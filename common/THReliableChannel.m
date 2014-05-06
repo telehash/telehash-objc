@@ -125,7 +125,7 @@
         THPacket* curPacket = [inPacketBuffer pop];
         dispatch_async(channelQueue, ^{
             [self.delegate channel:self handlePacket:curPacket];
-            if ([[curPacket.json objectForKey:@"end"] boolValue] == YES) {
+            if (self.state != THChannelEnded && [[curPacket.json objectForKey:@"end"] boolValue] == YES) {
                 // TODO: Shut it down!
                 self.state = THChannelEnded;
                 [self close];

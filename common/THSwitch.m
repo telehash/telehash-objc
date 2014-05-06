@@ -177,45 +177,52 @@
 
 -(void)openLine:(THIdentity *)toIdentity completion:(LineOpenBlock)lineOpenCompletion
 {
-	if (![toIdentity.hashname isEqualToString:@"3f6a490113612938979129ea8a6d37f28deeda3b4932cd8f63e5b45244c18035"]) {
-		NSLog(@"anal");
-	}
-	
     if (toIdentity.currentLine) {
+		CLCLogDebug(@"openLine returning currentLine for identity %@", toIdentity.hashname);
         if (lineOpenCompletion) lineOpenCompletion(toIdentity);
         return;
     }
     
-    for (THPendingJob* pendingJob in self.pendingJobs) {
-        if (pendingJob.type == PendingIdentity) {
-            THIdentity* pendingIdentity = (THIdentity*)pendingJob.pending;
+	THPendingJob* pendingJob = nil;
+	
+    for (THPendingJob* pendingJobItem in self.pendingJobs) {
+        if (pendingJobItem.type == PendingIdentity) {
+            THIdentity* pendingIdentity = (THIdentity*)pendingJobItem.pending;
             if ([pendingIdentity.hashname isEqualToString:toIdentity.hashname]) {
                 // We're already trying, bail on this one
-                CLCLogWarning(@"Tried to open another line while one pending");
-                if (lineOpenCompletion) lineOpenCompletion(nil);
-                return;
+                CLCLogWarning(@"Tried to open another line to identity %@ while one pending", toIdentity.hashname);
+                pendingJob = pendingJobItem;
             }
         }
     }
+	
 
-    THPendingJob* pendingJob = [THPendingJob pendingJobFor:toIdentity completion:^(id result) {
-        if (lineOpenCompletion) lineOpenCompletion(toIdentity);
-    }];
-	
-	// TODO:  XXX Check this timeout length
-	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-		if (!toIdentity.currentLine.inLineId) {
-			CLCLogWarning(@"Unable to finalize the line after 1s");
-			toIdentity.currentLine = nil;
-			[self.pendingJobs removeObject:pendingJob];
-			if (lineOpenCompletion) lineOpenCompletion(nil);
-		}
-	});
-	
-    [self.pendingJobs addObject:pendingJob];
+	// If we dont have a matched pending line job
+	if (!pendingJob) {
+		CLCLogDebug(@"creating a pending job for identity %@", toIdentity.hashname);
+		
+		THPendingJob* pendingJob = [THPendingJob pendingJobFor:toIdentity completion:^(id result) {
+			if (lineOpenCompletion) lineOpenCompletion(toIdentity);
+		}];
+		
+		// TODO:  XXX Check this timeout length
+		dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+			if (!toIdentity.currentLine.inLineId) {
+				CLCLogWarning(@"Unable to finalize the line after 1s");
+				toIdentity.currentLine = nil;
+				[self.pendingJobs removeObject:pendingJob];
+				if (lineOpenCompletion) lineOpenCompletion(nil);
+			}
+		});
+		
+		[self.pendingJobs addObject:pendingJob];
+	}
+
 
     // We have everything we need to direct request
     if (toIdentity.availablePaths.count > 0 && toIdentity.cipherParts.count > 0) {
+		CLCLogDebug(@"identity %@ already has known paths", toIdentity.hashname);
+		
         THLine* channelLine = [THLine new];
         channelLine.toIdentity = toIdentity;
         //channelLine.activePath = toIdentity.activePath;
@@ -228,6 +235,8 @@
     
     // Let's do a peer request
     if (toIdentity.via) {
+		CLCLogDebug(@"identity %@ has via set", toIdentity.hashname);
+		
         // If we have a pending relay path, we should bail here
         for (THPath* path in toIdentity.availablePaths) {
             if ([path class] == [THRelayPath class]) return;
@@ -279,7 +288,12 @@
     
     // Find a way to it from the mesh
     [self.meshBuckets seek:toIdentity completion:^(BOOL found) {
-        [self.pendingJobs removeObject:pendingJob];
+		CLCLogDebug(@"identity %@ found in meshbuckets", toIdentity.hashname);
+		// remove existing pendingJob if exists
+		if (pendingJob) {
+			[self.pendingJobs removeObject:pendingJob];
+		}
+		
         if (found) {
             [self openLine:toIdentity completion:lineOpenCompletion];
         } else {

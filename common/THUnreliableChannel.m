@@ -51,7 +51,7 @@
     if (self.state != THChannelOpening && [self.delegate respondsToSelector:@selector(channel:handlePacket:)]) {
         [self.delegate channel:self handlePacket:packet];
     }
-    if ([[packet.json objectForKey:@"end"] boolValue] == YES) {
+    if (self.state != THChannelEnded && [[packet.json objectForKey:@"end"] boolValue] == YES) {
         self.state = THChannelEnded;
         [self close];
     }

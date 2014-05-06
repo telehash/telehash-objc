@@ -270,6 +270,11 @@
             }
             [channel handlePacket:innerPacket];
         } else {
+			// Are we getting a rogue packet from an old session, or something broken?
+			if (!channelType && ([innerPacket.json objectForKey:@"end"] || [innerPacket.json count] == 1)) {
+				CLCLogWarning(@"recieved a spurious packet %@ for a non-existant channel %@, ignoring", innerPacket.json, channelId);
+				return;
+			}
             // See if it's a reliable or unreliable channel
             if (!channelType && ![innerPacket.json objectForKey:@"err"]) {
                 THPacket* errPacket = [THPacket new];
@@ -355,6 +360,7 @@
     
     [self addChannelHandler:handler];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+		CLCLogDebug(@"THLine removing pathChannel %@", pathChannel.channelId);
         [self removeChannelHandler:handler];
         [pathChannel close];
     });
