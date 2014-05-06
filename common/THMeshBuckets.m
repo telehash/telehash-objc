@@ -333,31 +333,35 @@
     [sees enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         NSString* seeString = (NSString*)obj;
         NSArray* seeParts = [seeString componentsSeparatedByString:@","];
-        if (seeParts.count == 0) {
+        if (seeParts.count < 2) {
             CLCLogDebug(@"Invalid see parts: %@", seeParts);
             return;
         }
         if ([[seeParts objectAtIndex:0] isEqualToString:self.seekingIdentity.hashname]) {
-            CLCLogDebug(@"We found %@!", self.seekingIdentity.hashname);
-            // this is it!
-            self.seekingIdentity.via = channel.toIdentity;
-            if (seeParts.count > 2) {
-                THIPv4Transport* localTransport = [self.localSwitch.transports objectForKey:@"ipv4"];
-                if (localTransport) {
-                    NSData* remoteAddress = [THIPV4Path addressTo:[seeParts objectAtIndex:2] port:[[seeParts objectAtIndex:3] integerValue]];
-                    [self.seekingIdentity addPath:[localTransport returnPathTo:remoteAddress]];
-                }
-                self.seekingIdentity.suggestedCipherSet = [seeParts objectAtIndex:1];
-            }
-            foundIt = YES;
-            *stop = YES;
-            return;
+			CLCLogDebug(@"We found %@!", self.seekingIdentity.hashname);
+			// this is it!
+			self.seekingIdentity.via = channel.toIdentity;
+			self.seekingIdentity.suggestedCipherSet = [seeParts objectAtIndex:1];
+			
+			if (seeParts.count > 2) {
+				THIPv4Transport* localTransport = [self.localSwitch.transports objectForKey:@"ipv4"];
+				if (localTransport) {
+					NSData* remoteAddress = [THIPV4Path addressTo:[seeParts objectAtIndex:2] port:[[seeParts objectAtIndex:3] integerValue]];
+					[self.seekingIdentity addPath:[localTransport returnPathTo:remoteAddress]];
+				}
+			}
+			foundIt = YES;
+			*stop = YES;
+			return;
+			
         } else {
             // If they told us to ask ourself ignore it
             if ([[seeParts objectAtIndex:0] isEqualToString:self.localIdentity.hashname]) return;
+			
             // If we're moving closer we want to go ahead and start a seek to it
             THIdentity* nearIdentity = [THIdentity identityFromHashname:[seeParts objectAtIndex:0]];
             nearIdentity.via = channel.toIdentity;
+			nearIdentity.suggestedCipherSet = [seeParts objectAtIndex:1];
             [self.nearby addObject:nearIdentity];
         }
     }];
