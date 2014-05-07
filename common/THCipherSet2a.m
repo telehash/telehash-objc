@@ -164,6 +164,9 @@ static unsigned char eccHeader[] = {0x04};
         // This is a partially opened line
         THCipherSetLineInfo2a* lineInfo = (THCipherSetLineInfo2a*)newLine.cipherSetInfo;
         lineInfo.remoteECCKey = prefixedRemoteEccKey;
+		
+		// TODO temas review
+		//newLine.cipherSetInfo = lineInfo; //??
     } else {
         newLine = [THLine new];
         newLine.toIdentity = senderIdentity;
@@ -187,7 +190,12 @@ static unsigned char eccHeader[] = {0x04};
     if (!lineInfo.ecdh) {
         lineInfo.ecdh = [ECDH new];
     }
-    
+	// TODO temas review
+	if (!lineInfo.remoteECCKey) {
+		CLCLogError(@"line has no remoteECCKey");
+		return;
+	}
+	
     NSData* sharedSecret = [lineInfo.ecdh agreeWithRemotePublicKey:lineInfo.remoteECCKey];
     NSMutableData* keyingMaterial = [NSMutableData dataWithLength:32 + sharedSecret.length];
     [keyingMaterial replaceBytesInRange:NSMakeRange(0, sharedSecret.length) withBytes:[sharedSecret bytes] length:sharedSecret.length];
