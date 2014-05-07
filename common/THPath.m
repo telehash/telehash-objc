@@ -221,7 +221,7 @@
 
 -(void)sendPacket:(THPacket *)packet
 {
-    if (!self.peerChannel) return;
+    if (!self.peerChannel || ![self.peerChannel isKindOfClass:[THChannel class]]) return;
     
     THPacket* relayPacket = [THPacket new];
     relayPacket.body = [packet encode];
@@ -249,19 +249,29 @@
 -(void)channel:(THChannel *)channel didFailWithError:(NSError *)error
 {
     // XXX TODO: Shutdown the busted path
+	CLCLogDebug(@"relay peerChannel didFailWithError: %@", [error description]);
 }
 
 -(void)channel:(THChannel *)channel didChangeStateTo:(THChannelState)channelState
 {
+	CLCLogDebug(@"relay peerChannel didChangeStateTo: %d", channelState);
+
     // XXX TODO:  Shutdown on channel ended
+	if (channelState == THChannelEnded || channelState == THChannelErrored) {
+		if (channel == self.peerChannel) {
+			CLCLogDebug(@"relay peerChannel closed");
+			self.peerChannel = nil;
+		}
+	}
+	
 }
 
 -(NSDictionary*)information
 {
-	if (self.peerChannel && self.peerChannel.toIdentity) {
+	if (self.peerChannel && [self.peerChannel isKindOfClass:[THChannel class]]) {
 		return @{@"type":@"relay", @"to":self.peerChannel.toIdentity.hashname};
 	} else {
-		return nil;
+		return @{@"type":@"relay"};
 	}
 }
 
