@@ -258,7 +258,11 @@
 
 -(NSDictionary*)information
 {
-    return @{@"type":@"relay", @"to":self.peerChannel.toIdentity.hashname};
+	if (self.peerChannel && self.peerChannel.toIdentity) {
+		return @{@"type":@"relay", @"to":self.peerChannel.toIdentity.hashname};
+	} else {
+		return nil;
+	}
 }
 
 -(NSDictionary*)informationTo:(NSData *)address
