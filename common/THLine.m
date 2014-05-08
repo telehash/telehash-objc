@@ -173,7 +173,8 @@
             [connectPacket.json setObject:paths forKey:@"paths"];
         }
         connectPacket.body = innerPacket.body;
-
+		
+		// TODO dan review this flow
         THPeerRelay* relay = [THPeerRelay new];
         
         THUnreliableChannel* connectChannel = [[THUnreliableChannel alloc] initToIdentity:peerLine.toIdentity];
