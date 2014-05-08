@@ -297,7 +297,10 @@
                 
                 [self.toIdentity sendPacket:errPacket];
                 return;
-            }
+            } else if (!channelType) {
+				return;
+			}
+			
             THChannel* newChannel;
             THChannelType newChannelType;
             if (seq && [seq unsignedIntegerValue] == 0) {
