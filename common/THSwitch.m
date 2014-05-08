@@ -237,10 +237,22 @@
     if (toIdentity.via) {
 		CLCLogDebug(@"identity %@ has via set", toIdentity.hashname);
 		
+		THRelayPath* relayPath = nil;
+		
         // If we have a pending relay path, we should bail here
         for (THPath* path in toIdentity.availablePaths) {
-            if ([path class] == [THRelayPath class]) return;
+            if ([path class] == [THRelayPath class]) {
+				CLCLogDebug(@"open line (via) found existing relayPath");
+				relayPath = (THRelayPath*)path;
+			}
         }
+		
+		if (!relayPath.peerChannel) {
+			CLCLogDebug(@"open line (via) relayPath has dead peerChannel, removing");
+			[toIdentity.availablePaths removeObject:relayPath];
+			relayPath = nil;
+		}
+		
         THIdentity* viaIdentity = [THIdentity identityFromHashname:toIdentity.via.hashname];
         
         THUnreliableChannel* peerChannel = [[THUnreliableChannel alloc] initToIdentity:viaIdentity];
@@ -263,14 +275,19 @@
         }
         peerPacket.body = chosenCS.publicKey;
         
-        THRelayPath* relayPath = [THRelayPath new];
+		if (!relayPath) {
+			CLCLogDebug(@"open line (via) creating new relayPath");
+			relayPath = [THRelayPath new];
+			[toIdentity addPath:relayPath];
+		}
+        
         relayPath.peerChannel = peerChannel;
         relayPath.transport = viaIdentity.activePath.transport;
         relayPath.relayedPath = viaIdentity.activePath;
         peerChannel.delegate = relayPath;
         peerChannel.type = @"peer";
         
-        [toIdentity addPath:relayPath];
+        
         toIdentity.activePath = relayPath;
         
         // FW helper
