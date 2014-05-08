@@ -62,6 +62,7 @@
             
             // Check for dead channels at 2m
             if (checkTime > identity.currentLine.lastInActivity + 120) {
+				CLCLogWarning(@"line inactive for %@, removing link channel", identity.hashname);
                 [bucket removeObjectAtIndex:idx];
                 THChannel* channel = [identity channelForType:@"link"];
                 if (channel) {
@@ -72,7 +73,7 @@
             }
             
             // 60s ping based on last activity
-            if (checkTime < identity.currentLine.lastOutActivity + 25) return;
+            //if (checkTime < identity.currentLine.lastOutActivity + 25) return;
             
             THPacket* pingPacket = [THPacket new];
             [pingPacket.json setObject:@YES forKey:@"seed"];
@@ -83,7 +84,7 @@
     }];
     
     if (!pendingPings) {
-        double delayInSeconds = 50.0;
+        double delayInSeconds = 25.0;
         dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
         dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
             pendingPings = NO;
@@ -266,7 +267,11 @@
     }
     
     NSUInteger now = time(NULL);
-    if (channel.lastOutActivity + 30 < now) {
+	
+	// ensure we update the line lastInActivity so that we dont time it out within the pingLines method
+	channel.line.lastInActivity = now;
+	
+    if (channel.lastOutActivity + 10 < now) {
         THPacket* pingPacket = [THPacket new];
         [pingPacket.json setObject:@YES forKey:@"seed"];
         if (channel.lastOutActivity == 0) {
@@ -286,6 +291,7 @@
 -(void)channel:(THChannel *)channel didChangeStateTo:(THChannelState)channelState
 {
     if (channelState == THChannelEnded || channelState == THChannelErrored) {
+		CLCLogWarning(@"link channel ended");
         NSMutableArray* bucket = [self.buckets objectAtIndex:[self.localIdentity distanceFrom:channel.toIdentity]];
         [bucket removeObject:channel];
     }
@@ -293,6 +299,7 @@
 
 -(void)channel:(THChannel *)channel didFailWithError:(NSError *)error
 {
+	CLCLogWarning(@"link channel errored with error: %@", [error description]);
     NSMutableArray* bucket = [self.buckets objectAtIndex:[self.localIdentity distanceFrom:channel.toIdentity]];
     [bucket removeObject:channel];
 }

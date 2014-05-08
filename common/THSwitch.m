@@ -455,7 +455,7 @@
     NSMutableSet* ourIDs = [NSMutableSet setWithArray:[self.identity.cipherParts allKeys]];
     [ourIDs intersectSet:[NSSet setWithArray:[toLine.toIdentity.cipherParts allKeys]]];
     if (ourIDs.count <= 0) {
-        CLCLogInfo(@"Unable to find a matching csid for open.");
+        CLCLogInfo(@"Unable to find a matching csid for open, requested cipherParts %@", toLine.toIdentity.cipherParts);
         return nil;
     }
     NSSortDescriptor *sort = [NSSortDescriptor sortDescriptorWithKey:@"description" ascending:NO];

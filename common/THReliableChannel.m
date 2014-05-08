@@ -112,18 +112,19 @@
 
 -(void)delegateHandlePackets;
 {
+	/*
     if (!channelQueue) {
         channelQueue = dispatch_queue_create([[NSString stringWithFormat:@"telehash.channel.%@", self.channelId] UTF8String], NULL);
         //channelSemaphore = dispatch_semaphore_create(0);
     }
-    
+    */
     while (inPacketBuffer.length > 0) {
         if (inPacketBuffer.frontSeq != self.nextExpectedSequence) {
             // XXX dispatch a missing queue?
             return;
         }
         THPacket* curPacket = [inPacketBuffer pop];
-        dispatch_async(channelQueue, ^{
+        dispatch_async(dispatch_get_main_queue(), ^{
             [self.delegate channel:self handlePacket:curPacket];
             if (self.state != THChannelEnded && [[curPacket.json objectForKey:@"end"] boolValue] == YES) {
                 // TODO: Shut it down!
