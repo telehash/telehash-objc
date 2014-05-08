@@ -246,13 +246,26 @@
         peerChannel.type = @"connect";
         [thSwitch openChannel:peerChannel firstPacket:nil];
         
-        THRelayPath* relayPath = [THRelayPath new];
-        relayPath.relayedPath = packet.returnPath;
-        relayPath.transport = packet.returnPath.transport;
-        relayPath.peerChannel = peerChannel;
-        peerChannel.delegate = relayPath;
+		// If we have a pending relay path, we should bail here
+		THRelayPath* relayPath = nil;
+        for (THPath* path in peerIdentity.availablePaths) {
+            if ([path class] == [THRelayPath class]) {
+				CLCLogDebug(@"incoming connect found existing relayPath");
+				relayPath = (THRelayPath*)path;
+			}
+        }
+		
+		if (!relayPath) {
+			CLCLogDebug(@"incoming connect creating new relayPath");
+			relayPath = [THRelayPath new];
+			[peerIdentity.availablePaths addObject:relayPath];
+		}
         
-        [peerIdentity.availablePaths addObject:relayPath];
+		relayPath.relayedPath = packet.returnPath;
+		relayPath.transport = packet.returnPath.transport;
+		relayPath.peerChannel = peerChannel;
+		peerChannel.delegate = relayPath;
+		
         if (!peerIdentity.activePath) peerIdentity.activePath = relayPath;
         
         [thSwitch openLine:peerIdentity];
