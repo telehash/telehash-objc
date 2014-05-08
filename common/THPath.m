@@ -249,7 +249,9 @@
 -(void)channel:(THChannel *)channel didFailWithError:(NSError *)error
 {
     // XXX TODO: Shutdown the busted path
-	CLCLogDebug(@"relay peerChannel didFailWithError: %@", [error description]);
+	CLCLogWarning(@"relay peerChannel didFailWithError: %@", [error description]);
+	
+	self.peerChannel = nil;
 }
 
 -(void)channel:(THChannel *)channel didChangeStateTo:(THChannelState)channelState
@@ -257,9 +259,10 @@
 	CLCLogDebug(@"relay peerChannel didChangeStateTo: %d", channelState);
 
     // XXX TODO:  Shutdown on channel ended
+	// TODO temas, we're getting errors, but not closes...
 	if (channelState == THChannelEnded || channelState == THChannelErrored) {
 		if (channel == self.peerChannel) {
-			CLCLogDebug(@"relay peerChannel closed");
+			CLCLogWarning(@"relay peerChannel closed");
 			self.peerChannel = nil;
 		}
 	}

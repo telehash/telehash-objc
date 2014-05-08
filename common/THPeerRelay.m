@@ -20,7 +20,7 @@
 
 -(void)sendPacket:(THPacket *)packet
 {
-	CLCLogDebug(@"THPeerRelay sendPacket called!");
+	CLCLogWarning(@"THPeerRelay sendPacket called!");
 }
 
 -(BOOL)channel:(THChannel *)channel handlePacket:(THPacket *)packet
@@ -42,11 +42,11 @@
 
 -(void)channel:(THChannel *)channel didChangeStateTo:(THChannelState)channelState
 {
-    CLCLogDebug(@"THPeerRelay channel didChangeStateTo: %d", channelState);
+    CLCLogWarning(@"THPeerRelay channel didChangeStateTo: %d", channelState);
 }
 
 -(void)channel:(THChannel *)channel didFailWithError:(NSError *)error
 {
-	CLCLogDebug(@"THPeerRelay channel didFailWithError: %@", [error description]);
+	CLCLogWarning(@"THPeerRelay channel didFailWithError: %@", [error description]);
 }
 @end
