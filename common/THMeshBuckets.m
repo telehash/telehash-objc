@@ -106,7 +106,10 @@
 	
 	if (seeIdentities != nil) {
 		for (THIdentity* seeIdentity in seeIdentities) {
-			[sees addObject:[seeIdentity seekStringForIdentity:identity]];
+			NSString* seekString = [seeIdentity seekStringForIdentity:identity];
+			if (seekString) {
+				[sees addObject:seekString];
+			}
 		}
 	}
 	
@@ -287,7 +290,10 @@
 			
 			if (seeIdentities != nil) {
 				for (THIdentity* seeIdentity in seeIdentities) {
-					[sees addObject:[seeIdentity seekStringForIdentity:channel.toIdentity]];
+					NSString* seekString = [seeIdentity seekStringForIdentity:channel.toIdentity];
+					if (seekString) {
+						[sees addObject:seekString];
+					}
 				}
 			}
 			

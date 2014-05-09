@@ -140,7 +140,10 @@
 		
 		if (seeIdentities != nil) {
 			for (THIdentity* seeIdentity in seeIdentities) {
-				[sees addObject:[seeIdentity seekStringForIdentity:identity]];
+				NSString* seekString = [seeIdentity seekStringForIdentity:identity];
+				if (seekString) {
+					[sees addObject:seekString];
+				}
 			}
 		}
 		
