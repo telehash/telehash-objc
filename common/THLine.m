@@ -133,11 +133,18 @@
         [response.json setObject:@(YES) forKey:@"end"];
         [response.json setObject:channelId forKey:@"c"];
         THSwitch* defaultSwitch = [THSwitch defaultSwitch];
-        NSArray* sees = [defaultSwitch.meshBuckets closeInBucket:[THIdentity identityFromHashname:[innerPacket.json objectForKey:@"seek"]]];
-        if (sees == nil) {
-            sees = [NSArray array];
-        }
-        [response.json setObject:[sees valueForKey:@"seekString"] forKey:@"see"];
+		
+		THIdentity* identity = [THIdentity identityFromHashname:[innerPacket.json objectForKey:@"seek"]];
+        NSArray* seeIdentities = [defaultSwitch.meshBuckets closeInBucket:identity];
+		NSMutableArray* sees = [NSMutableArray array];
+		
+		if (seeIdentities != nil) {
+			for (THIdentity* seeIdentity in seeIdentities) {
+				[sees addObject:[seeIdentity seekStringForIdentity:identity]];
+			}
+		}
+		
+        [response.json setObject:sees forKey:@"see"];
         
         [self sendPacket:response];
     } else if ([channelType isEqualToString:@"link"] && !channel) {

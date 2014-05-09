@@ -100,11 +100,17 @@
     THChannel* linkChannel = [identity channelForType:@"link"];
     THPacket* linkPacket = [THPacket new];
     [linkPacket.json setObject:@YES forKey:@"seed"]; // TODO:  Allow for opting out of seeding?
-    NSArray* sees = [self nearby:identity];
-    if (sees == nil) {
-        sees = [NSArray array];
-    }
-    [linkPacket.json setObject:[sees valueForKey:@"seekString"] forKey:@"see"];
+    
+	NSArray* seeIdentities = [self nearby:identity];
+    NSMutableArray* sees = [NSMutableArray array];
+	
+	if (seeIdentities != nil) {
+		for (THIdentity* seeIdentity in seeIdentities) {
+			[sees addObject:[seeIdentity seekStringForIdentity:identity]];
+		}
+	}
+	
+    [linkPacket.json setObject:sees forKey:@"see"];
     
     if (!linkChannel) {
         linkChannel = [[THUnreliableChannel alloc] initToIdentity:identity];
@@ -276,11 +282,16 @@
         [pingPacket.json setObject:@YES forKey:@"seed"];
         if (channel.lastOutActivity == 0) {
             // Add the sees, it's our initial response
-            NSArray* sees = [self nearby:channel.toIdentity];
-            if (sees == nil) {
-                sees = [NSArray array];
-            }
-            [pingPacket.json setObject:[sees valueForKey:@"seekString"] forKey:@"see"];
+			NSArray* seeIdentities = [self nearby:channel.toIdentity];
+			NSMutableArray* sees = [NSMutableArray array];
+			
+			if (seeIdentities != nil) {
+				for (THIdentity* seeIdentity in seeIdentities) {
+					[sees addObject:[seeIdentity seekStringForIdentity:channel.toIdentity]];
+				}
+			}
+			
+            [pingPacket.json setObject:sees forKey:@"see"];
         }
         [channel sendPacket:pingPacket];
     }

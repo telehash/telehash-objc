@@ -48,6 +48,7 @@
 -(void)sendPacket:(THPacket*)packet;
 -(void)sendPacket:(THPacket*)packet path:(THPath*)path;
 -(NSString*)seekString;
+-(NSString*)seekStringForIdentity:(THIdentity*)identity;
 
 -(THChannel*)channelForType:(NSString*)type;
 

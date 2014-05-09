@@ -194,6 +194,22 @@ int nlz(unsigned long x) {
     }
 }
 
+-(NSString*)seekStringForIdentity:(THIdentity*)identity
+{
+	NSMutableSet* ourIDs = [NSMutableSet setWithArray:[self.cipherParts allKeys]];
+    [ourIDs intersectSet:[NSSet setWithArray:[identity.cipherParts allKeys]]];
+	
+	NSSortDescriptor *sort = [NSSortDescriptor sortDescriptorWithKey:@"description" ascending:NO];
+    NSArray* sortedCSIds = [ourIDs sortedArrayUsingDescriptors:@[sort]];
+	
+    if (!self.address) {
+        return [NSString stringWithFormat:@"%@,%@", self.hashname, [sortedCSIds objectAtIndex:0]];
+    } else {
+        const struct sockaddr_in* addr = [self.address bytes];
+        return [NSString stringWithFormat:@"%@,%@,%s,%d", self.hashname, [sortedCSIds objectAtIndex:0], inet_ntoa(addr->sin_addr),addr->sin_port];
+    }
+}
+
 -(void)addCipherSet:(THCipherSet *)cipherSet
 {
     NSMutableDictionary* newParts = [NSMutableDictionary dictionaryWithDictionary:_cipherParts];
