@@ -23,6 +23,7 @@
 #import "THCipherSet3a.h"
 #import "THUnreliableChannel.h"
 #import "CLCLog.h"
+#import "THRelay.h"
 
 @interface THSwitch()
 
@@ -234,24 +235,8 @@
     };
     
     // Let's do a peer request
-    if (toIdentity.via) {
+    if (toIdentity.via && !toIdentity.relay) {
 		CLCLogDebug(@"identity %@ has via set", toIdentity.hashname);
-		
-		THRelayPath* relayPath = nil;
-		
-        // If we have a pending relay path, we should bail here
-        for (THPath* path in toIdentity.availablePaths) {
-            if ([path class] == [THRelayPath class]) {
-				CLCLogDebug(@"open line (via) found existing relayPath");
-				relayPath = (THRelayPath*)path;
-			}
-        }
-		
-		if (!relayPath.peerChannel) {
-			CLCLogDebug(@"open line (via) relayPath has dead peerChannel, removing");
-			[toIdentity.availablePaths removeObject:relayPath];
-			relayPath = nil;
-		}
 		
         THIdentity* viaIdentity = [THIdentity identityFromHashname:toIdentity.via.hashname];
         
@@ -275,20 +260,14 @@
         }
         peerPacket.body = chosenCS.publicKey;
         
-		if (!relayPath) {
-			CLCLogDebug(@"open line (via) creating new relayPath");
-			relayPath = [THRelayPath new];
-			[toIdentity addPath:relayPath];
-		}
-        
-        relayPath.peerChannel = peerChannel;
-        relayPath.transport = viaIdentity.activePath.transport;
-        relayPath.relayedPath = viaIdentity.activePath;
-        peerChannel.delegate = relayPath;
+        THRelay* relay = [THRelay new];
+        relay.toIdentity = toIdentity;
+        relay.relayedPath = toIdentity.via.activePath;
+        relay.peerChannel = peerChannel;
+        peerChannel.delegate = relay;
         peerChannel.type = @"peer";
         
-        
-        toIdentity.activePath = relayPath;
+        toIdentity.relay = relay;
         
         // FW helper
         for (THPath* punchPath in toIdentity.availablePaths) {
@@ -464,7 +443,7 @@
     return [cs generateOpen:toLine from:self.identity];
 }
 
--(void)transport:(THTransport *)transport handlePacket:(THPacket *)packet
+-(void)handlePacket:(THPacket *)packet
 {
     if (packet.jsonLength == 1) {
         [self processOpen:packet];
@@ -482,7 +461,11 @@
     } else {
         CLCLogInfo(@"Dropping an unknown packet");
     }
+}
 
+-(void)transport:(THTransport *)transport handlePacket:(THPacket *)packet
+{
+    [self handlePacket:packet];
 }
 
 -(void)transportDidChangeActive:(THTransport *)transport;

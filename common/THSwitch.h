@@ -67,6 +67,7 @@ typedef void(^LineOpenBlock)(THIdentity*);
 -(void)loadSeeds:(NSData*)seedData;
 -(void)updateStatus:(THSwitchStatus)status;
 -(THPacket*)generateOpen:(THLine*)toLine;
+-(void)handlePacket:(THPacket*)packet;
 
 -(void)transport:(THTransport *)transport handlePacket:(THPacket *)packet;
 -(void)transportDidChangeActive:(THTransport *)transport;

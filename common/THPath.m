@@ -47,11 +47,6 @@
 {
     return NO;
 }
-
--(BOOL)isRelay
-{
-    return NO;
-}
 @end
 
 
@@ -184,103 +179,4 @@
 }
 @end
 
-@implementation THRelayPath {
-    THRelayTransport* _relayTransport;
-}
-
--(void)dealloc
-{
-    CLCLogDebug(@"We lost a relay!");
-}
-
--(id)initOnChannel:(THUnreliableChannel *)channel
-{
-    self = [super init];
-    if (self) {
-        _relayTransport = [[THRelayTransport alloc] initWithPath:self];
-        self.relayedPath = channel.toIdentity.activePath;
-        self.peerChannel = channel;
-    }
-    return self;
-}
-
--(THTransport*)transport
-{
-    return _relayTransport;
-}
-
--(BOOL)isRelay
-{
-    return YES;
-}
-
--(NSString*)typeName
-{
-    return @"relay";
-}
-
--(void)sendPacket:(THPacket *)packet
-{
-    if (!self.peerChannel || ![self.peerChannel isKindOfClass:[THChannel class]]) return;
-    
-    THPacket* relayPacket = [THPacket new];
-    relayPacket.body = [packet encode];
-    
-    CLCLogDebug(@"Relay sending %@", packet.json);
-    [self.peerChannel sendPacket:relayPacket];
-}
-
--(BOOL)channel:(THChannel *)channel handlePacket:(THPacket *)packet
-{
-    THPacket* relayedPacket = [THPacket packetData:packet.body];
-    if (!relayedPacket) {
-        CLCLogInfo(@"Garbage on the relay, invalid or unparseable packet.");
-        return YES;
-    }
-    relayedPacket.returnPath = self;
-    THTransport* transport = self.relayedPath.transport;
-    if ([transport.delegate respondsToSelector:@selector(transport:handlePacket:)]) {
-        [transport.delegate transport:self.transport handlePacket:relayedPacket];
-    }
-    
-    return YES;
-}
-
--(void)channel:(THChannel *)channel didFailWithError:(NSError *)error
-{
-    // XXX TODO: Shutdown the busted path
-	CLCLogWarning(@"relay peerChannel didFailWithError: %@", [error description]);
-	
-	self.peerChannel = nil;
-}
-
--(void)channel:(THChannel *)channel didChangeStateTo:(THChannelState)channelState
-{
-	CLCLogDebug(@"relay peerChannel didChangeStateTo: %d", channelState);
-
-    // XXX TODO:  Shutdown on channel ended
-	// TODO temas, we're getting errors, but not closes...
-	if (channelState == THChannelEnded || channelState == THChannelErrored) {
-		if (channel == self.peerChannel) {
-			CLCLogWarning(@"relay peerChannel closed");
-			self.peerChannel = nil;
-		}
-	}
-	
-}
-
--(NSDictionary*)information
-{
-	if (self.peerChannel && [self.peerChannel isKindOfClass:[THChannel class]]) {
-		return @{@"type":@"relay", @"to":self.peerChannel.toIdentity.hashname};
-	} else {
-		return @{@"type":@"relay"};
-	}
-}
-
--(NSDictionary*)informationTo:(NSData *)address
-{
-    return nil;
-}
-@end
 

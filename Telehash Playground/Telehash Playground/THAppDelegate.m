@@ -109,6 +109,10 @@
 
 -(void)tableViewSelectionDidChange:(NSNotification *)notification
 {
+    if (tableView.selectedRow < 0) {
+        return;
+    }
+    
     NSArray* keys = [thSwitch.openLines allKeys];
     THLine* line = [thSwitch.openLines objectForKey:[keys objectAtIndex:tableView.selectedRow]];
     if (line) {

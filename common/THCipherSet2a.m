@@ -149,9 +149,12 @@ static unsigned char eccHeader[] = {0x04};
         senderIdentity.currentLine.createdAt == [[innerPacket.json objectForKey:@"at"] unsignedIntegerValue]) {
         // Add the route then bail
         CLCLogInfo(@"Attempted to reopen the line for %@ line id: %@", senderIdentity.hashname, senderIdentity.currentLine.outLineId);
-        if (!openPacket.returnPath.isRelay && ![senderIdentity pathMatching:openPacket.returnPath.information]) {
+        // XXX TODO:  Should we add a path here?
+        /*
+        if (![senderIdentity pathMatching:openPacket.returnPath.information]) {
             [senderIdentity addPath:openPacket.returnPath];
         }
+        */
         return nil;
     } else if (senderIdentity.currentLine.createdAt > 0 && senderIdentity.currentLine.createdAt < [[innerPacket.json objectForKey:@"at"] unsignedIntegerValue]) {
         [senderIdentity.channels removeAllObjects];

@@ -21,7 +21,6 @@ NSMutableArray* THPathTypeRegistry;
 @property (readonly) NSString* typeName;
 @property (assign, nonatomic) THTransport* transport;
 @property (readonly) BOOL isLocal;
-@property (readonly) BOOL isRelay;
 @property NSUInteger priority;
 @property BOOL available;
 -(void)sendPacket:(THPacket*)packet;
@@ -40,9 +39,3 @@ NSMutableArray* THPathTypeRegistry;
 -(void)sendPacket:(THPacket *)packet;
 @end
 
-@interface THRelayPath : THPath<THChannelDelegate>
-@property (nonatomic, retain) THPath* relayedPath;
-@property (nonatomic, assign) THUnreliableChannel* peerChannel;
--(id)initOnChannel:(THUnreliableChannel*)channel;
--(void)sendPacket:(THPacket *)packet;
-@end

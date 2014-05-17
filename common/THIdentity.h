@@ -14,10 +14,10 @@
 @class THChannel;
 @class THCipherSet;
 @class THPath;
+@class THRelay;
 
 @interface THIdentity : NSObject
 
-+(id)generateIdentity;
 +(id)identityFromParts:(NSDictionary*)parts key:(THCipherSet*)key;
 +(id)identityFromHashname:(NSString*)hashname;
 
@@ -35,6 +35,7 @@
 @property THPath* activePath;
 @property BOOL isLocal;
 @property NSString* suggestedCipherSet;
+@property THRelay* relay;
 
 -(void)addCipherSet:(THCipherSet*)cipherSet;
 -(void)addPath:(THPath*)path;

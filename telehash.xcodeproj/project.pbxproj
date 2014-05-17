@@ -109,6 +109,9 @@
 		82DB2375187C83E4002C74C9 /* THPendingJob.h in Headers */ = {isa = PBXBuildFile; fileRef = 82DB2373187C83E4002C74C9 /* THPendingJob.h */; };
 		82DB2376187C83E4002C74C9 /* THPendingJob.m in Sources */ = {isa = PBXBuildFile; fileRef = 82DB2374187C83E4002C74C9 /* THPendingJob.m */; };
 		82DB2377187C83E4002C74C9 /* THPendingJob.m in Sources */ = {isa = PBXBuildFile; fileRef = 82DB2374187C83E4002C74C9 /* THPendingJob.m */; };
+		82EF37311927AF3D001D3DB4 /* THRelay.h in Headers */ = {isa = PBXBuildFile; fileRef = 82EF372F1927AF3D001D3DB4 /* THRelay.h */; };
+		82EF37321927AF3D001D3DB4 /* THRelay.m in Sources */ = {isa = PBXBuildFile; fileRef = 82EF37301927AF3D001D3DB4 /* THRelay.m */; };
+		82EF37331927AF3D001D3DB4 /* THRelay.m in Sources */ = {isa = PBXBuildFile; fileRef = 82EF37301927AF3D001D3DB4 /* THRelay.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -284,6 +287,8 @@
 		82DB236A187C8343002C74C9 /* THMeshBuckets.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THMeshBuckets.m; sourceTree = "<group>"; };
 		82DB2373187C83E4002C74C9 /* THPendingJob.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THPendingJob.h; sourceTree = "<group>"; };
 		82DB2374187C83E4002C74C9 /* THPendingJob.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THPendingJob.m; sourceTree = "<group>"; };
+		82EF372F1927AF3D001D3DB4 /* THRelay.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THRelay.h; sourceTree = "<group>"; };
+		82EF37301927AF3D001D3DB4 /* THRelay.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THRelay.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -532,6 +537,8 @@
 				827CB8AA190C887F001EB8F9 /* THUnreliableChannel.m */,
 				827CB8B2190C8890001EB8F9 /* THReliableChannel.h */,
 				827CB8B3190C8890001EB8F9 /* THReliableChannel.m */,
+				82EF372F1927AF3D001D3DB4 /* THRelay.h */,
+				82EF37301927AF3D001D3DB4 /* THRelay.m */,
 			);
 			path = common;
 			sourceTree = "<group>";
@@ -583,6 +590,7 @@
 				827CB8B4190C8890001EB8F9 /* THReliableChannel.h in Headers */,
 				82B172151800A51B00C29EAF /* THIdentity.h in Headers */,
 				827CB8AB190C887F001EB8F9 /* THUnreliableChannel.h in Headers */,
+				82EF37311927AF3D001D3DB4 /* THRelay.h in Headers */,
 				8231EBC51836BD3600BC41C1 /* NSString+HexString.h in Headers */,
 				82A31BA3183457EB005077AD /* NSData+HexString.h in Headers */,
 				82B1720617FDE90600C29EAF /* THSwitch.h in Headers */,
@@ -799,6 +807,7 @@
 				822C6D3517FCD3F6008C04BA /* CTRAES256.mm in Sources */,
 				8249D6451906100C0009F03B /* THCipherSet3a.m in Sources */,
 				8236E1A818F5EDB600169201 /* THTransport.m in Sources */,
+				82EF37321927AF3D001D3DB4 /* THRelay.m in Sources */,
 				82DB2376187C83E4002C74C9 /* THPendingJob.m in Sources */,
 				8231EBC61836BD3600BC41C1 /* NSString+HexString.m in Sources */,
 				820BADFD18D81476003D7CBA /* THPath.m in Sources */,
@@ -841,6 +850,7 @@
 				822C6D3617FCD3F6008C04BA /* CTRAES256.mm in Sources */,
 				8249D6461906100C0009F03B /* THCipherSet3a.m in Sources */,
 				8236E1A918F5EDB600169201 /* THTransport.m in Sources */,
+				82EF37331927AF3D001D3DB4 /* THRelay.m in Sources */,
 				82DB2377187C83E4002C74C9 /* THPendingJob.m in Sources */,
 				8231EBC71836BD3600BC41C1 /* NSString+HexString.m in Sources */,
 				820BADFE18D81476003D7CBA /* THPath.m in Sources */,

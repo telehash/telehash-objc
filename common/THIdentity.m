@@ -18,6 +18,7 @@
 #import "THCipherSet.h"
 #import "THPath.h"
 #import "CLCLog.h"
+#import "THRelay.h"
 #include <arpa/inet.h>
 
 static NSMutableDictionary* identityCache;
@@ -161,6 +162,9 @@ int nlz(unsigned long x) {
     } else {
         [self.currentLine sendPacket:packet path:path];
     }
+    if (self.relay) {
+        [self.relay sendPacket:packet];
+    }
 }
 
 -(void)sendPacket:(THPacket *)packet
@@ -254,7 +258,6 @@ int nlz(unsigned long x) {
 {
     NSMutableArray* paths = [NSMutableArray arrayWithCapacity:self.availablePaths.count];
     for(THPath* path in self.availablePaths) {
-        if (path.isRelay) continue;
         if (path.isLocal && !toIdentity.isLocal) continue;
         if (path.isLocal && !allowLocal) continue;
         [paths addObject:[path information]];

@@ -27,6 +27,7 @@
 #import "THReliableChannel.h"
 #import "CLCLog.h"
 #import "THCipherSet3a.h"
+#import "THRelay.h"
 
 #include <arpa/inet.h>
 
@@ -256,27 +257,13 @@
         peerChannel.type = @"connect";
         [thSwitch openChannel:peerChannel firstPacket:nil];
         
-		// If we have a pending relay path, we should bail here
-		THRelayPath* relayPath = nil;
-        for (THPath* path in peerIdentity.availablePaths) {
-            if ([path class] == [THRelayPath class]) {
-				CLCLogDebug(@"incoming connect found existing relayPath");
-				relayPath = (THRelayPath*)path;
-			}
-        }
-		
-		if (!relayPath) {
-			CLCLogDebug(@"incoming connect creating new relayPath");
-			relayPath = [THRelayPath new];
-			[peerIdentity.availablePaths addObject:relayPath];
-		}
+        THRelay* relay = [THRelay new];
+        relay.toIdentity = peerIdentity;
+		relay.relayedPath = packet.returnPath;
+		relay.peerChannel = peerChannel;
+		peerChannel.delegate = relay;
         
-		relayPath.relayedPath = packet.returnPath;
-		relayPath.transport = packet.returnPath.transport;
-		relayPath.peerChannel = peerChannel;
-		peerChannel.delegate = relayPath;
-		
-        if (!peerIdentity.activePath) peerIdentity.activePath = relayPath;
+        peerIdentity.relay = relay;
         
         [thSwitch openLine:peerIdentity];
     } else if ([channelType isEqualToString:@"path"] && !channel) {
@@ -429,7 +416,6 @@
     THPacket* pathPacket = [THPacket new];
     [pathPacket.json setObject:[packet.json objectForKey:@"c"] forKey:@"c"];
     for (THPath* path in self.toIdentity.availablePaths) {
-        if (path.isRelay) continue;
         path.priority = 0;
         NSDictionary* pathInfo = path.information;
         if (pathInfo) {
