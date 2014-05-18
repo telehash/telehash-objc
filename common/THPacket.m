@@ -22,7 +22,7 @@
     }
     
     if (packetData.length == 0 || (packetData.length == 2 && jsonLength == 0)) {
-        CLCLogError(@"ignoring a poke packet");
+        CLCLogDebug(@"ignoring a poke packet");
         return nil;
     }
     

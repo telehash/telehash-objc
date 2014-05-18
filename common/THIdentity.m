@@ -162,9 +162,6 @@ int nlz(unsigned long x) {
     } else {
         [self.currentLine sendPacket:packet path:path];
     }
-    if (self.relay) {
-        [self.relay sendPacket:packet];
-    }
 }
 
 -(void)sendPacket:(THPacket *)packet

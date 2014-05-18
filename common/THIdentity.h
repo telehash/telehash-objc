@@ -36,6 +36,7 @@
 @property BOOL isLocal;
 @property NSString* suggestedCipherSet;
 @property THRelay* relay;
+@property NSArray* availableBridges;
 
 -(void)addCipherSet:(THCipherSet*)cipherSet;
 -(void)addPath:(THPath*)path;

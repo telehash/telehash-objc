@@ -47,7 +47,11 @@
         CLCLogInfo(@"Garbage on the relay, invalid or unparseable packet.");
         return YES;
     }
-    relayedPacket.returnPath = self;
+    relayedPacket.returnPath = nil;
+    if ( [packet.json objectForKey:@"bridge"] || [relayedPacket.json objectForKey:@"json"]) {
+        NSLog(@"Start a bridge on %@", packet.returnPath.information);
+        [self.toIdentity addPath:packet.returnPath];
+    }
     [[THSwitch defaultSwitch] handlePacket:relayedPacket];
     /*
     THTransport* transport = self.relayedPath.transport;

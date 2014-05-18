@@ -21,6 +21,7 @@
 
 #define K_BUCKET_SIZE 8
 #define MAX_LINKS 256
+#define MAX_POTENTIAL_BRIDGES 5
 
 @interface PendingSeekJob : NSObject<THChannelDelegate>
 @property THIdentity* localIdentity;
@@ -244,6 +245,16 @@
     THSwitch* defaultSwitch = [THSwitch defaultSwitch];
     if (defaultSwitch.status != THSwitchOnline) {
         [defaultSwitch updateStatus:THSwitchOnline];
+    }
+    
+    NSArray* bridges = [packet.json objectForKey:@"bridge"];
+    if (bridges) {
+        channel.toIdentity.availableBridges = bridges;
+        [self.localSwitch.potentialBridges addObject:bridges];
+        // Let's just maintain 5 potent
+        if (self.localSwitch.potentialBridges.count > MAX_POTENTIAL_BRIDGES) {
+            [self.localSwitch.potentialBridges removeObjectAtIndex:0];
+        }
     }
     
     THIPv4Transport* transport = [self.localSwitch.transports objectForKey:@"ipv4"];

@@ -50,6 +50,7 @@ typedef void(^LineOpenBlock)(THIdentity*);
 @property id<THSwitchDelegate> delegate;
 @property THSwitchStatus status;
 @property NSMutableDictionary* transports;
+@property NSMutableArray* potentialBridges;
 
 +(id)THSWitchWithIdentity:(THIdentity*)identity;
 

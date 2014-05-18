@@ -60,6 +60,9 @@
         CLCLogInfo(@"Sending open on %@ to %@", path, self.toIdentity.hashname);
         [path sendPacket:openPacket];
     }
+    if (self.toIdentity.relay) {
+        [self.toIdentity.relay sendPacket:openPacket];
+    }
 }
 
 -(void)handleOpen:(THPacket *)openPacket
@@ -342,6 +345,10 @@
     
     if (path == nil) path = self.toIdentity.activePath;
     [path sendPacket:lineOutPacket];
+    
+    if (self.toIdentity.relay) {
+        [self.toIdentity.relay sendPacket:lineOutPacket];
+    }
 }
 
 -(void)sendPacket:(THPacket *)packet;
@@ -451,7 +458,7 @@
     
     // Flag the sending path as alive
     THPath* path = [self.line.toIdentity pathMatching:packet.returnPath.information];
-    if (!path) {
+    if (packet.returnPath && !path) {
         [self.line.toIdentity addPath:packet.returnPath];
         path = packet.returnPath;
     }

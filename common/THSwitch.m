@@ -61,6 +61,7 @@
         self.openLines = [NSMutableDictionary dictionary];
         self.pendingJobs = [NSMutableArray array];
         self.transports = [NSMutableDictionary dictionary];
+        self.potentialBridges = [NSMutableArray array];
         self.status = THSWitchOffline;
     }
     return self;
@@ -342,13 +343,15 @@
         return;
     }
     
-    // Add the incoming path to the
-    THPath* path = [newLine.toIdentity pathMatching:incomingPacket.returnPath.information];
-    if (!path) {
-        path = incomingPacket.returnPath;
-        [newLine.toIdentity addPath:path];
+    // Add the incoming path if we have one, relay would not
+    if (incomingPacket.returnPath) {
+        THPath* path = [newLine.toIdentity pathMatching:incomingPacket.returnPath.information];
+        if (!path) {
+            path = incomingPacket.returnPath;
+            [newLine.toIdentity addPath:path];
+        }
+        newLine.toIdentity.activePath = path;
     }
-    newLine.toIdentity.activePath = path;
     
     // remove any existing lines to this hashname
     [self.meshBuckets removeLine:newLine];
