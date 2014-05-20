@@ -285,10 +285,10 @@
         seeIdentity.via = channel.toIdentity;
         if (seeParts.count == 4) {
             [seeIdentity addPath:[[THIPV4Path alloc] initWithTransport:transport ip:[seeParts objectAtIndex:2] port:[[seeParts objectAtIndex:3] integerValue]]];
-			
-			// Temas review, this is where our infinite loop happens with hashname lookups
-			[self.localSwitch openLine:seeIdentity];
 		}
+		
+		// Temas review, this is where our infinite loop happens with hashname lookups
+		[self.localSwitch openLine:seeIdentity];
     }
     
     NSUInteger now = time(NULL);
@@ -367,8 +367,9 @@
     NSString* error = [packet.json objectForKey:@"err"];
     if (error) return YES;
 	
-	// TODO Temas, when sees.count == 0, we get stuck in an infinite loop
+	// TODO Temas, this is causing this infinite loop if anyone had seen the hashname before, they then return it (even if its not online)... which causes more lookups
     NSArray* sees = [packet.json objectForKey:@"see"];
+
     __block BOOL foundIt = NO;
     CLCLogDebug(@"Checking for %@ in sees %@",  self.seekingIdentity.hashname, sees);
     [sees enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
