@@ -289,14 +289,14 @@
 		// remove existing pendingJob if exists
 		if (pendingJob) {
 			[self.pendingJobs removeObject:pendingJob];
+		} else {
+			if (found) {
+				[self openLine:toIdentity completion:lineOpenCompletion];
+			} else {
+				toIdentity.currentLine = nil;
+				if (lineOpenCompletion) lineOpenCompletion(nil);
+			}
 		}
-		
-        if (found) {
-            [self openLine:toIdentity completion:lineOpenCompletion];
-        } else {
-            toIdentity.currentLine = nil;
-            if (lineOpenCompletion) lineOpenCompletion(nil);
-        }
     }];
 }
 

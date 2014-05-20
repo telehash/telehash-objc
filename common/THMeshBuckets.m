@@ -307,7 +307,8 @@
 			if (seeIdentities != nil) {
 				for (THIdentity* seeIdentity in seeIdentities) {
 					NSString* seekString = [seeIdentity seekStringForIdentity:channel.toIdentity];
-					if (seekString) {
+					// TODO Temas, maybe only include if we've had recent activity? or should this be done another way
+					if (seekString && (time(NULL) > seeIdentity.currentLine.lastInActivity + 30)) {
 						[sees addObject:seekString];
 					}
 				}
