@@ -344,11 +344,17 @@
     lineOutPacket.jsonLength = 0;
     
     if (path == nil) path = self.toIdentity.activePath;
-    [path sendPacket:lineOutPacket];
-    
-    if (self.toIdentity.relay) {
+	
+	if (path) {
+		[path sendPacket:lineOutPacket];
+	} else if (self.toIdentity.relay) {
         [self.toIdentity.relay sendPacket:lineOutPacket];
-    }
+    } else {
+		CLCLogWarning(@"no path or relay available on line, closing line");
+		// TODO Temas, i know we probably shouldnt close the line, is there a better way?
+		[self close];
+	}
+    
 }
 
 -(void)sendPacket:(THPacket *)packet;

@@ -55,14 +55,15 @@
 
 -(void)pingLines
 {
+	
     time_t checkTime = time(NULL);
     [self.buckets enumerateObjectsUsingBlock:^(id obj, NSUInteger bucketIdx, BOOL *stop) {
         NSMutableArray* bucket = (NSMutableArray*)obj;
         [bucket enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
             THIdentity* identity = (THIdentity*)obj;
             
-            // Check for dead channels at 2m
-            if (checkTime > identity.currentLine.lastInActivity + 120) {
+            // Check for dead channels at 2m (if we have a pending ping, dont do anything destructive!)
+            if (!pendingPings && checkTime > identity.currentLine.lastInActivity + 120) {
 				CLCLogWarning(@"line inactive for %@, removing link channel", identity.hashname);
                 [bucket removeObjectAtIndex:idx];
                 THChannel* channel = [identity channelForType:@"link"];
@@ -272,7 +273,7 @@
         
         // If we have a link channel already, just skip it
         THChannel* linkChannel = [seeIdentity channelForType:@"link"];
-        if (linkChannel) continue;
+        if (seeIdentity.activePath || linkChannel) continue;
         
         seeIdentity.suggestedCipherSet = [seeParts objectAtIndex:1];
         
@@ -284,8 +285,10 @@
         seeIdentity.via = channel.toIdentity;
         if (seeParts.count == 4) {
             [seeIdentity addPath:[[THIPV4Path alloc] initWithTransport:transport ip:[seeParts objectAtIndex:2] port:[[seeParts objectAtIndex:3] integerValue]]];
-        }
-        [self.localSwitch openLine:seeIdentity];
+			
+			// Temas review, this is where our infinite loop happens with hashname lookups
+			[self.localSwitch openLine:seeIdentity];
+		}
     }
     
     NSUInteger now = time(NULL);
@@ -363,7 +366,8 @@
      
     NSString* error = [packet.json objectForKey:@"err"];
     if (error) return YES;
-
+	
+	// TODO Temas, when sees.count == 0, we get stuck in an infinite loop
     NSArray* sees = [packet.json objectForKey:@"see"];
     __block BOOL foundIt = NO;
     CLCLogDebug(@"Checking for %@ in sees %@",  self.seekingIdentity.hashname, sees);
@@ -421,7 +425,8 @@
          
         return NSOrderedSame;
     }];
-     
+    
+	// TODO Temas, this always runs when sees.count == 0, it seems to requery the same thing, and return with exacly the same results
     if (self.nearby.count > 0) {
         [self runSeek];
         for (NSUInteger i = self.runningSearches; i < MIN(3, self.nearby.count - 1); ++i) {
