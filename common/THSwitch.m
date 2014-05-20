@@ -286,9 +286,9 @@
     // Find a way to it from the mesh
     [self.meshBuckets seek:toIdentity completion:^(BOOL found) {
 		CLCLogDebug(@"identity %@ found in meshbuckets", toIdentity.hashname);
-		// remove existing pendingJob if exists
+		// TODO Temas do we remove existing pendingJob if exists?
 		if (pendingJob) {
-			[self.pendingJobs removeObject:pendingJob];
+			//[self.pendingJobs removeObject:pendingJob];
 		} else {
 			if (found) {
 				[self openLine:toIdentity completion:lineOpenCompletion];
