@@ -124,16 +124,15 @@
             return;
         }
         THPacket* curPacket = [inPacketBuffer pop];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self.delegate channel:self handlePacket:curPacket];
-            if (self.state != THChannelEnded && [[curPacket.json objectForKey:@"end"] boolValue] == YES) {
-                // TODO: Shut it down!
-                self.state = THChannelEnded;
-                [self close];
-                return;
-            }
-            self.nextExpectedSequence = [[curPacket.json objectForKey:@"seq"] unsignedIntegerValue] + 1;
-        });
+		
+		[self.delegate channel:self handlePacket:curPacket];
+		if (self.state != THChannelEnded && [[curPacket.json objectForKey:@"end"] boolValue] == YES) {
+			// TODO: Shut it down!
+			self.state = THChannelEnded;
+			[self close];
+			return;
+		}
+		self.nextExpectedSequence = [[curPacket.json objectForKey:@"seq"] unsignedIntegerValue] + 1;
     }
 }
 
