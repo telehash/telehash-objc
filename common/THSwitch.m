@@ -252,7 +252,7 @@
 		toIdentity.relay.toIdentity = toIdentity;
 
 		for (THIdentity* viaIdentity in toIdentity.vias) {
-			if (viaIdentity.currentLine.isOpen) {
+			if (viaIdentity.currentLine && viaIdentity.activePath) {
 				THUnreliableChannel* peerChannel = [[THUnreliableChannel alloc] initToIdentity:viaIdentity];
 				peerChannel.type = @"peer";
 				peerChannel.delegate = toIdentity.relay;
