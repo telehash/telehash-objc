@@ -63,7 +63,7 @@
             THIdentity* identity = (THIdentity*)obj;
             
             // Check for dead channels at 2m (if we have a pending ping, dont do anything destructive!)
-            if (!pendingPings && checkTime > identity.currentLine.lastInActivity + 120) {
+            if (!pendingPings && checkTime > identity.currentLine.lastInActivity + 60) {
 				CLCLogWarning(@"line inactive for %@, removing link channel", identity.hashname);
                 [bucket removeObjectAtIndex:idx];
                 THChannel* channel = [identity channelForType:@"link"];
@@ -89,6 +89,7 @@
         double delayInSeconds = 25.0;
         dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
         dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+			CLCLogDebug(@"dispatch pingLines");
             pendingPings = NO;
             [self pingLines];
         });
@@ -282,7 +283,7 @@
             break;
         }
 
-        seeIdentity.via = channel.toIdentity;
+        [seeIdentity addVia:channel.toIdentity];
         if (seeParts.count == 4) {
             [seeIdentity addPath:[[THIPV4Path alloc] initWithTransport:transport ip:[seeParts objectAtIndex:2] port:[[seeParts objectAtIndex:3] integerValue]]];
 		}
@@ -307,8 +308,7 @@
 			if (seeIdentities != nil) {
 				for (THIdentity* seeIdentity in seeIdentities) {
 					NSString* seekString = [seeIdentity seekStringForIdentity:channel.toIdentity];
-					// TODO Temas, maybe only include if we've had recent activity? or should this be done another way
-					if (seekString && (time(NULL) < seeIdentity.currentLine.lastInActivity + 30)) {
+					if (seekString) {
 						[sees addObject:seekString];
 					}
 				}
@@ -383,7 +383,7 @@
         if ([[seeParts objectAtIndex:0] isEqualToString:self.seekingIdentity.hashname]) {
 			CLCLogDebug(@"We found %@!", self.seekingIdentity.hashname);
 			// this is it!
-			self.seekingIdentity.via = channel.toIdentity;
+			[self.seekingIdentity addVia:channel.toIdentity];
 			self.seekingIdentity.suggestedCipherSet = [seeParts objectAtIndex:1];
 			
 			if (seeParts.count > 2) {
@@ -403,7 +403,7 @@
 			
             // If we're moving closer we want to go ahead and start a seek to it
             THIdentity* nearIdentity = [THIdentity identityFromHashname:[seeParts objectAtIndex:0]];
-            nearIdentity.via = channel.toIdentity;
+            [nearIdentity addVia:channel.toIdentity];
 			nearIdentity.suggestedCipherSet = [seeParts objectAtIndex:1];
             [self.nearby addObject:nearIdentity];
         }

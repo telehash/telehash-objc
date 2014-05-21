@@ -99,6 +99,7 @@ static NSMutableDictionary* identityCache;
     self.isLocal = NO;
     self.cipherParts = [NSMutableDictionary dictionary];
     self.availablePaths = [NSMutableArray array];
+	self.vias = [NSMutableArray array];
     self.channels = [NSMutableDictionary dictionary];
 }
 
@@ -290,6 +291,13 @@ int nlz(unsigned long x) {
         CLCLogInfo(@"Setting active path to %@ to %@", self.hashname, path.information);
         self.activePath = path;
     }
+}
+
+-(void)addVia:(THIdentity*)viaIdentity
+{
+	// quick and dirty to ensure no duups
+	[self.vias removeObject:viaIdentity];
+	[self.vias addObject:viaIdentity];
 }
 
 +(NSString*)hashnameForParts:(NSDictionary*)parts

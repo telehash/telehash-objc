@@ -26,7 +26,7 @@
 
 @property (readonly) NSString* hashname;
 @property NSData* address;
-@property THIdentity* via;
+@property NSMutableArray* vias;
 @property NSMutableDictionary* channels;
 @property THLine* currentLine;
 @property NSDictionary* cipherParts;
@@ -42,6 +42,7 @@
 -(void)addPath:(THPath*)path;
 -(void)checkPriorityPath:(THPath*)path;
 
+-(void)addVia:(THIdentity*)viaIdentity;
 // TODO:  Method to create a channel for a type
 
 -(NSInteger)distanceFrom:(THIdentity*)identity;

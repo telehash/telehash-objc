@@ -350,9 +350,8 @@
 	} else if (self.toIdentity.relay) {
         [self.toIdentity.relay sendPacket:lineOutPacket];
     } else {
-		CLCLogWarning(@"no path or relay available on line, closing line");
+		CLCLogWarning(@"no path or relay available on line to %@, closing line", self.toIdentity.hashname);
 		// TODO Temas, i know we probably shouldnt close the line, is there a better way?
-		[self close];
 	}
     
 }

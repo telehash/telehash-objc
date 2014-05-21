@@ -236,50 +236,54 @@
     };
     
     // Let's do a peer request
-    if (toIdentity.via && !toIdentity.relay) {
+    if (toIdentity.vias.count > 0 && !toIdentity.relay) {
 		CLCLogDebug(@"identity %@ has via set", toIdentity.hashname);
 		
-        THIdentity* viaIdentity = [THIdentity identityFromHashname:toIdentity.via.hashname];
-        
-        THUnreliableChannel* peerChannel = [[THUnreliableChannel alloc] initToIdentity:viaIdentity];
-        [self openChannel:peerChannel firstPacket:nil];
-        
-        THPacket* peerPacket = [THPacket new];
-        [peerPacket.json setObject:[NSNumber numberWithUnsignedInteger:viaIdentity.currentLine.nextChannelId] forKey:@"c"];
-        [peerPacket.json setObject:toIdentity.hashname forKey:@"peer"];
-        [peerPacket.json setObject:@"peer" forKey:@"type"];
-        [peerPacket.json setObject:peerChannel.channelId forKey:@"c"];
-        NSArray* paths = [self.identity pathInformationTo:toIdentity allowLocal:NO];
-        if (paths) {
-            [peerPacket.json setObject:paths forKey:@"paths"];
-        }
-        
-        THCipherSet* chosenCS = [self.identity.cipherParts objectForKey:toIdentity.suggestedCipherSet];
-        if (!chosenCS) {
-            CLCLogError(@"We did not actually have a key for the CS %@ to connect to %@", toIdentity.suggestedCipherSet, toIdentity.hashname);
-            return;
-        }
-        peerPacket.body = chosenCS.publicKey;
-        
-        THRelay* relay = [THRelay new];
-        relay.toIdentity = toIdentity;
-        relay.relayedPath = toIdentity.via.activePath;
-        relay.peerChannel = peerChannel;
-        peerChannel.delegate = relay;
-        peerChannel.type = @"peer";
-        
-        toIdentity.relay = relay;
-        
-        // FW helper
-        for (THPath* punchPath in toIdentity.availablePaths) {
+		// FW Helper
+		for (THPath* punchPath in toIdentity.availablePaths) {
             if ([punchPath class] == [THIPV4Path class]) {
                 THIPV4Path* ipPath = (THIPV4Path*)punchPath;
                 [punchPath.transport send:[NSData data] to:ipPath.address];
             }
         }
-        
-        // We blind send this and hope for the best!
-        [viaIdentity sendPacket:peerPacket];
+		
+		THRelay* relay = [THRelay new];
+		toIdentity.relay = relay;
+		toIdentity.relay.toIdentity = toIdentity;
+
+		for (THIdentity* viaIdentity in toIdentity.vias) {
+			if (viaIdentity.currentLine.isOpen) {
+				THUnreliableChannel* peerChannel = [[THUnreliableChannel alloc] initToIdentity:viaIdentity];
+				peerChannel.type = @"peer";
+				peerChannel.delegate = toIdentity.relay;
+				[self openChannel:peerChannel firstPacket:nil];
+				
+				THPacket* peerPacket = [THPacket new];
+				[peerPacket.json setObject:[NSNumber numberWithUnsignedInteger:viaIdentity.currentLine.nextChannelId] forKey:@"c"];
+				[peerPacket.json setObject:toIdentity.hashname forKey:@"peer"];
+				[peerPacket.json setObject:@"peer" forKey:@"type"];
+				[peerPacket.json setObject:peerChannel.channelId forKey:@"c"];
+				NSArray* paths = [self.identity pathInformationTo:toIdentity allowLocal:NO];
+				if (paths) {
+					[peerPacket.json setObject:paths forKey:@"paths"];
+				}
+				
+				THCipherSet* chosenCS = [self.identity.cipherParts objectForKey:toIdentity.suggestedCipherSet];
+				if (!chosenCS) {
+					CLCLogError(@"We did not actually have a key for the CS %@ to connect to %@", toIdentity.suggestedCipherSet, toIdentity.hashname);
+					return;
+				}
+				peerPacket.body = chosenCS.publicKey;
+				
+				// Temas please dont kill me
+				toIdentity.relay.relayedPath = viaIdentity.activePath;
+				toIdentity.relay.peerChannel = peerChannel;
+				
+				// We blind send this and hope for the best!
+				[viaIdentity sendPacket:peerPacket];
+			}
+		}
+		
         return;
     }
     

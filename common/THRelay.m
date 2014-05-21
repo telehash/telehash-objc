@@ -16,7 +16,7 @@
 
 -(void)dealloc
 {
-    CLCLogDebug(@"We lost a relay!");
+    CLCLogDebug(@"We lost a relay to %@!", self.toIdentity.hashname);
 }
 
 -(id)initOnChannel:(THUnreliableChannel *)channel
@@ -44,7 +44,7 @@
 {
     THPacket* relayedPacket = [THPacket packetData:packet.body];
     if (!relayedPacket) {
-        CLCLogInfo(@"Garbage on the relay, invalid or unparseable packet.");
+        CLCLogInfo(@"Garbage on the relay for %@, invalid or unparseable packet with json %@", self.toIdentity.hashname, packet.json);
         return YES;
     }
     relayedPacket.returnPath = nil;
@@ -52,6 +52,10 @@
         NSLog(@"Start a bridge on %@", packet.returnPath.information);
         [self.toIdentity addPath:packet.returnPath];
     }
+	
+	// overwrite our peerChannel with the one that actually responded
+	self.peerChannel = (THUnreliableChannel*)channel;
+	
     [[THSwitch defaultSwitch] handlePacket:relayedPacket];
     /*
     THTransport* transport = self.relayedPath.transport;
@@ -66,7 +70,7 @@
 -(void)channel:(THChannel *)channel didFailWithError:(NSError *)error
 {
     // XXX TODO: Shutdown the busted path
-	CLCLogWarning(@"relay peerChannel didFailWithError: %@", [error description]);
+	CLCLogWarning(@"relay peerChannel for %@ didFailWithError: %@", self.toIdentity.hashname, [error description]);
 	
 	self.peerChannel = nil;
     self.toIdentity.relay = nil;
@@ -74,13 +78,13 @@
 
 -(void)channel:(THChannel *)channel didChangeStateTo:(THChannelState)channelState
 {
-	CLCLogDebug(@"relay peerChannel didChangeStateTo: %d", channelState);
+	CLCLogDebug(@"relay peerChannel for %@ didChangeStateTo: %d", self.toIdentity.hashname, channelState);
     
     // XXX TODO:  Shutdown on channel ended
 	// TODO temas, we're getting errors, but not closes...
 	if (channelState == THChannelEnded || channelState == THChannelErrored) {
 		if (channel == self.peerChannel) {
-			CLCLogWarning(@"relay peerChannel closed");
+			CLCLogWarning(@"relay peerChannel for %@ closed", self.toIdentity.hashname);
 			self.peerChannel = nil;
             self.toIdentity.relay = nil;
 		}
