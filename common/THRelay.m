@@ -31,7 +31,11 @@
 
 -(void)sendPacket:(THPacket *)packet
 {
-    if (!self.peerChannel || ![self.peerChannel isKindOfClass:[THChannel class]]) return;
+    if (!self.peerChannel) {
+		CLCLogWarning(@"attempting to send on a dead relay, removing relay reference");
+		self.toIdentity.relay = nil;
+		return;
+	}
     
     THPacket* relayPacket = [THPacket new];
     relayPacket.body = [packet encode];
