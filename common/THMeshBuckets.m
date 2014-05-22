@@ -63,7 +63,7 @@
             THIdentity* identity = (THIdentity*)obj;
             
             // Check for dead channels at 2m (if we have a pending ping, dont do anything destructive!)
-            if (!pendingPings && checkTime > identity.currentLine.lastInActivity + 60) {
+            if (checkTime > identity.currentLine.lastInActivity + 120) {
 				CLCLogWarning(@"line inactive for %@, removing link channel", identity.hashname);
                 [bucket removeObjectAtIndex:idx];
                 THChannel* channel = [identity channelForType:@"link"];
