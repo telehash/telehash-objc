@@ -232,10 +232,21 @@
                 THChannel* curChannel = (THChannel*)obj;
                 curChannel.state = THChannelEnded;
             }];
+			
             [peerIdentity.channels removeAllObjects];
             [peerIdentity.availablePaths removeAllObjects];
+			[peerIdentity.vias removeAllObjects];
+			
             peerIdentity.activePath = nil;
-            
+			
+			// lets REALLY ensure relay is destroyed
+			if (peerIdentity.relay) {
+				if (peerIdentity.relay.peerChannel) {
+					[peerIdentity.relay.peerChannel close];
+				}
+				peerIdentity.relay = nil;
+			}
+			
             [thSwitch closeLine:peerIdentity.currentLine];
             
             peerIdentity.currentLine = nil;
@@ -350,8 +361,8 @@
 	} else if (self.toIdentity.relay) {
         [self.toIdentity.relay sendPacket:lineOutPacket];
     } else {
-		CLCLogWarning(@"no path or relay available on line to %@, closing line", self.toIdentity.hashname);
-		// TODO Temas, i know we probably shouldnt close the line, is there a better way?
+		CLCLogWarning(@"no path or relay available on line to %@, attempting to re-open line", self.toIdentity.hashname);
+		[[THSwitch defaultSwitch] openLine:self.toIdentity];
 	}
     
 }

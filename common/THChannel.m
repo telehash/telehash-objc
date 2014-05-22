@@ -73,7 +73,9 @@
 
 -(void)close
 {
-    if (self.state != THChannelEnded) {
+	if (!self.channelId) return;
+	
+    if (self.state != THChannelOpening && self.state != THChannelEnded) {
         THPacket* endPacket = [THPacket new];
         [endPacket.json setObject:@YES forKey:@"end"];
         [self sendPacket:endPacket];

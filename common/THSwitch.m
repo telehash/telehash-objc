@@ -252,7 +252,7 @@
 		toIdentity.relay.toIdentity = toIdentity;
 
 		for (THIdentity* viaIdentity in toIdentity.vias) {
-			if (viaIdentity.currentLine && viaIdentity.activePath) {
+			if (viaIdentity.currentLine && viaIdentity.activePath && !viaIdentity.relay) {
 				THUnreliableChannel* peerChannel = [[THUnreliableChannel alloc] initToIdentity:viaIdentity];
 				peerChannel.type = @"peer";
 				peerChannel.delegate = toIdentity.relay;
@@ -283,6 +283,14 @@
 				[viaIdentity sendPacket:peerPacket];
 			}
 		}
+		
+		// we didnt have any valid via's, unset our relay again
+		if (!toIdentity.relay.peerChannel) {
+			toIdentity.relay = nil;
+		}
+		
+		// after attempting to use the, drop them
+		[toIdentity.vias removeAllObjects];
 		
         return;
     }

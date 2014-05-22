@@ -74,6 +74,9 @@
 	
 	self.peerChannel = nil;
     self.toIdentity.relay = nil;
+	
+	// attempt to re-open line
+	[[THSwitch defaultSwitch] openLine:self.toIdentity];
 }
 
 -(void)channel:(THChannel *)channel didChangeStateTo:(THChannelState)channelState
@@ -87,6 +90,9 @@
 			CLCLogWarning(@"relay peerChannel for %@ closed", self.toIdentity.hashname);
 			self.peerChannel = nil;
             self.toIdentity.relay = nil;
+			
+			// attempt to re-open line
+			[[THSwitch defaultSwitch] openLine:self.toIdentity];
 		}
 	}
 	
