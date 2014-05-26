@@ -12,7 +12,6 @@
 #import "CLCLog.h"
 
 @interface THReliableChannel() {
-    dispatch_queue_t channelQueue;
     NSArray* missing;
 }
 -(void)checkAckPing:(NSUInteger)packetTime;
@@ -28,7 +27,6 @@
         inPacketBuffer = [THPacketBuffer new];
         outPacketBuffer = [THPacketBuffer new];
         self.maxSeen = @0;
-        channelQueue = NULL;
     }
     return self;
 }
@@ -36,6 +34,8 @@
 {
     [super handlePacket:packet];
     
+	// TODO handle resending miss packets
+	
     NSNumber* curSeq = [packet.json objectForKey:@"seq"];
     if (curSeq.unsignedIntegerValue > self.maxSeen.unsignedIntegerValue) {
         self.maxSeen = curSeq;
@@ -66,6 +66,7 @@
 
 -(void)checkAckPing:(NSUInteger)packetTime;
 {
+	// TODO review this under load
     double delayInSeconds = 1.0;
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
     dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
@@ -112,28 +113,24 @@
 
 -(void)delegateHandlePackets;
 {
-	/*
-    if (!channelQueue) {
-        channelQueue = dispatch_queue_create([[NSString stringWithFormat:@"telehash.channel.%@", self.channelId] UTF8String], NULL);
-        //channelSemaphore = dispatch_semaphore_create(0);
-    }
-    */
-    while (inPacketBuffer.length > 0) {
-        if (inPacketBuffer.frontSeq != self.nextExpectedSequence) {
-            // XXX dispatch a missing queue?
-            return;
-        }
-        THPacket* curPacket = [inPacketBuffer pop];
+	while (inPacketBuffer.length > 0) {
+		if (inPacketBuffer.frontSeq != self.nextExpectedSequence) {
+			// XXX dispatch a missing queue?
+			return;
+		}
+		THPacket* curPacket = [inPacketBuffer pop];
 		
 		[self.delegate channel:self handlePacket:curPacket];
+		
 		if (self.state != THChannelEnded && [[curPacket.json objectForKey:@"end"] boolValue] == YES) {
 			// TODO: Shut it down!
 			self.state = THChannelEnded;
 			[self close];
 			return;
 		}
+		
 		self.nextExpectedSequence = [[curPacket.json objectForKey:@"seq"] unsignedIntegerValue] + 1;
-    }
+	}
 }
 
 // Flush our out buffer

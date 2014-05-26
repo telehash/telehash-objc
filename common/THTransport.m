@@ -44,10 +44,17 @@ static void THReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     [NSException raise:NSInternalInconsistencyException
                 format:@"You must override %@ in a subclass", NSStringFromSelector(_cmd)];
 }
+
+-(void)send:(NSData*)data to:(NSData*)address
+{
+	[NSException raise:NSInternalInconsistencyException
+                format:@"You must override %@ in a subclass", NSStringFromSelector(_cmd)];
+}
 @end
 
 @implementation THIPv4Transport
 {
+	dispatch_queue_t socketDispatchQueue;
     GCDAsyncUdpSocket* udpSocket;
     NSString* bindInterface;
     SCNetworkReachabilityRef reachability;
@@ -63,7 +70,8 @@ static void THReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 {
     self = [super init];
     if (self) {
-        udpSocket = [[GCDAsyncUdpSocket alloc] initWithDelegate:self delegateQueue:dispatch_get_main_queue()];
+		socketDispatchQueue = dispatch_queue_create("com.telehash.transport", NULL);
+        udpSocket = [[GCDAsyncUdpSocket alloc] initWithDelegate:self delegateQueue:socketDispatchQueue];
     }
     return self;
 }
