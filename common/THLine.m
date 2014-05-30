@@ -54,6 +54,8 @@
 
 -(void)sendOpen;
 {
+	self.lastOutActivity = time(NULL);
+	
     THSwitch* defaultSwitch = [THSwitch defaultSwitch];
     THPacket* openPacket = [defaultSwitch generateOpen:self];
     for (THPath* path in self.toIdentity.availablePaths) {
@@ -70,6 +72,9 @@
     self.outLineId = [openPacket.json objectForKey:@"line"];
     self.createdAt = [[openPacket.json objectForKey:@"at"] unsignedIntegerValue];
     self.lastInActivity = time(NULL);
+	
+	
+	// setup timeout check
 }
 
 -(NSUInteger)nextChannelId
@@ -340,7 +345,7 @@
 -(void)sendPacket:(THPacket *)packet path:(THPath*)path
 {
     self.lastOutActivity = time(NULL);
-    CLCLogDebug(@"Sending %@\%@", packet.json, packet.body);
+    CLCLogDebug(@"Sending %@\%@ to %@", packet.json, packet.body, self.toIdentity.hashname);
     NSData* innerPacketData = [self.cipherSetInfo encryptLinePacket:packet];
     NSMutableData* linePacketData = [NSMutableData dataWithCapacity:(innerPacketData.length + 16)];
     if (!linePacketData) {
@@ -361,7 +366,7 @@
 	} else if (self.toIdentity.relay) {
         [self.toIdentity.relay sendPacket:lineOutPacket];
     } else {
-		CLCLogWarning(@"no path or relay available on line to %@, attempting to re-open line", self.toIdentity.hashname);
+		CLCLogWarning(@"no path or relay available on line to %@", self.toIdentity.hashname);
 		[[THSwitch defaultSwitch] openLine:self.toIdentity];
 	}
     

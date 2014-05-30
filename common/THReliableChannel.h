@@ -16,7 +16,6 @@
     NSUInteger lastAck;
 }
 @property NSUInteger nextExpectedSequence;
-@property dispatch_queue_t dispatchQueue;
 -(id)initToIdentity:(THIdentity*)identity;
 -(void)handlePacket:(THPacket*)packet;
 -(void)sendPacket:(THPacket*)packet;

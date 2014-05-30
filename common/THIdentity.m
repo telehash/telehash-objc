@@ -250,6 +250,11 @@ int nlz(unsigned long x) {
     }
     
     [self.availablePaths addObject:path];
+	
+	// TODO this shouldnt be here
+	if (self.currentLine) {
+		[self.currentLine negotiatePath];
+	}
 }
 
 -(NSArray*)pathInformationTo:(THIdentity *)toIdentity allowLocal:(BOOL)allowLocal
@@ -316,5 +321,36 @@ int nlz(unsigned long x) {
         shaBuffer = [sha finish];
     }
     return [shaBuffer hexString];
+}
+
+-(void)closeChannels
+{
+	[self.channels enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+		THChannel* curChannel = (THChannel*)obj;
+		curChannel.state = THChannelEnded;
+	}];
+	
+	[self.channels removeAllObjects];
+}
+
+-(void)reset
+{
+	CLCLogWarning(@"resetting identity with hashname %@", self.hashname);
+	[self closeChannels];
+
+	[self.availablePaths removeAllObjects];
+	[self.vias removeAllObjects];
+	
+	self.activePath = nil;
+	
+	// lets REALLY ensure relay is destroyed
+	if (self.relay) {
+		if (self.relay.peerChannel) {
+			[self.relay.peerChannel close];
+		}
+		self.relay = nil;
+	}
+	
+	self.currentLine = nil;
 }
 @end

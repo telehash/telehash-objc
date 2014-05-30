@@ -54,7 +54,6 @@ static void THReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 
 @implementation THIPv4Transport
 {
-	dispatch_queue_t socketDispatchQueue;
     GCDAsyncUdpSocket* udpSocket;
     NSString* bindInterface;
     SCNetworkReachabilityRef reachability;
@@ -70,8 +69,7 @@ static void THReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 {
     self = [super init];
     if (self) {
-		socketDispatchQueue = dispatch_queue_create("com.telehash.transport", NULL);
-        udpSocket = [[GCDAsyncUdpSocket alloc] initWithDelegate:self delegateQueue:socketDispatchQueue];
+        udpSocket = [[GCDAsyncUdpSocket alloc] initWithDelegate:self delegateQueue:dispatch_get_main_queue()];
     }
     return self;
 }

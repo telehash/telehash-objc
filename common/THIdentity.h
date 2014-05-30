@@ -59,4 +59,7 @@
 -(THPath*)pathMatching:(NSDictionary*)pathInfo;
 
 +(NSString*)hashnameForParts:(NSDictionary*)parts;
+
+-(void)closeChannels;
+-(void)reset;
 @end

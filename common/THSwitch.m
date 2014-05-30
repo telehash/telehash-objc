@@ -179,7 +179,18 @@
 
 -(void)openLine:(THIdentity *)toIdentity completion:(LineOpenBlock)lineOpenCompletion
 {
+	// TODO figure out when to send a re-open
     if (toIdentity.currentLine) {
+		
+		// Are we broken??
+		if (!toIdentity.activePath && !toIdentity.relay) {
+			CLCLogDebug(@"openLine has no active path or relay for identity %@", toIdentity.hashname);
+
+			[toIdentity.currentLine sendOpen];
+			return;
+		}
+		
+		
 		CLCLogDebug(@"openLine returning currentLine for identity %@", toIdentity.hashname);
         if (lineOpenCompletion) lineOpenCompletion(toIdentity);
         return;
@@ -211,7 +222,9 @@
 		dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
 			if (!toIdentity.currentLine.inLineId) {
 				CLCLogWarning(@"Unable to finalize the line after 1s");
+				
 				toIdentity.currentLine = nil;
+				
 				[self.pendingJobs removeObject:pendingJob];
 				if (lineOpenCompletion) lineOpenCompletion(nil);
 			}
@@ -232,7 +245,7 @@
         
         [channelLine sendOpen];
 		
-        return;
+		//return;
     };
     
     // Let's do a peer request
@@ -384,9 +397,9 @@
     if (pendingLineJob && newLine.inLineId) {
         THIdentity* pendingIdentity = (THIdentity*)pendingLineJob.pending;
         newLine = pendingIdentity.currentLine;
-        CLCLogInfo(@"Finish open on %@", newLine);
+        CLCLogInfo(@"Finish opening line %@ for %@", newLine.inLineId, pendingIdentity.hashname);
         [newLine openLine];
-        
+
         [self.openLines setObject:newLine forKey:newLine.inLineId];
         
         if ([self.delegate respondsToSelector:@selector(openedLine:)]) {
@@ -399,9 +412,8 @@
     } else {
         [newLine sendOpen];
         [newLine openLine];
-        
-        CLCLogInfo(@"Line setup for %@", newLine.inLineId);
-        
+		
+        CLCLogInfo(@"Line %@ setup for %@", newLine.inLineId, newLine.toIdentity.hashname);
         [self.openLines setObject:newLine forKey:newLine.inLineId];
         if ([self.delegate respondsToSelector:@selector(openedLine:)]) {
             [self.delegate openedLine:newLine];

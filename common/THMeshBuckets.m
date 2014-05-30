@@ -62,9 +62,11 @@
         [bucket enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
             THIdentity* identity = (THIdentity*)obj;
             
-            // Check for dead channels at 2m (if we have a pending ping, dont do anything destructive!)
+            // Check for dead channels at 2m
             if (checkTime > identity.currentLine.lastInActivity + 120) {
-				CLCLogWarning(@"line inactive for %@, removing link channel", identity.hashname);
+				NSInteger lastInDuration = checkTime - identity.currentLine.lastInActivity;
+				CLCLogWarning(@"line inactive for %@ (in duration %d), removing link channel", identity.hashname, lastInDuration);
+				
                 [bucket removeObjectAtIndex:idx];
                 THChannel* channel = [identity channelForType:@"link"];
                 if (channel) {
@@ -77,11 +79,21 @@
             // 60s ping based on last activity
             //if (checkTime < identity.currentLine.lastOutActivity + 25) return;
             
-            THPacket* pingPacket = [THPacket new];
-            [pingPacket.json setObject:@YES forKey:@"seed"];
+			if (identity.activePath || identity.relay) {
+				THPacket* pingPacket = [THPacket new];
+				[pingPacket.json setObject:@YES forKey:@"seed"];
+				
+				THChannel* linkChannel = [identity channelForType:@"link"];
+				if (linkChannel) {
+					[linkChannel sendPacket:pingPacket];
+				} else {
+					CLCLogDebug(@"link channel missing for %@ within pingLines", identity.hashname);
+				}
+			} else {
+				CLCLogWarning(@"no path or relay available for pingLines to %@", identity.hashname);
+			}
+			
             
-            THChannel* linkChannel = [identity channelForType:@"link"];
-            if (linkChannel) [linkChannel sendPacket:pingPacket];
         }];
     }];
     
@@ -167,6 +179,7 @@
 
 -(void)removeLine:(THLine *)line
 {
+	if (!line) return;
     NSInteger bucketIndex = [self.localIdentity distanceFrom:line.toIdentity];
     [[self.buckets objectAtIndex:bucketIndex] removeObject:line];
 }
@@ -230,7 +243,12 @@
     seekJob.localIdentity = self.localIdentity;
     seekJob.seekingIdentity = toIdentity;
     seekJob.completion = completion;
-    NSArray* nearby = [self nearby:toIdentity];
+    
+	NSPredicate* activeFilter = [NSPredicate predicateWithFormat:@"SELF.activePath != nil AND NOT (SELF.hashname MATCHES %@)", toIdentity.hashname];
+	NSArray* nearby = [[self nearby:toIdentity] filteredArrayUsingPredicate:activeFilter];
+	
+	CLCLogDebug(@"seek for %@ has %d nearby peers", toIdentity.hashname, nearby.count);
+	
     seekJob.nearby = [NSMutableArray arrayWithArray:[nearby subarrayWithRange:NSMakeRange(0, MIN(3, nearby.count))]];
     [self.pendingSeeks setValue:seekJob forKey:toIdentity.hashname];
     
@@ -368,7 +386,6 @@
     NSString* error = [packet.json objectForKey:@"err"];
     if (error) return YES;
 	
-	// TODO Temas, this is causing this infinite loop if anyone had seen the hashname before, they then return it (even if its not online)... which causes more lookups
     NSArray* sees = [packet.json objectForKey:@"see"];
 
     __block BOOL foundIt = NO;
@@ -428,7 +445,6 @@
         return NSOrderedSame;
     }];
     
-	// TODO Temas, this always runs when sees.count == 0, it seems to requery the same thing, and return with exacly the same results
     if (self.nearby.count > 0) {
         [self runSeek];
         for (NSUInteger i = self.runningSearches; i < MIN(3, self.nearby.count - 1); ++i) {
