@@ -29,6 +29,7 @@
         _state = THChannelOpening;
         self.toIdentity = identity;
         self.channelId = 0; // We'll just go ahead and make one
+		self.createdAt = time(NULL);
         self.lastInActivity = 0;
         self.lastOutActivity = 0;
         THSwitch* defaultSwitch = [THSwitch defaultSwitch];
@@ -57,12 +58,16 @@
     } else if (self.state == THChannelErrored) {
         // XXX Error that we're trying to send on an errored channel
     }
+	
     self.lastOutActivity = time(NULL);
+	self.line.lastOutActivity = time(NULL);
 }
 
 -(void)handlePacket:(THPacket *)packet;
 {
     self.lastInActivity = time(NULL);
+	self.line.lastInActivity = time(NULL);
+	
     NSString* err = [packet.json objectForKey:@"err"];
     if (err) {
         [self.delegate channel:self didFailWithError:[NSError errorWithDomain:@"telehash" code:100 userInfo:@{NSLocalizedDescriptionKey:err}]];
@@ -81,6 +86,7 @@
         [self sendPacket:endPacket];
         self.state = THChannelEnded;
     }
+	
     [self.toIdentity.channels removeObjectForKey:self.channelId];
 }
 @end

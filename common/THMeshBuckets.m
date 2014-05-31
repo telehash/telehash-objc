@@ -55,56 +55,54 @@
 
 -(void)pingLines
 {
-	
     time_t checkTime = time(NULL);
+	
     [self.buckets enumerateObjectsUsingBlock:^(id obj, NSUInteger bucketIdx, BOOL *stop) {
         NSMutableArray* bucket = (NSMutableArray*)obj;
+		
         [bucket enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
             THIdentity* identity = (THIdentity*)obj;
-            
-            // Check for dead channels at 2m
-            if (checkTime > identity.currentLine.lastInActivity + 120) {
-				NSInteger lastInDuration = checkTime - identity.currentLine.lastInActivity;
-				CLCLogWarning(@"line inactive for %@ (in duration %d), removing link channel", identity.hashname, lastInDuration);
+			THChannel* linkChannel = [identity channelForType:@"link"];
+			
+			if (linkChannel) {
+				// if our lastInActivity > 50s and the channel is >5s old
+				if ((checkTime >= linkChannel.lastInActivity + 50) && (checkTime > linkChannel.createdAt + 25)) {
+					NSInteger lastInDuration = checkTime - linkChannel.lastInActivity;
+					CLCLogWarning(@"line inactive for %@ (in duration %d), removing link channel", identity.hashname, lastInDuration);
+					
+					[bucket removeObjectAtIndex:idx];
+					THChannel* channel = [identity channelForType:@"link"];
+					if (channel) {
+						[identity.channels removeObjectForKey:channel.channelId];
+					}
+					return;
+				}
 				
-                [bucket removeObjectAtIndex:idx];
-                THChannel* channel = [identity channelForType:@"link"];
-                if (channel) {
-                    [identity.channels removeObjectForKey:channel.channelId];
-                }
-                // TODO:  Is the channel auto cleaned up properly now?  We dont' send an end:true because we assume it's dead
-                return;
-            }
-            
-            // 60s ping based on last activity
-            //if (checkTime < identity.currentLine.lastOutActivity + 25) return;
-            
-			if (identity.activePath || identity.relay) {
-				THPacket* pingPacket = [THPacket new];
-				[pingPacket.json setObject:@YES forKey:@"seed"];
-				
-				THChannel* linkChannel = [identity channelForType:@"link"];
-				if (linkChannel) {
+				if (identity.activePath || identity.relay) {
+					THPacket* pingPacket = [THPacket new];
+					[pingPacket.json setObject:@YES forKey:@"seed"];
+					
 					[linkChannel sendPacket:pingPacket];
 				} else {
-					CLCLogDebug(@"link channel missing for %@ within pingLines", identity.hashname);
+					CLCLogWarning(@"no path or relay available for pingLines to %@, attempting a re-open", identity.hashname);
+					[identity.currentLine sendOpen];
 				}
 			} else {
-				CLCLogWarning(@"no path or relay available for pingLines to %@", identity.hashname);
+				CLCLogDebug(@"link channel missing for %@ within pingLines, attempting a re-open", identity.hashname);
+				[identity.currentLine sendOpen];
 			}
-			
-            
         }];
     }];
     
     if (!pendingPings) {
         double delayInSeconds = 25.0;
-        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
-        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-			CLCLogDebug(@"dispatch pingLines");
+		
+        dispatch_time_t pingTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
+        dispatch_after(pingTime, dispatch_get_main_queue(), ^(void){
             pendingPings = NO;
             [self pingLines];
         });
+		
         pendingPings = YES;
     }
 }
@@ -112,7 +110,7 @@
 -(void)linkToIdentity:(THIdentity*)identity
 {
     [self addIdentity:identity];
-    THChannel* linkChannel = [identity channelForType:@"link"];
+	
     THPacket* linkPacket = [THPacket new];
     [linkPacket.json setObject:@YES forKey:@"seed"]; // TODO:  Allow for opting out of seeding?
     
@@ -130,19 +128,22 @@
 	
     [linkPacket.json setObject:sees forKey:@"see"];
     
+	THChannel* linkChannel = [identity channelForType:@"link"];
     if (!linkChannel) {
         linkChannel = [[THUnreliableChannel alloc] initToIdentity:identity];
         [linkPacket.json setObject:@"link" forKey:@"type"];
+		
         [[THSwitch defaultSwitch] openChannel:linkChannel firstPacket:linkPacket];
     } else {
         [linkChannel sendPacket:linkPacket];
     }
+	
     linkChannel.delegate = self;
 }
 
 -(void)addIdentity:(THIdentity *)identity
 {
-    [self pingLines];
+    //[self pingLines];
     
     NSInteger bucketIndex = [self.localIdentity distanceFrom:identity];
     NSMutableArray* bucket = [self.buckets objectAtIndex:bucketIndex];
@@ -244,7 +245,7 @@
     seekJob.seekingIdentity = toIdentity;
     seekJob.completion = completion;
     
-	NSPredicate* activeFilter = [NSPredicate predicateWithFormat:@"SELF.activePath != nil AND NOT (SELF.hashname MATCHES %@)", toIdentity.hashname];
+	NSPredicate* activeFilter = [NSPredicate predicateWithFormat:@"SELF.hasLink == YES AND NOT (SELF.hashname MATCHES %@)", toIdentity.hashname];
 	NSArray* nearby = [[self nearby:toIdentity] filteredArrayUsingPredicate:activeFilter];
 	
 	CLCLogDebug(@"seek for %@ has %d nearby peers", toIdentity.hashname, nearby.count);
@@ -370,6 +371,8 @@
     THSwitch* defaultSwitch = [THSwitch defaultSwitch];
     ++self.runningSearches;
     
+	if (!identity.activePath) return;
+	
     THChannel* seekChannel = [[THUnreliableChannel alloc] initToIdentity:identity];
     seekChannel.delegate = self;
     

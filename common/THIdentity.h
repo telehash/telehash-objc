@@ -25,6 +25,7 @@
 -(id)initWithParts:(NSDictionary*)parts key:(THCipherSet*)key;
 
 @property (readonly) NSString* hashname;
+@property (readonly) BOOL hasLink;
 @property NSData* address;
 @property NSMutableArray* vias;
 @property NSMutableDictionary* channels;

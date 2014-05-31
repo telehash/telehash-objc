@@ -183,9 +183,9 @@
     if (toIdentity.currentLine) {
 		
 		// Are we broken??
-		if (!toIdentity.activePath && !toIdentity.relay) {
+		if (!toIdentity.activePath && !toIdentity.relay.peerChannel) {
 			CLCLogDebug(@"openLine has no active path or relay for identity %@", toIdentity.hashname);
-
+			
 			[toIdentity.currentLine sendOpen];
 			return;
 		}
@@ -265,35 +265,8 @@
 		toIdentity.relay.toIdentity = toIdentity;
 
 		for (THIdentity* viaIdentity in toIdentity.vias) {
-			if (viaIdentity.currentLine && viaIdentity.activePath && !viaIdentity.relay) {
-				THUnreliableChannel* peerChannel = [[THUnreliableChannel alloc] initToIdentity:viaIdentity];
-				peerChannel.type = @"peer";
-				peerChannel.delegate = toIdentity.relay;
-				[self openChannel:peerChannel firstPacket:nil];
-				
-				THPacket* peerPacket = [THPacket new];
-				[peerPacket.json setObject:[NSNumber numberWithUnsignedInteger:viaIdentity.currentLine.nextChannelId] forKey:@"c"];
-				[peerPacket.json setObject:toIdentity.hashname forKey:@"peer"];
-				[peerPacket.json setObject:@"peer" forKey:@"type"];
-				[peerPacket.json setObject:peerChannel.channelId forKey:@"c"];
-				NSArray* paths = [self.identity pathInformationTo:toIdentity allowLocal:NO];
-				if (paths) {
-					[peerPacket.json setObject:paths forKey:@"paths"];
-				}
-				
-				THCipherSet* chosenCS = [self.identity.cipherParts objectForKey:toIdentity.suggestedCipherSet];
-				if (!chosenCS) {
-					CLCLogError(@"We did not actually have a key for the CS %@ to connect to %@", toIdentity.suggestedCipherSet, toIdentity.hashname);
-					return;
-				}
-				peerPacket.body = chosenCS.publicKey;
-				
-				// Temas please dont kill me
-				toIdentity.relay.relayedPath = viaIdentity.activePath;
-				toIdentity.relay.peerChannel = peerChannel;
-				
-				// We blind send this and hope for the best!
-				[viaIdentity sendPacket:peerPacket];
+			if (viaIdentity.currentLine && viaIdentity.activePath && !viaIdentity.activePath.isBridge) {
+				[toIdentity.relay attachVia:viaIdentity];
 			}
 		}
 		
@@ -375,6 +348,8 @@
             path = incomingPacket.returnPath;
             [newLine.toIdentity addPath:path];
         }
+		
+		CLCLogDebug(@"processOpen setting activePath for %@ to %@", newLine.toIdentity.hashname, path.information);
         newLine.toIdentity.activePath = path;
     }
     
@@ -421,7 +396,7 @@
         
         if (pendingLineJob) pendingLineJob.handler(newLine);
         
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
             THChannel* linkChannel = [newLine.toIdentity channelForType:@"link"];
             if (!linkChannel) {
                 [self.meshBuckets linkToIdentity:newLine.toIdentity];
@@ -429,8 +404,12 @@
         });
         [self.meshBuckets addIdentity:newLine.toIdentity];
     }
-    [newLine negotiatePath];
-    
+	
+	// negotiate path after a short delay to allow any bridge path to come in
+	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(100 * NSEC_PER_MSEC)), dispatch_get_main_queue(), ^{
+		[newLine negotiatePath];
+    });
+	
     // Check the pending jobs for any lines or channels
     [self.pendingJobs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         THPendingJob* job = (THPendingJob*)obj;

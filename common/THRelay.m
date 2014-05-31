@@ -11,6 +11,7 @@
 #import "THPacket.h"
 #import "CLCLog.h"
 #import "THPath.h"
+#import "THCipherSet.h"
 
 @implementation THRelay
 
@@ -29,12 +30,47 @@
     return self;
 }
 
+-(void)attachVia:(THIdentity*)viaIdentity
+{
+	THSwitch* defaultSwitch = [THSwitch defaultSwitch];
+	
+	THUnreliableChannel* peerChannel = [[THUnreliableChannel alloc] initToIdentity:viaIdentity];
+	peerChannel.type = @"peer";
+	peerChannel.delegate = self;
+	[defaultSwitch openChannel:peerChannel firstPacket:nil];
+	
+	THPacket* peerPacket = [THPacket new];
+	[peerPacket.json setObject:[NSNumber numberWithUnsignedInteger:viaIdentity.currentLine.nextChannelId] forKey:@"c"];
+	[peerPacket.json setObject:self.toIdentity.hashname forKey:@"peer"];
+	[peerPacket.json setObject:@"peer" forKey:@"type"];
+	[peerPacket.json setObject:peerChannel.channelId forKey:@"c"];
+	NSArray* paths = [defaultSwitch.identity pathInformationTo:self.toIdentity allowLocal:NO];
+	if (paths) {
+		[peerPacket.json setObject:paths forKey:@"paths"];
+	}
+	
+	THCipherSet* chosenCS = [defaultSwitch.identity.cipherParts objectForKey:self.toIdentity.suggestedCipherSet];
+	if (!chosenCS) {
+		CLCLogError(@"We did not actually have a key for the CS %@ to connect to %@", self.toIdentity.suggestedCipherSet, self.toIdentity.hashname);
+		return;
+	}
+	
+	peerPacket.body = chosenCS.publicKey;
+	
+	self.relayIdentity = viaIdentity;
+	self.relayedPath = viaIdentity.activePath;
+	self.peerChannel = peerChannel;
+	
+	// We blind send this and hope for the best!
+	[viaIdentity sendPacket:peerPacket];
+}
+
 -(void)sendPacket:(THPacket *)packet
 {
     if (!self.peerChannel) {
-		CLCLogWarning(@"attempting to send on a dead relay, removing relay reference");
-		self.toIdentity.relay = nil;
-		return;
+		// TODO review this
+		CLCLogDebug(@"re-opening relay peerChannel via %@", self.relayIdentity.hashname);
+		[self attachVia:self.relayIdentity];
 	}
     
     THPacket* relayPacket = [THPacket new];
@@ -51,55 +87,38 @@
         CLCLogInfo(@"Garbage on the relay for %@, invalid or unparseable packet with json %@", self.toIdentity.hashname, packet.json);
         return YES;
     }
+	
     relayedPacket.returnPath = nil;
-    if ( [packet.json objectForKey:@"bridge"] || [relayedPacket.json objectForKey:@"json"]) {
+	
+    if ([packet.json objectForKey:@"bridge"] || [relayedPacket.json objectForKey:@"json"]) {
         NSLog(@"Start a bridge on %@", packet.returnPath.information);
+		packet.returnPath.isBridge = YES;
         [self.toIdentity addPath:packet.returnPath];
     }
 	
-	// overwrite our peerChannel with the one that actually responded
+	// overwrite our peerChannel and relayIdentity with the one that actually responded
 	self.peerChannel = (THUnreliableChannel*)channel;
+	self.relayIdentity = channel.toIdentity;
 	
     [[THSwitch defaultSwitch] handlePacket:relayedPacket];
-    /*
-    THTransport* transport = self.relayedPath.transport;
-    if ([transport.delegate respondsToSelector:@selector(transport:handlePacket:)]) {
-        [transport.delegate transport:self.transport handlePacket:relayedPacket];
-    }
-    */
     
     return YES;
 }
 
 -(void)channel:(THChannel *)channel didFailWithError:(NSError *)error
 {
-    // XXX TODO: Shutdown the busted path
 	CLCLogWarning(@"relay peerChannel for %@ didFailWithError: %@", self.toIdentity.hashname, [error description]);
-	
 	self.peerChannel = nil;
-    self.toIdentity.relay = nil;
-	
-	// attempt to re-open line
-	[[THSwitch defaultSwitch] openLine:self.toIdentity];
 }
 
 -(void)channel:(THChannel *)channel didChangeStateTo:(THChannelState)channelState
 {
 	CLCLogDebug(@"relay peerChannel for %@ didChangeStateTo: %d", self.toIdentity.hashname, channelState);
-    
-    // XXX TODO:  Shutdown on channel ended
-	// TODO temas, we're getting errors, but not closes...
-	if (channelState == THChannelEnded || channelState == THChannelErrored) {
-		if (channel == self.peerChannel) {
-			CLCLogWarning(@"relay peerChannel for %@ closed", self.toIdentity.hashname);
-			self.peerChannel = nil;
-            self.toIdentity.relay = nil;
-			
-			// attempt to re-open line
-			[[THSwitch defaultSwitch] openLine:self.toIdentity];
-		}
-	}
 	
+	if (channel == self.peerChannel && (channelState == THChannelEnded || channelState == THChannelErrored)) {
+		CLCLogWarning(@"relay peerChannel for %@ closed", self.toIdentity.hashname);
+		self.peerChannel = nil;
+	}
 }
 
 @end

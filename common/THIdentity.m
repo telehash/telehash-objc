@@ -124,6 +124,14 @@ static NSMutableDictionary* identityCache;
     return _hashnameCache;
 }
 
+-(BOOL)hasLink
+{
+	THChannel* linkChannel = [self channelForType:@"link"];
+	if (linkChannel) return YES;
+	
+	return NO;
+}
+
 int nlz(unsigned long x) {
     if (x == 0) return 4;
     if (x > 0x7) return 0;
@@ -250,11 +258,6 @@ int nlz(unsigned long x) {
     }
     
     [self.availablePaths addObject:path];
-	
-	// TODO this shouldnt be here
-	if (self.currentLine) {
-		[self.currentLine negotiatePath];
-	}
 }
 
 -(NSArray*)pathInformationTo:(THIdentity *)toIdentity allowLocal:(BOOL)allowLocal
@@ -263,6 +266,8 @@ int nlz(unsigned long x) {
     for(THPath* path in self.availablePaths) {
         if (path.isLocal && !toIdentity.isLocal) continue;
         if (path.isLocal && !allowLocal) continue;
+		if (path.isBridge) continue;
+		
         [paths addObject:[path information]];
     }
     return paths;
@@ -293,7 +298,7 @@ int nlz(unsigned long x) {
     
     // If the active path is preferred, go ahead and switch
     if (path.priority > self.activePath.priority) {
-        CLCLogInfo(@"Setting active path to %@ to %@", self.hashname, path.information);
+        CLCLogInfo(@"Setting active path for %@ to %@", self.hashname, path.information);
         self.activePath = path;
     }
 }

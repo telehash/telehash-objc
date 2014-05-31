@@ -51,6 +51,7 @@ static unsigned char eccHeader[] = {0x04};
 -(void)decryptLinePacket:(THPacket*)packet
 {
 	if (!self.decryptorKey) return;
+	if (packet.body.length < 32) return;
 	
     NSData* iv = [packet.body subdataWithRange:NSMakeRange(16, 16)];
     NSData* cipherText = [packet.body subdataWithRange:NSMakeRange(32, packet.body.length - 48)];

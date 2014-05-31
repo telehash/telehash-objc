@@ -42,6 +42,7 @@ typedef enum {
 @property NSNumber* channelId;
 @property THChannelState state;
 @property NSString* type;
+@property NSUInteger createdAt;
 @property NSUInteger lastInActivity;
 @property NSUInteger lastOutActivity;
 

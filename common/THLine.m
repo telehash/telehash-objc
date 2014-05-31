@@ -39,6 +39,7 @@
 {
     NSUInteger _nextChannelId;
     NSMutableArray* channelHandlers;
+	THPacket* cachedOpen;
 }
 
 -(id)init;
@@ -57,13 +58,18 @@
 	self.lastOutActivity = time(NULL);
 	
     THSwitch* defaultSwitch = [THSwitch defaultSwitch];
-    THPacket* openPacket = [defaultSwitch generateOpen:self];
+	
+	if (!cachedOpen) {
+		cachedOpen = [defaultSwitch generateOpen:self];
+	}
+	
     for (THPath* path in self.toIdentity.availablePaths) {
-        CLCLogInfo(@"Sending open on %@ to %@", path, self.toIdentity.hashname);
-        [path sendPacket:openPacket];
+        CLCLogInfo(@"Sending open on %@ to %@", path.information, self.toIdentity.hashname);
+        [path sendPacket:cachedOpen];
     }
+	
     if (self.toIdentity.relay) {
-        [self.toIdentity.relay sendPacket:openPacket];
+        [self.toIdentity.relay sendPacket:cachedOpen];
     }
 }
 
@@ -71,10 +77,8 @@
 {
     self.outLineId = [openPacket.json objectForKey:@"line"];
     self.createdAt = [[openPacket.json objectForKey:@"at"] unsignedIntegerValue];
+	
     self.lastInActivity = time(NULL);
-	
-	
-	// setup timeout check
 }
 
 -(NSUInteger)nextChannelId
@@ -233,12 +237,7 @@
         // If we already have a line to them, we assume it's dead
         if (peerIdentity.currentLine) {
             // TODO:  This should really try and reuse the line first, then fall back to full redo
-            [peerIdentity.channels enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-                THChannel* curChannel = (THChannel*)obj;
-                curChannel.state = THChannelEnded;
-            }];
-			
-            [peerIdentity.channels removeAllObjects];
+            [peerIdentity closeChannels];
             [peerIdentity.availablePaths removeAllObjects];
 			[peerIdentity.vias removeAllObjects];
 			
@@ -278,6 +277,7 @@
         
         THRelay* relay = [THRelay new];
         relay.toIdentity = peerIdentity;
+		relay.relayIdentity = self.toIdentity;
 		relay.relayedPath = packet.returnPath;
 		relay.peerChannel = peerChannel;
 		peerChannel.delegate = relay;
@@ -345,6 +345,7 @@
 -(void)sendPacket:(THPacket *)packet path:(THPath*)path
 {
     self.lastOutActivity = time(NULL);
+	
     CLCLogDebug(@"Sending %@\%@ to %@", packet.json, packet.body, self.toIdentity.hashname);
     NSData* innerPacketData = [self.cipherSetInfo encryptLinePacket:packet];
     NSMutableData* linePacketData = [NSMutableData dataWithCapacity:(innerPacketData.length + 16)];
@@ -366,8 +367,8 @@
 	} else if (self.toIdentity.relay) {
         [self.toIdentity.relay sendPacket:lineOutPacket];
     } else {
-		CLCLogWarning(@"no path or relay available on line to %@", self.toIdentity.hashname);
-		[[THSwitch defaultSwitch] openLine:self.toIdentity];
+		CLCLogWarning(@"no path or relay available on line to %@, attempting a re-open", self.toIdentity.hashname);
+		[self sendOpen];
 	}
     
 }

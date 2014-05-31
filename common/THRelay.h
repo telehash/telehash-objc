@@ -13,8 +13,10 @@
 
 @interface THRelay : NSObject<THChannelDelegate>
 @property (assign) THIdentity* toIdentity;
+@property (retain) THIdentity* relayIdentity;
 @property (retain) THPath* relayedPath;
 @property (weak) THUnreliableChannel* peerChannel;
 -(id)initOnChannel:(THUnreliableChannel*)channel;
+-(void)attachVia:(THIdentity*)viaIdentity;
 -(void)sendPacket:(THPacket *)packet;
 @end
