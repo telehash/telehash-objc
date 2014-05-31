@@ -143,7 +143,13 @@
 
 -(void)addIdentity:(THIdentity *)identity
 {
-    //[self pingLines];
+    THChannel* linkChannel = [identity channelForType:@"link"];
+	if (linkChannel) {
+		THPacket* pingPacket = [THPacket new];
+		[pingPacket.json setObject:@YES forKey:@"seed"];
+		
+		[linkChannel sendPacket:pingPacket];
+	}
     
     NSInteger bucketIndex = [self.localIdentity distanceFrom:identity];
     NSMutableArray* bucket = [self.buckets objectAtIndex:bucketIndex];
@@ -151,7 +157,6 @@
         bucket = [NSMutableArray array];
     }
     
-    THChannel* linkChannel = [identity channelForType:@"link"];
     // TODO:  Check our hints for age on this entry, if it's older we should bump the newest from the bucket if it's full
     if (linkTotal >= MAX_LINKS && bucket.count >= K_BUCKET_SIZE) {
         // TODO:  Evict the oldest
