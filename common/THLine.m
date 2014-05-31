@@ -172,7 +172,8 @@
         linkChannel.channelId = [innerPacket.json objectForKey:@"c"];
         linkChannel.type = @"link";
         linkChannel.delegate = defaultSwitch.meshBuckets;
-        
+        linkChannel.lastInActivity = time(NULL);
+		
         THUnreliableChannel* curChannel = (THUnreliableChannel*)[self.toIdentity channelForType:@"link"];
         if (curChannel) {
             [self.toIdentity.channels removeObjectForKey:curChannel.channelId];
