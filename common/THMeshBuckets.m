@@ -39,6 +39,7 @@
 {
     BOOL pendingPings;
     NSUInteger linkTotal;
+	NSTimer* pingTimer;
 }
 
 -(id)init
@@ -49,6 +50,7 @@
         for (int i = 0; i < 256; ++i) {
             [self.buckets insertObject:[NSMutableArray array] atIndex:i];
         }
+		pingTimer = [NSTimer scheduledTimerWithTimeInterval:25 target:self selector:@selector(pingLines) userInfo:nil repeats:YES];
     }
     return self;
 }
@@ -93,18 +95,6 @@
 			}
         }];
     }];
-    
-    if (!pendingPings) {
-        double delayInSeconds = 25.0;
-		
-        dispatch_time_t pingTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
-        dispatch_after(pingTime, dispatch_get_main_queue(), ^(void){
-            pendingPings = NO;
-            [self pingLines];
-        });
-		
-        pendingPings = YES;
-    }
 }
 
 -(void)linkToIdentity:(THIdentity*)identity
