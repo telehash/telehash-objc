@@ -27,6 +27,7 @@
     self = [super init];
     if (self) {
         _state = THChannelOpening;
+		self.direction = THChannelOutbound;
         self.toIdentity = identity;
         self.channelId = 0; // We'll just go ahead and make one
 		self.createdAt = time(NULL);

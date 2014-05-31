@@ -173,6 +173,7 @@
         linkChannel.type = @"link";
         linkChannel.delegate = defaultSwitch.meshBuckets;
         linkChannel.lastInActivity = time(NULL);
+		linkChannel.direction = THChannelInbound;
 		
         THUnreliableChannel* curChannel = (THUnreliableChannel*)[self.toIdentity channelForType:@"link"];
         if (curChannel) {
@@ -326,13 +327,16 @@
                 newChannel = [[THUnreliableChannel alloc] initToIdentity:self.toIdentity];
                 newChannelType = UnreliableChannel;
             }
+			
             newChannel.channelId = channelId;
-            // Opening state for initial processing
             newChannel.state = THChannelOpening;
+			newChannel.direction = THChannelInbound;
             newChannel.type = channelType;
+			
             THSwitch* defaultSwitch = [THSwitch defaultSwitch];
             [self.toIdentity.channels setObject:newChannel forKey:channelId];
             [newChannel handlePacket:innerPacket];
+			
             // Now we're full open and ready to roll
             newChannel.state = THChannelOpen;
             if ([defaultSwitch.delegate respondsToSelector:@selector(channelReady:type:firstPacket:)]) {

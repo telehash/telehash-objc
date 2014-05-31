@@ -24,6 +24,11 @@ typedef enum {
     THChannelErrored
 } THChannelState;
 
+typedef enum {
+	THChannelInbound,
+	THChannelOutbound
+} THChannelDirection;
+
 @protocol THChannelDelegate <NSObject>
 #pragma mark State Handling
 -(void)channel:(THChannel*)channel didChangeStateTo:(THChannelState)channelState;
@@ -41,6 +46,7 @@ typedef enum {
 @property THLine* line;
 @property NSNumber* channelId;
 @property THChannelState state;
+@property THChannelDirection direction;
 @property NSString* type;
 @property NSUInteger createdAt;
 @property NSUInteger lastInActivity;
