@@ -26,6 +26,7 @@
 
 @property (readonly) NSString* hashname;
 @property (readonly) BOOL hasLink;
+@property (readonly) BOOL isBridged;
 @property NSData* address;
 @property NSMutableArray* vias;
 @property NSMutableDictionary* channels;

@@ -234,7 +234,7 @@
     seekJob.seekingIdentity = toIdentity;
     seekJob.completion = completion;
     
-	NSPredicate* activeFilter = [NSPredicate predicateWithFormat:@"SELF.hasLink == YES AND NOT (SELF.hashname MATCHES %@)", toIdentity.hashname];
+	NSPredicate* activeFilter = [NSPredicate predicateWithFormat:@"NOT (SELF.hashname MATCHES %@) AND SELF.hasLink == YES AND SELF.isBridged == NO", toIdentity.hashname];
 	NSArray* nearby = [[self nearby:toIdentity] filteredArrayUsingPredicate:activeFilter];
 	
 	CLCLogDebug(@"seek for %@ has %d nearby peers", toIdentity.hashname, nearby.count);

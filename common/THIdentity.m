@@ -132,6 +132,14 @@ static NSMutableDictionary* identityCache;
 	return NO;
 }
 
+-(BOOL)isBridged
+{
+	if (!self.activePath || self.activePath.isBridge) {
+		return YES;
+	}
+	return NO;
+}
+
 int nlz(unsigned long x) {
     if (x == 0) return 4;
     if (x > 0x7) return 0;

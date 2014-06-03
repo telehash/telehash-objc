@@ -402,12 +402,18 @@
                 [self.meshBuckets linkToIdentity:newLine.toIdentity];
             }
         });
+		
         [self.meshBuckets addIdentity:newLine.toIdentity];
     }
 	
 	// negotiate path after a short delay to allow any bridge path to come in
-	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(100 * NSEC_PER_MSEC)), dispatch_get_main_queue(), ^{
+	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(200 * NSEC_PER_MSEC)), dispatch_get_main_queue(), ^{
 		[newLine negotiatePath];
+		
+		// then RE-negotiate 2s in.. just to be sure
+		dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+			[newLine negotiatePath];
+		});
     });
 	
     // Check the pending jobs for any lines or channels
