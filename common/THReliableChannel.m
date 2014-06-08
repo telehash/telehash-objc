@@ -10,6 +10,7 @@
 #import "THPacketBuffer.h"
 #import "THPacket.h"
 #import "CLCLog.h"
+#include <stdlib.h>
 
 @interface THReliableChannel() {
     NSArray* missing;
@@ -32,20 +33,31 @@
 }
 -(void)handlePacket:(THPacket *)packet;
 {
+	/*
+	int rand = arc4random_uniform(10);
+	if (rand < 1) {
+		CLCLogDebug(@"dropping packet for loss test");
+		return;
+	}
+	*/
     [super handlePacket:packet];
     
-	// TODO handle resending miss packets
 	
     NSNumber* curSeq = [packet.json objectForKey:@"seq"];
     if (curSeq.unsignedIntegerValue > self.maxSeen.unsignedIntegerValue) {
         self.maxSeen = curSeq;
     }
+	
     NSNumber* ack = [packet.json objectForKey:@"ack"];
     if (ack) {
         // Let's clean up the out buffer based on their ack position
         [outPacketBuffer clearThrough:[ack unsignedIntegerValue]];
-        
     }
+	
+	NSArray* miss = [packet.json objectForKey:@"miss"];
+	if (miss) {
+		//[self resendMissingPackets:miss];
+	}
     
     NSString* packetType = [packet.json objectForKey:@"type"];
     if (!self.type && packetType) self.type = packetType;
@@ -94,10 +106,12 @@
         [packet.json setObject:[NSNumber numberWithUnsignedLong:sequence] forKey:@"seq"];
         ++sequence;
     }
+	
     // Append misses
     if (missing) {
         [packet.json setObject:missing forKey:@"miss"];
     }
+	
     // Append channel id
     [packet.json setObject:self.channelId forKey:@"c"];
     // Append ack
@@ -106,9 +120,24 @@
         lastAck = self.nextExpectedSequence - 1;
     }
     
-    [outPacketBuffer push:packet];
+	if ([packet.json objectForKey:@"seq"]) {
+		[outPacketBuffer push:packet];
+	}
     
     if (self.state == THChannelOpen) [self.toIdentity sendPacket:packet];
+}
+
+-(void)resendMissingPackets:(NSArray*)miss
+{
+	NSArray* missedPackets = [outPacketBuffer packetsForMiss:miss];
+	if (missedPackets) {
+		CLCLogDebug(@"resending %d missing packets", missedPackets.count);
+		for (THPacket* packet in missedPackets) {
+			if (self.state == THChannelOpen) [self.toIdentity sendPacket:packet];
+		}
+	} else {
+		CLCLogWarning(@"outPacketBuffer didnt have packets for resendMissingPackets");
+	}
 }
 
 -(void)delegateHandlePackets;
@@ -116,6 +145,14 @@
 	while (inPacketBuffer.length > 0) {
 		if (inPacketBuffer.frontSeq != self.nextExpectedSequence) {
 			// XXX dispatch a missing queue?
+			CLCLogWarning(@"sequence out of order %d expecting %d", inPacketBuffer.frontSeq, self.nextExpectedSequence);
+			
+			//NSMutableArray* misses = [NSMutableArray arrayWithArray:missing];
+			//[misses addObject:[NSNumber numberWithUnsignedInteger:self.nextExpectedSequence]];
+			//missing = misses;
+			
+			//[self sendPacket:[THPacket new]];
+
 			return;
 		}
 		THPacket* curPacket = [inPacketBuffer pop];

@@ -14,6 +14,7 @@
 @property THPacket* packet;
 @property THPacketNode* next;
 @property NSUInteger seq;
+@property BOOL acked;
 +(THPacketNode*)nodeWithPacket:(THPacket*)packet;
 @end
 
@@ -27,6 +28,7 @@
 -(THPacket*)pop;
 -(void)clearThrough:(NSUInteger)lastAck;
 -(NSUInteger)frontSeq;
+-(NSArray*)packetsForMiss:(NSArray*)miss;
 -(NSArray*)missingSeq;
 -(void)forEach:(void(^)(THPacket* packet))block;
 @end

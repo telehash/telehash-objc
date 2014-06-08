@@ -141,8 +141,7 @@
 
 -(void)dealloc
 {
-    
-    CLCLogDebug(@"Path go bye bye for %@ %d", [GCDAsyncUdpSocket hostFromAddress:toAddress], [GCDAsyncUdpSocket portFromAddress:toAddress]);
+    //CLCLogDebug(@"Path go bye bye for %@ %d", [GCDAsyncUdpSocket hostFromAddress:toAddress], [GCDAsyncUdpSocket portFromAddress:toAddress]);
 }
 
 -(void)sendPacket:(THPacket *)packet

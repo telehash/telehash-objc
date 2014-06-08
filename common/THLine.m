@@ -183,8 +183,10 @@
         [defaultSwitch.meshBuckets channel:linkChannel handlePacket:innerPacket];
     } else if ([channelType isEqualToString:@"peer"]) {
         // TODO:  Check this logic in association with the move to channels on identity
+		CLCLogInfo(@"peer request to %@", [innerPacket.json objectForKey:@"peer"]);
         THLine* peerLine = [thSwitch lineToHashname:[innerPacket.json objectForKey:@"peer"]];
         if (!peerLine) {
+			CLCLogWarning(@"unable to establish line for peer request");
             // What? We don't know about this person, bye bye
             return;
         }
@@ -351,6 +353,15 @@
 {
     self.lastOutActivity = time(NULL);
 	
+	time_t checkTime = time(NULL);
+	
+	if (checkTime > self.lastInActivity + 30) {
+		NSUInteger lastInDuration = checkTime - self.lastInActivity;
+		CLCLogWarning(@"line is stale, last inbound activity %d seconds ago", lastInDuration);
+		
+		// TODO: possibly remove paths and reset identity (need to go upstream on channels tho *pause*)
+	}
+	
     CLCLogDebug(@"Sending %@\%@ to %@", packet.json, packet.body, self.toIdentity.hashname);
     NSData* innerPacketData = [self.cipherSetInfo encryptLinePacket:packet];
     NSMutableData* linePacketData = [NSMutableData dataWithCapacity:(innerPacketData.length + 16)];
@@ -359,6 +370,7 @@
         CLCLogWarning(@"**** We couldn't encrypt a line packet to %@", self.toIdentity.hashname);
         return;
     }
+	
     [linePacketData appendData:[self.outLineId dataFromHexString]];
     [linePacketData appendData:innerPacketData];
     THPacket* lineOutPacket = [THPacket new];
@@ -373,7 +385,8 @@
         [self.toIdentity.relay sendPacket:lineOutPacket];
     } else {
 		CLCLogWarning(@"no path or relay available on line to %@, attempting a re-open", self.toIdentity.hashname);
-		[self sendOpen];
+		[[THSwitch defaultSwitch] openLine:self.toIdentity];
+		//TODO: we need to pause the channel and buffer before we actually get here...
 	}
     
 }
@@ -461,6 +474,9 @@
     }
     
 }
+
+
+
 @end
 
 @implementation THPathHandler

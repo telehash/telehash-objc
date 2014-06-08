@@ -8,6 +8,7 @@
 
 #import "THPacketBuffer.h"
 #import "THPacket.h"
+#import "CLCLog.h"
 
 @implementation  THPacketNode
 +(THPacketNode*)nodeWithPacket:(THPacket *)packet;
@@ -20,6 +21,8 @@
 }
 @end
 
+
+// TODO: @temas, hey man... I have been trying to grock how to do correct miss handling with this code, we need to talk
 @implementation THPacketBuffer
 -(id)init;
 {
@@ -37,7 +40,11 @@
         firstNode = newNode;
         tailNode = firstNode;
         return;
-    }
+    } else if (firstNode.seq > newNode.seq) {
+		newNode.next = firstNode;
+		firstNode = newNode;
+		return;
+	}
     
     for (THPacketNode* curNode = firstNode; curNode != nil; curNode = curNode.next) {
         // Drop it if it matches any existing node
@@ -59,6 +66,7 @@
         }
     }
     
+	CLCLogDebug(@"pushed to tailNode");
     // When in doubt just attach it at the end
     tailNode.next = newNode;
 }
@@ -89,8 +97,10 @@
 
 -(void)clearThrough:(NSUInteger)lastAck;
 {
+	CLCLogDebug(@"clearThrough: %d", lastAck);
+	
     THPacketNode* curNode = firstNode;
-    while (curNode && curNode.seq <= lastAck) {
+	while (curNode && curNode.seq <= lastAck) {
         firstNode = curNode.next;
         THPacketNode* nextNode = curNode.next;
         curNode.next = nil;
@@ -119,6 +129,25 @@
         }
         curNode = nextNode;
     }
+    return missing;
+}
+
+-(NSArray*)packetsForMiss:(NSArray*)miss
+{
+	NSMutableArray* missing;
+    THPacketNode* curNode = firstNode;
+    THPacketNode* nextNode;
+    while (curNode) {
+        nextNode = curNode.next;
+		
+        if (nextNode != nil && [miss containsObject:[NSNumber numberWithUnsignedInteger:nextNode.seq]]) {
+            if (!missing) missing = [NSMutableArray array];
+			[missing addObject:nextNode.packet];
+        }
+		
+        curNode = nextNode;
+    }
+	
     return missing;
 }
 

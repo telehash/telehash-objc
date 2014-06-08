@@ -16,6 +16,7 @@
 #import "THPendingJob.h"
 #import "THChannel.h"
 #import "THPath.h"
+#import "THRelay.h"
 #import "THUnreliableChannel.h"
 #import "CLCLog.h"
 
@@ -69,7 +70,7 @@
 			if (linkChannel) {
 				// if our lastInActivity > 50s and the channel is >5s old
 				if ((checkTime >= linkChannel.lastInActivity + 50) && (checkTime > linkChannel.createdAt + 25)) {
-					NSInteger lastInDuration = checkTime - linkChannel.lastInActivity;
+					NSUInteger lastInDuration = checkTime - linkChannel.lastInActivity;
 					CLCLogWarning(@"line inactive for %@ (in duration %d), removing link channel", identity.hashname, lastInDuration);
 					
 					[bucket removeObjectAtIndex:idx];
@@ -77,10 +78,13 @@
 					if (channel) {
 						[identity.channels removeObjectForKey:channel.channelId];
 					}
+					
+					// TODO: this should be moved to line activity check
+					[identity reset];
 					return;
 				}
 				
-				if (identity.activePath || identity.relay) {
+				if (identity.activePath || identity.relay.peerChannel) {
 					THPacket* pingPacket = [THPacket new];
 					[pingPacket.json setObject:@YES forKey:@"seed"];
 					

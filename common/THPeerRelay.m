@@ -26,6 +26,7 @@
 -(BOOL)channel:(THChannel *)channel handlePacket:(THPacket *)packet
 {
     CLCLogDebug(@"Relay got %@", packet.json);
+	
     THPacket* outPacket = [THPacket new];
     outPacket.body = packet.body;
     outPacket.jsonLength = packet.jsonLength;

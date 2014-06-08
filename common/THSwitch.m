@@ -179,23 +179,13 @@
 
 -(void)openLine:(THIdentity *)toIdentity completion:(LineOpenBlock)lineOpenCompletion
 {
-	// TODO figure out when to send a re-open
-    if (toIdentity.currentLine) {
-		
-		// Are we broken??
-		if (!toIdentity.activePath && !toIdentity.relay.peerChannel) {
-			CLCLogDebug(@"openLine has no active path or relay for identity %@", toIdentity.hashname);
-			
-			[toIdentity.currentLine sendOpen];
-			return;
-		}
-		
-		
+    if (toIdentity.currentLine && (toIdentity.activePath || toIdentity.relay.peerChannel)) {
 		CLCLogDebug(@"openLine returning currentLine for identity %@", toIdentity.hashname);
         if (lineOpenCompletion) lineOpenCompletion(toIdentity);
         return;
     }
     
+	BOOL existingPendingJob = NO;
 	THPendingJob* pendingJob = nil;
 	
     for (THPendingJob* pendingJobItem in self.pendingJobs) {
@@ -205,6 +195,7 @@
                 // We're already trying, bail on this one
                 CLCLogWarning(@"Tried to open another line to identity %@ while one pending", toIdentity.hashname);
                 pendingJob = pendingJobItem;
+				existingPendingJob = YES;
             }
         }
     }
@@ -219,9 +210,9 @@
 		}];
 		
 		// TODO:  XXX Check this timeout length
-		dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+		dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
 			if (!toIdentity.currentLine.inLineId) {
-				CLCLogWarning(@"Unable to finalize the line after 1s");
+				CLCLogWarning(@"Unable to finalize the line after 2s");
 				
 				toIdentity.currentLine = nil;
 				
@@ -238,12 +229,12 @@
     if (toIdentity.availablePaths.count > 0 && toIdentity.cipherParts.count > 0) {
 		CLCLogDebug(@"identity %@ already has known paths", toIdentity.hashname);
 		
-        THLine* channelLine = [THLine new];
-        channelLine.toIdentity = toIdentity;
-        //channelLine.activePath = toIdentity.activePath;
-        toIdentity.currentLine = channelLine;
+		if (!toIdentity.currentLine) {
+			toIdentity.currentLine = [THLine new];
+			toIdentity.currentLine.toIdentity = toIdentity;
+		}
         
-        [channelLine sendOpen];
+        [toIdentity.currentLine sendOpen];
 		
 		//return;
     };
@@ -265,6 +256,7 @@
 		toIdentity.relay.toIdentity = toIdentity;
 
 		for (THIdentity* viaIdentity in toIdentity.vias) {
+			// if the via has an active line that ISNT a bridge, lets try them
 			if (viaIdentity.currentLine && viaIdentity.activePath && !viaIdentity.activePath.isBridge) {
 				[toIdentity.relay attachVia:viaIdentity];
 			}
@@ -282,20 +274,14 @@
     }
     
     // Find a way to it from the mesh
-    [self.meshBuckets seek:toIdentity completion:^(BOOL found) {
-		CLCLogDebug(@"identity %@ found in meshbuckets", toIdentity.hashname);
-		// TODO Temas do we remove existing pendingJob if exists?
-		if (pendingJob) {
-			//[self.pendingJobs removeObject:pendingJob];
-		} else {
+	if (!existingPendingJob) {
+		[self.meshBuckets seek:toIdentity completion:^(BOOL found) {
 			if (found) {
+				CLCLogDebug(@"identity %@ found in meshbuckets", toIdentity.hashname);
 				[self openLine:toIdentity completion:lineOpenCompletion];
-			} else {
-				toIdentity.currentLine = nil;
-				if (lineOpenCompletion) lineOpenCompletion(nil);
 			}
-		}
-    }];
+		}];
+	}
 }
 
 -(void)closeLine:(THLine *)line
@@ -467,6 +453,7 @@
         THLine* line = [self.openLines objectForKey:lineId];
         // If there is no line to handle this dump it
         if (line == nil) {
+			CLCLogWarning(@"line %@ not found in openLines", lineId);
             return;
         }
         [line handlePacket:packet];

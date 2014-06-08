@@ -349,7 +349,6 @@ int nlz(unsigned long x) {
 -(void)reset
 {
 	CLCLogWarning(@"resetting identity with hashname %@", self.hashname);
-	[self closeChannels];
 
 	[self.availablePaths removeAllObjects];
 	[self.vias removeAllObjects];

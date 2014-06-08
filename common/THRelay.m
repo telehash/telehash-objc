@@ -97,9 +97,11 @@
     }
 	
 	// overwrite our peerChannel and relayIdentity with the one that actually responded
-	self.peerChannel = (THUnreliableChannel*)channel;
-	self.relayIdentity = channel.toIdentity;
-	
+	if (self.peerChannel.lastInActivity == 0) {
+		self.peerChannel = (THUnreliableChannel*)channel;
+		self.relayIdentity = channel.toIdentity;
+	}
+
     [[THSwitch defaultSwitch] handlePacket:relayedPacket];
     
     return YES;
@@ -108,7 +110,10 @@
 -(void)channel:(THChannel *)channel didFailWithError:(NSError *)error
 {
 	CLCLogWarning(@"relay peerChannel for %@ didFailWithError: %@", self.toIdentity.hashname, [error description]);
-	self.peerChannel = nil;
+	
+	if (channel == self.peerChannel) {
+		self.peerChannel = nil;
+	}
 }
 
 -(void)channel:(THChannel *)channel didChangeStateTo:(THChannelState)channelState
