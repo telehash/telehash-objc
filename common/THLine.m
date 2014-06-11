@@ -271,6 +271,7 @@
         
         // Add a bridge route
         if ([innerPacket.json objectForKey:@"bridge"]) {
+			packet.returnPath.isBridge = YES;
             [peerIdentity addPath:packet.returnPath];
         }
         
