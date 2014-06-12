@@ -257,7 +257,7 @@
 
 		for (THIdentity* viaIdentity in toIdentity.vias) {
 			// if the via has an active line that ISNT a bridge, lets try them
-			if (viaIdentity.currentLine && viaIdentity.activePath && !viaIdentity.activePath.isBridge) {
+			if (viaIdentity.currentLine && viaIdentity.activePath) {
 				[toIdentity.relay attachVia:viaIdentity];
 			}
 		}
