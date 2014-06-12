@@ -71,7 +71,7 @@
     // XXX: Make sure we're pinging every second
     [self checkAckPing:time(NULL)];
     
-    missing = [inPacketBuffer missingSeq];
+    missing = [inPacketBuffer missingSeqFrom:MAX(self.nextExpectedSequence - 1, 0)];
     
     [self delegateHandlePackets];
 }

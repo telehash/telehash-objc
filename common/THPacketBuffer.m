@@ -114,11 +114,16 @@
     return firstNode.seq;
 }
 
--(NSArray*)missingSeq;
+-(NSArray*)missingSeqFrom:(NSUInteger)firstSeq
 {
     NSMutableArray* missing;
     THPacketNode* curNode = firstNode;
     THPacketNode* nextNode;
+    // Find the first missing set then carry on
+    for (NSUInteger i = firstSeq; i < curNode.seq; ++i) {
+        if (!missing) missing = [NSMutableArray array];
+        [missing addObject:[NSNumber numberWithUnsignedInteger:i]];
+    }
     while (curNode) {
         nextNode = curNode.next;
         if (nextNode != nil && nextNode.seq != curNode.seq + 1) {
