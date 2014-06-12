@@ -134,7 +134,7 @@ static NSMutableDictionary* identityCache;
 
 -(BOOL)isBridged
 {
-	if (!self.activePath || self.activePath.isBridge) {
+	if (!self.activePath) {
 		return YES;
 	}
 	return NO;
@@ -274,7 +274,6 @@ int nlz(unsigned long x) {
     for(THPath* path in self.availablePaths) {
         if (path.isLocal && !toIdentity.isLocal) continue;
         if (path.isLocal && !allowLocal) continue;
-		if (path.isBridge) continue;
 		
         [paths addObject:[path information]];
     }

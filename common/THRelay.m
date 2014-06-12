@@ -92,7 +92,6 @@
 	
     if ([packet.json objectForKey:@"bridge"] || [relayedPacket.json objectForKey:@"json"]) {
         NSLog(@"Start a bridge on %@", packet.returnPath.information);
-		packet.returnPath.isBridge = YES;
         [self.toIdentity addPath:packet.returnPath];
     }
 	
