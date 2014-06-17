@@ -39,6 +39,8 @@
 	peerChannel.delegate = self;
 	[defaultSwitch openChannel:peerChannel firstPacket:nil];
 	
+	if (!peerChannel.channelId) return;
+	
 	THPacket* peerPacket = [THPacket new];
 	[peerPacket.json setObject:[NSNumber numberWithUnsignedInteger:viaIdentity.currentLine.nextChannelId] forKey:@"c"];
 	[peerPacket.json setObject:self.toIdentity.hashname forKey:@"peer"];
@@ -71,8 +73,13 @@
 		// TODO review this
 		CLCLogDebug(@"re-opening relay peerChannel via %@", self.relayIdentity.hashname);
 		[self attachVia:self.relayIdentity];
+		
+		if (!self.peerChannel) {
+			CLCLogWarning(@"failed to recover relay");
+			return;
+		}
 	}
-    
+	
     THPacket* relayPacket = [THPacket new];
     relayPacket.body = [packet encode];
     

@@ -71,7 +71,7 @@
     // XXX: Make sure we're pinging every second
     [self checkAckPing:time(NULL)];
     
-    missing = [inPacketBuffer missingSeqFrom:MAX(self.nextExpectedSequence - 1, 0)];
+    missing = [inPacketBuffer missingSeqFrom:self.nextExpectedSequence];
     
     [self delegateHandlePackets];
 }
@@ -153,7 +153,7 @@
 			
 			//[self sendPacket:[THPacket new]];
 
-			return;
+			//return;
 		}
 		THPacket* curPacket = [inPacketBuffer pop];
 		

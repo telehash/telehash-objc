@@ -355,7 +355,7 @@
 	
 	time_t checkTime = time(NULL);
 	
-	if (checkTime > self.lastInActivity + 30) {
+	if (self.lastInActivity > 0 && checkTime > self.lastInActivity + 30) {
 		NSUInteger lastInDuration = checkTime - self.lastInActivity;
 		CLCLogWarning(@"line is stale, last inbound activity %d seconds ago", lastInDuration);
 		
