@@ -187,6 +187,7 @@
         NSNumber* seqNum = [curPacket.json objectForKey:@"seq"];
         if (seqNum) {
             lastProcessed = [seqNum unsignedIntegerValue];
+            self.nextExpectedSequence = lastProcessed + 1;
         }
 		
 		if (self.state != THChannelEnded && [[curPacket.json objectForKey:@"end"] boolValue] == YES) {
@@ -195,8 +196,6 @@
 			[self close];
 			return;
 		}
-		
-		self.nextExpectedSequence = lastProcessed + 1;
 	}
 }
 
