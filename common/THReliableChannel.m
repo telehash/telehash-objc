@@ -66,8 +66,12 @@
     
     // If this is a new seq object we'll need to pass it off
     if ([packet.json objectForKey:@"seq"]) {
-        CLCLogInfo(@"Putting on the incoming buffer: %@ ", packet.json);
-        [inPacketBuffer push:packet];
+		if ([curSeq unsignedIntegerValue] >= lastProcessed) {
+			CLCLogInfo(@"Putting on the incoming buffer: %@ ", packet.json);
+			[inPacketBuffer push:packet];
+		} else {
+			CLCLogWarning(@"recieved a packet seq earlier than our lastProcessed position");
+		}
     }
     
     // XXX: Make sure we're pinging every second
@@ -128,10 +132,12 @@
     [packet.json setObject:self.channelId forKey:@"c"];
     
     // Append ack
-    if (lastProcessed > lastAck) {
+    if (lastProcessed >= lastAck) {
         [packet.json setObject:[NSNumber numberWithUnsignedLong:lastProcessed] forKey:@"ack"];
         lastAck = lastProcessed;
-    }
+    } else {
+		CLCLogWarning(@"lastProcessed %d < lastAck %d", lastProcessed, lastAck);
+	}
     
 	if ([packet.json objectForKey:@"seq"]) {
 		[outPacketBuffer push:packet];
@@ -169,17 +175,10 @@
 {
 	while (inPacketBuffer.length > 0) {
 		if (inPacketBuffer.frontSeq != self.nextExpectedSequence) {
-			// XXX dispatch a missing queue?
 			CLCLogWarning(@"sequence out of order %d expecting %d", inPacketBuffer.frontSeq, self.nextExpectedSequence);
-			
-			//NSMutableArray* misses = [NSMutableArray arrayWithArray:missing];
-			//[misses addObject:[NSNumber numberWithUnsignedInteger:self.nextExpectedSequence]];
-			//missing = misses;
-			
-			//[self sendPacket:[THPacket new]];
-
 			return;
 		}
+		
 		THPacket* curPacket = [inPacketBuffer pop];
 		
 		[self.delegate channel:self handlePacket:curPacket];
@@ -187,6 +186,7 @@
         NSNumber* seqNum = [curPacket.json objectForKey:@"seq"];
         if (seqNum) {
             lastProcessed = [seqNum unsignedIntegerValue];
+			self.nextExpectedSequence = lastProcessed + 1;
         }
 		
 		if (self.state != THChannelEnded && [[curPacket.json objectForKey:@"end"] boolValue] == YES) {
@@ -195,8 +195,6 @@
 			[self close];
 			return;
 		}
-		
-		self.nextExpectedSequence = lastProcessed + 1;
 	}
 }
 

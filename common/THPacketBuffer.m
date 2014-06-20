@@ -100,7 +100,7 @@
 	CLCLogDebug(@"clearThrough: %d", lastAck);
 	
     THPacketNode* curNode = firstNode;
-	while (curNode && curNode.seq <= lastAck) {
+	while (curNode && curNode.seq < lastAck) { // removing = for test
         firstNode = curNode.next;
         THPacketNode* nextNode = curNode.next;
         curNode.next = nil;
