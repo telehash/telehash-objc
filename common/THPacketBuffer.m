@@ -145,9 +145,9 @@
     while (curNode) {
         nextNode = curNode.next;
 		
-        if (nextNode != nil && [miss containsObject:[NSNumber numberWithUnsignedInteger:nextNode.seq]]) {
+        if ([miss containsObject:[NSNumber numberWithUnsignedInteger:curNode.seq]]) {
             if (!missing) missing = [NSMutableArray array];
-			[missing addObject:nextNode.packet];
+			[missing addObject:curNode.packet];
         }
 		
         curNode = nextNode;

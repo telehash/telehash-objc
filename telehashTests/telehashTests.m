@@ -13,6 +13,8 @@
 #import "THPacketBuffer.h"
 #import "THCipherSet.h"
 #import "THPath.h"
+#import "THReliableChannel.h"
+#import "THChannel.h"
 #include <arpa/inet.h>
 
 @interface telehashTests : XCTestCase
@@ -182,11 +184,25 @@
     [packet.json setObject:@2 forKey:@"seq"];
     [buffer push:packet];
     
-    NSLog(@"%@", [buffer missingSeqFrom:0]);
+    XCTAssertEqualObjects([buffer missingSeqFrom:0], (@[@0U, @1U]), @"Missing should have 0, 1");
     
     packet = [THPacket new];
     [packet.json setObject:@1 forKey:@"seq"];
     [buffer push:packet];
+    
+    NSLog(@"%@", [buffer missingSeqFrom:0]);
+}
+
+-(void)testReliableChannelSeq
+{
+    THIdentity* testIdentity = [THIdentity identityFromHashname:@"abcdef1234567890abcdef1234567890"];
+    THReliableChannel* testChannel = [[THReliableChannel alloc] initToIdentity:testIdentity];
+    testChannel.channelId = @42;
+    
+    THPacket* testPacket = [THPacket new];
+    [testPacket.json setObject:@1 forKey:@"seq"];
+    
+    [testChannel handlePacket:testPacket];
 }
 
 @end

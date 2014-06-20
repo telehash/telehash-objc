@@ -12,6 +12,8 @@
 #import "CLCLog.h"
 #include <stdlib.h>
 
+#define FUZZY_LOSS NO
+
 @interface THReliableChannel() {
     NSArray* missing;
 }
@@ -56,7 +58,7 @@
 	
 	NSArray* miss = [packet.json objectForKey:@"miss"];
 	if (miss) {
-		//[self resendMissingPackets:miss];
+		[self resendMissingPackets:miss];
 	}
     
     NSString* packetType = [packet.json objectForKey:@"type"];
@@ -71,7 +73,17 @@
     // XXX: Make sure we're pinging every second
     [self checkAckPing:time(NULL)];
     
-    missing = [inPacketBuffer missingSeqFrom:self.nextExpectedSequence];
+    // Immediately send a missing packet for any packets that are new missing
+    NSArray* curMissing = [inPacketBuffer missingSeqFrom:self.nextExpectedSequence];
+    NSMutableSet* newMissing = [NSMutableSet setWithCapacity:self.missing.count];
+    [newMissing addObjectsFromArray:curMissing];
+    [newMissing minusSet:[NSSet setWithArray:self.missing]];
+    
+    missing = curMissing;
+    
+    if (newMissing.count > 0) {
+        [self sendPacket:[THPacket new]];
+    }
     
     [self delegateHandlePackets];
 }
@@ -82,7 +94,7 @@
     double delayInSeconds = 1.0;
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
     dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-        if (lastAck < (self.nextExpectedSequence - 1)) {
+        if (lastAck < lastProcessed) {
             [self sendPacket:[THPacket new]];
         }
     });
@@ -108,23 +120,31 @@
     }
 	
     // Append misses
-    if (missing) {
+    if (![packet.json objectForKey:@"miss"] && missing) {
         [packet.json setObject:missing forKey:@"miss"];
     }
 	
     // Append channel id
     [packet.json setObject:self.channelId forKey:@"c"];
+    
     // Append ack
-    if (self.nextExpectedSequence > 0 && (self.nextExpectedSequence - 1 > lastAck)) {
-        [packet.json setObject:[NSNumber numberWithUnsignedLong:(self.nextExpectedSequence - 1)] forKey:@"ack"];
-        lastAck = self.nextExpectedSequence - 1;
+    if (lastProcessed > lastAck) {
+        [packet.json setObject:[NSNumber numberWithUnsignedLong:lastProcessed] forKey:@"ack"];
+        lastAck = lastProcessed;
     }
     
 	if ([packet.json objectForKey:@"seq"]) {
 		[outPacketBuffer push:packet];
 	}
     
-    if (self.state == THChannelOpen) [self.toIdentity sendPacket:packet];
+    if (self.state == THChannelOpen) {
+#ifdef FUZZY_LOSS
+        // 10% packet loss fuzz
+        if ((int)(arc4random() % 11) == 1)
+            return;
+#endif
+        [self.toIdentity sendPacket:packet];
+    }
 }
 
 -(void)resendMissingPackets:(NSArray*)miss
@@ -133,6 +153,7 @@
 	if (missedPackets) {
 		CLCLogDebug(@"resending %d missing packets", missedPackets.count);
 		for (THPacket* packet in missedPackets) {
+            [packet.json removeObjectForKey:@"miss"];
 			if (self.state == THChannelOpen) [self.toIdentity sendPacket:packet];
 		}
 	} else {
@@ -153,11 +174,16 @@
 			
 			//[self sendPacket:[THPacket new]];
 
-			//return;
+			return;
 		}
 		THPacket* curPacket = [inPacketBuffer pop];
 		
 		[self.delegate channel:self handlePacket:curPacket];
+        
+        NSNumber* seqNum = [curPacket.json objectForKey:@"seq"];
+        if (seqNum) {
+            lastProcessed = [seqNum unsignedIntegerValue];
+        }
 		
 		if (self.state != THChannelEnded && [[curPacket.json objectForKey:@"end"] boolValue] == YES) {
 			// TODO: Shut it down!

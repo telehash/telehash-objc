@@ -14,6 +14,7 @@
     THPacketBuffer* inPacketBuffer;
     THPacketBuffer* outPacketBuffer;
     NSUInteger lastAck;
+    NSUInteger lastProcessed;
 }
 @property NSUInteger nextExpectedSequence;
 -(id)initToIdentity:(THIdentity*)identity;
