@@ -12,7 +12,7 @@
 #import "CLCLog.h"
 #include <stdlib.h>
 
-#define FUZZY_LOSS NO
+#define FUZZY_LOSS YES
 
 @interface THReliableChannel() {
     NSArray* missing;
@@ -50,17 +50,17 @@
         self.maxSeen = curSeq;
     }
 	
-    NSNumber* ack = [packet.json objectForKey:@"ack"];
-    if (ack) {
-        // Let's clean up the out buffer based on their ack position
-        [outPacketBuffer clearThrough:[ack unsignedIntegerValue]];
-    }
-	
 	NSArray* miss = [packet.json objectForKey:@"miss"];
 	if (miss) {
 		[self resendMissingPackets:miss];
 	}
     
+	NSNumber* ack = [packet.json objectForKey:@"ack"];
+    if (ack) {
+        // Let's clean up the out buffer based on their ack position
+        [outPacketBuffer clearThrough:[ack unsignedIntegerValue]];
+    }
+	
     NSString* packetType = [packet.json objectForKey:@"type"];
     if (!self.type && packetType) self.type = packetType;
     
@@ -150,6 +150,10 @@
 -(void)resendMissingPackets:(NSArray*)miss
 {
 	NSArray* missedPackets = [outPacketBuffer packetsForMiss:miss];
+	if (miss.count != missedPackets.count) {
+		CLCLogWarning(@"outPacketBuffer returned %d missed packets, we wanted %d", missedPackets.count, miss.count);
+	}
+	
 	if (missedPackets) {
 		CLCLogDebug(@"resending %d missing packets", missedPackets.count);
 		for (THPacket* packet in missedPackets) {
@@ -192,7 +196,7 @@
 			return;
 		}
 		
-		self.nextExpectedSequence = [[curPacket.json objectForKey:@"seq"] unsignedIntegerValue] + 1;
+		self.nextExpectedSequence = lastProcessed + 1;
 	}
 }
 
