@@ -288,7 +288,6 @@
 {
     if (line.toIdentity.currentLine == line) {
         line.toIdentity.currentLine = nil;
-        [line.toIdentity.channels removeAllObjects];
     }
     if (line.inLineId) [self.openLines removeObjectForKey:line.inLineId];
     [self.meshBuckets removeLine:line];

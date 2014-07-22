@@ -78,7 +78,7 @@
 					if (channel) {
 						[identity.channels removeObjectForKey:channel.channelId];
 					}
-					
+										
 					// TODO: this should be moved to line activity check
 					[identity reset];
 					return;

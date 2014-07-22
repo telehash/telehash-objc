@@ -241,7 +241,10 @@
         // If we already have a line to them, we assume it's dead
         if (peerIdentity.currentLine) {
             // TODO:  This should really try and reuse the line first, then fall back to full redo
-            [peerIdentity closeChannels];
+            
+			[peerIdentity reset];
+			/*
+			[peerIdentity closeChannels];
             [peerIdentity.availablePaths removeAllObjects];
 			[peerIdentity.vias removeAllObjects];
 			
@@ -258,6 +261,7 @@
             [thSwitch closeLine:peerIdentity.currentLine];
             
             peerIdentity.currentLine = nil;
+			 */
         }
         
         // Add the available paths

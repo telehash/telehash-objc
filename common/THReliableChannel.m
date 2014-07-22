@@ -12,7 +12,7 @@
 #import "CLCLog.h"
 #include <stdlib.h>
 
-#define FUZZY_LOSS YES
+//#define FUZZY_LOSS YES
 
 @interface THReliableChannel() {
     NSArray* missing;
@@ -76,18 +76,6 @@
     
     // XXX: Make sure we're pinging every second
     [self checkAckPing:time(NULL)];
-    
-    // Immediately send a missing packet for any packets that are new missing
-    NSArray* curMissing = [inPacketBuffer missingSeqFrom:self.nextExpectedSequence];
-    NSMutableSet* newMissing = [NSMutableSet setWithCapacity:self.missing.count];
-    [newMissing addObjectsFromArray:curMissing];
-    [newMissing minusSet:[NSSet setWithArray:self.missing]];
-    
-    missing = curMissing;
-    
-    if (newMissing.count > 0) {
-        [self sendPacket:[THPacket new]];
-    }
     
     [self delegateHandlePackets];
 }
@@ -176,6 +164,20 @@
 	while (inPacketBuffer.length > 0) {
 		if (inPacketBuffer.frontSeq != self.nextExpectedSequence) {
 			CLCLogWarning(@"sequence out of order %d expecting %d", inPacketBuffer.frontSeq, self.nextExpectedSequence);
+			
+			// Immediately send a missing packet for any packets that are new missing
+			NSArray* curMissing = [inPacketBuffer missingSeqFrom:self.nextExpectedSequence];
+			NSMutableSet* newMissing = [NSMutableSet setWithCapacity:self.missing.count];
+			[newMissing addObjectsFromArray:curMissing];
+			[newMissing minusSet:[NSSet setWithArray:self.missing]];
+			
+			missing = curMissing;
+			
+			if (newMissing.count > 0) {
+				[self sendPacket:[THPacket new]];
+			}
+
+			
 			return;
 		}
 		

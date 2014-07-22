@@ -349,6 +349,8 @@ int nlz(unsigned long x) {
 {
 	CLCLogWarning(@"resetting identity with hashname %@", self.hashname);
 
+	[self closeChannels];
+	
 	[self.availablePaths removeAllObjects];
 	[self.vias removeAllObjects];
 	
@@ -360,6 +362,10 @@ int nlz(unsigned long x) {
 			[self.relay.peerChannel close];
 		}
 		self.relay = nil;
+	}
+	
+	if (self.currentLine) {
+		[[THSwitch defaultSwitch] closeLine:self.currentLine];
 	}
 	
 	self.currentLine = nil;
