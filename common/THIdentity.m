@@ -25,6 +25,7 @@ static NSMutableDictionary* identityCache;
 
 @interface THIdentity() {
     NSString* _hashnameCache;
+	NSTimer* pingTimer;
 }
 @end
 
@@ -103,6 +104,7 @@ static NSMutableDictionary* identityCache;
     self.availablePaths = [NSMutableArray array];
 	self.vias = [NSMutableArray array];
     self.channels = [NSMutableDictionary dictionary];
+	pingTimer = [NSTimer scheduledTimerWithTimeInterval:25 target:self selector:@selector(pingLink) userInfo:nil repeats:YES];
 }
 
 -(void)setIP:(NSString*)ip port:(NSUInteger)port;
@@ -341,6 +343,64 @@ int nlz(unsigned long x) {
     return [shaBuffer hexString];
 }
 
+-(void)establishLink
+{
+	THPacket* linkPacket = [THPacket new];
+    [linkPacket.json setObject:@YES forKey:@"seed"]; // TODO:  Allow for opting out of seeding?
+    
+	// HAX for now
+    NSMutableArray* sees = [NSMutableArray array];
+    [linkPacket.json setObject:sees forKey:@"see"];
+    
+	THChannel* linkChannel = [self channelForType:@"link"];
+    if (!linkChannel) {
+        linkChannel = [[THUnreliableChannel alloc] initToIdentity:self];
+        [linkPacket.json setObject:@"link" forKey:@"type"];
+		
+        [[THSwitch defaultSwitch] openChannel:linkChannel firstPacket:linkPacket];
+    } else {
+        [linkChannel sendPacket:linkPacket];
+    }
+	
+    linkChannel.delegate = self;
+}
+
+-(void)pingLink
+{
+    time_t checkTime = time(NULL);
+	
+    THChannel* linkChannel = [self channelForType:@"link"];
+	if (linkChannel) {
+		// if our lastInActivity > 50s and the channel is >5s old
+		if ((checkTime >= linkChannel.lastInActivity + 50) && (checkTime > linkChannel.createdAt + 25)) {
+			NSUInteger lastInDuration = checkTime - linkChannel.lastInActivity;
+			CLCLogWarning(@"line inactive for %@ (in duration %d), removing link channel", self.hashname, lastInDuration);
+
+			[self.channels removeObjectForKey:linkChannel.channelId];
+			
+			// TODO: this should be moved to line activity check
+			[self reset];
+			return;
+		}
+		
+		if (self.activePath || self.relay.peerChannel) {
+			THPacket* pingPacket = [THPacket new];
+			[pingPacket.json setObject:@YES forKey:@"seed"];
+			
+			[linkChannel sendPacket:pingPacket];
+		} else {
+			CLCLogWarning(@"no path or relay available for pingLines to %@, attempting a re-open", self.hashname);
+			[self.currentLine sendOpen];
+		}
+	} else {
+		CLCLogDebug(@"link channel missing for %@ within pingLines, resetting identity", self.hashname);
+		[self reset];
+	}
+
+}
+
+
+
 -(void)closeChannels
 {
 	[self.channels enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
@@ -381,4 +441,43 @@ int nlz(unsigned long x) {
 	
 	self.currentLine = nil;
 }
+
+
+
+
+
+// Channel delegate methods
+
+-(BOOL)channel:(THChannel *)channel handlePacket:(THPacket *)packet
+{
+    THSwitch* defaultSwitch = [THSwitch defaultSwitch];
+    if (defaultSwitch.status != THSwitchOnline) {
+        [defaultSwitch updateStatus:THSwitchOnline];
+    }
+    
+    NSArray* bridges = [packet.json objectForKey:@"bridge"];
+    if (bridges) {
+        channel.toIdentity.availableBridges = bridges;
+        [defaultSwitch.potentialBridges addObject:bridges];
+        // Let's just maintain 5 potent
+        if (defaultSwitch.potentialBridges.count > 5) {
+            [defaultSwitch.potentialBridges removeObjectAtIndex:0];
+        }
+    }
+	   
+    return YES;
+}
+
+-(void)channel:(THChannel *)channel didChangeStateTo:(THChannelState)channelState
+{
+    if (channelState == THChannelEnded || channelState == THChannelErrored) {
+		CLCLogWarning(@"link channel ended for hashname %@", self.hashname);
+    }
+}
+
+-(void)channel:(THChannel *)channel didFailWithError:(NSError *)error
+{
+	CLCLogWarning(@"link channel errored for hashname %@ with error: %@", self.hashname, [error description]);
+}
+
 @end

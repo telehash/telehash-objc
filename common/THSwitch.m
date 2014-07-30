@@ -12,7 +12,6 @@
 #import "NSString+HexString.h"
 #import "THLine.h"
 #import "THChannel.h"
-#import "THMeshBuckets.h"
 #import "THPendingJob.h"
 #import "THCipherSet.h"
 #import "NSData+HexString.h"
@@ -21,6 +20,7 @@
 #import "THPath.h"
 #import "THCipherSet2a.h"
 #import "THCipherSet3a.h"
+#import "THMeshBuckets.h"
 #import "THUnreliableChannel.h"
 #import "CLCLog.h"
 #import "THRelay.h"
@@ -56,8 +56,7 @@
 -(id)init;
 {
     if (self) {
-        self.meshBuckets = [THMeshBuckets new];
-        self.meshBuckets.localSwitch = self;
+		self.meshBuckets = [THMeshBuckets new];
         self.openLines = [NSMutableDictionary dictionary];
         self.pendingJobs = [NSMutableArray array];
         self.transports = [NSMutableDictionary dictionary];
@@ -70,7 +69,6 @@
 -(void)setIdentity:(THIdentity *)identity
 {
     _identity = identity;
-    self.meshBuckets.localIdentity = identity;
 }
 
 -(THIdentity*)identity
@@ -80,7 +78,6 @@
 
 -(void)start
 {
-    self.meshBuckets.localIdentity = self.identity;
     // XXX TODO FIXME For each path start it
     for (NSString* key in self.transports) {
         [[self.transports objectForKey:key] start];
@@ -284,16 +281,19 @@
 		
         return;
     }
-    
-    // Find a way to it from the mesh
-	if (!existingPendingJob) {
-		[self.meshBuckets seek:toIdentity completion:^(BOOL found) {
+
+	
+	NSPredicate* seedFilter = [NSPredicate predicateWithFormat:@"SELF.toIdentity.isSeed == YES"];
+	NSArray* seedLines = [[self.openLines allValues] filteredArrayUsingPredicate:seedFilter];
+	for (THLine* seedLine in seedLines) {
+		[self.meshBuckets seek:toIdentity onSeed:seedLine.toIdentity completion:^(BOOL found) {
 			if (found) {
 				CLCLogDebug(@"identity %@ found in meshbuckets", toIdentity.hashname);
 				[self openLine:toIdentity completion:lineOpenCompletion];
 			}
 		}];
 	}
+	
 }
 
 -(void)closeLine:(THLine *)line
@@ -302,7 +302,6 @@
 		line.cachedOpen = nil;
 	}
 	
-	[self.meshBuckets removeLine:line];
     if (line.inLineId) [self.openLines removeObjectForKey:line.inLineId];
 	
 	if (line.toIdentity.currentLine == line) {
@@ -356,7 +355,6 @@
     }
     
     // remove any existing lines to this hashname
-    [self.meshBuckets removeLine:newLine];
     if (newLine.inLineId) [self.openLines removeObjectForKey:newLine.inLineId];
     
     __block THPendingJob* pendingLineJob = nil;
@@ -385,7 +383,7 @@
         
         if (pendingLineJob) pendingLineJob.handler(newLine);
         
-        [self.meshBuckets linkToIdentity:newLine.toIdentity];
+        [pendingIdentity establishLink];
     } else {
         [newLine sendOpen];
         [newLine openLine];
@@ -401,11 +399,9 @@
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
             THChannel* linkChannel = [newLine.toIdentity channelForType:@"link"];
             if (!linkChannel) {
-                [self.meshBuckets linkToIdentity:newLine.toIdentity];
+                [newLine.toIdentity establishLink];
             }
         });
-		
-        [self.meshBuckets addIdentity:newLine.toIdentity];
     }
 	
 	// negotiate path after a short delay to allow any bridge path to come in

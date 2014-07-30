@@ -15,17 +15,10 @@
 
 typedef void(^SeekCompletionBlock)(BOOL found);
 
-@interface THMeshBuckets : NSObject<THChannelDelegate>
+@interface THMeshBuckets : NSObject
 
 @property (nonatomic, assign) THSwitch* localSwitch;
 @property THIdentity* localIdentity;
-@property NSMutableArray* buckets;
 @property NSMutableArray* pendingSeeks;
-
--(void)linkToIdentity:(THIdentity*)identity;
--(void)addIdentity:(THIdentity*)identity;
--(void)removeLine:(THLine*)line;
--(NSArray*)closeInBucket:(THIdentity*)seekIdentity;
--(NSArray*)nearby:(THIdentity*)seekIdentity;
--(void)seek:(THIdentity*)seekIdentity completion:(SeekCompletionBlock)completion;
+-(void)seek:(THIdentity*)toIdentity onSeed:(THIdentity*)seed completion:(SeekCompletionBlock)completion;
 @end

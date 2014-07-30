@@ -8,6 +8,8 @@
 
 #import <Foundation/Foundation.h>
 #import "THRSA.h"
+#import "THSwitch.h"
+#import "THChannelDelegate.h"
 
 @class THPacket;
 @class THLine;
@@ -16,7 +18,7 @@
 @class THPath;
 @class THRelay;
 
-@interface THIdentity : NSObject
+@interface THIdentity : NSObject<THChannelDelegate>
 
 +(id)identityFromParts:(NSDictionary*)parts key:(THCipherSet*)key;
 +(id)identityFromHashname:(NSString*)hashname;
@@ -63,6 +65,8 @@
 -(THPath*)pathMatching:(NSDictionary*)pathInfo;
 
 +(NSString*)hashnameForParts:(NSDictionary*)parts;
+
+-(void)establishLink;
 
 -(void)closeChannels;
 -(void)reset;

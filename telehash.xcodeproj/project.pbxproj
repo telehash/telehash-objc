@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		657BB0E61989320F00B977A1 /* THChannelDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 657BB0E41989320F00B977A1 /* THChannelDelegate.h */; };
+		657BB0E71989320F00B977A1 /* THChannelDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 657BB0E51989320F00B977A1 /* THChannelDelegate.m */; };
+		657BB0EE1989361E00B977A1 /* THMeshBuckets.h in Headers */ = {isa = PBXBuildFile; fileRef = 657BB0EC1989361E00B977A1 /* THMeshBuckets.h */; };
+		657BB0EF1989361E00B977A1 /* THMeshBuckets.m in Sources */ = {isa = PBXBuildFile; fileRef = 657BB0ED1989361E00B977A1 /* THMeshBuckets.m */; };
 		820BADF318D77EFA003D7CBA /* THPeerRelay.h in Headers */ = {isa = PBXBuildFile; fileRef = 820BADF118D77EFA003D7CBA /* THPeerRelay.h */; };
 		820BADF418D77EFA003D7CBA /* THPeerRelay.m in Sources */ = {isa = PBXBuildFile; fileRef = 820BADF218D77EFA003D7CBA /* THPeerRelay.m */; };
 		820BADF518D77EFA003D7CBA /* THPeerRelay.m in Sources */ = {isa = PBXBuildFile; fileRef = 820BADF218D77EFA003D7CBA /* THPeerRelay.m */; };
@@ -103,9 +107,6 @@
 		82B70ACE18404D4900E819F3 /* THPacketBuffer.h in Headers */ = {isa = PBXBuildFile; fileRef = 82B70ACC18404D4900E819F3 /* THPacketBuffer.h */; };
 		82B70ACF18404D4900E819F3 /* THPacketBuffer.m in Sources */ = {isa = PBXBuildFile; fileRef = 82B70ACD18404D4900E819F3 /* THPacketBuffer.m */; };
 		82B70AD018404D4900E819F3 /* THPacketBuffer.m in Sources */ = {isa = PBXBuildFile; fileRef = 82B70ACD18404D4900E819F3 /* THPacketBuffer.m */; };
-		82DB236B187C8343002C74C9 /* THMeshBuckets.h in Headers */ = {isa = PBXBuildFile; fileRef = 82DB2369187C8343002C74C9 /* THMeshBuckets.h */; };
-		82DB236C187C8343002C74C9 /* THMeshBuckets.m in Sources */ = {isa = PBXBuildFile; fileRef = 82DB236A187C8343002C74C9 /* THMeshBuckets.m */; };
-		82DB236D187C8343002C74C9 /* THMeshBuckets.m in Sources */ = {isa = PBXBuildFile; fileRef = 82DB236A187C8343002C74C9 /* THMeshBuckets.m */; };
 		82DB2375187C83E4002C74C9 /* THPendingJob.h in Headers */ = {isa = PBXBuildFile; fileRef = 82DB2373187C83E4002C74C9 /* THPendingJob.h */; };
 		82DB2376187C83E4002C74C9 /* THPendingJob.m in Sources */ = {isa = PBXBuildFile; fileRef = 82DB2374187C83E4002C74C9 /* THPendingJob.m */; };
 		82DB2377187C83E4002C74C9 /* THPendingJob.m in Sources */ = {isa = PBXBuildFile; fileRef = 82DB2374187C83E4002C74C9 /* THPendingJob.m */; };
@@ -202,6 +203,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		657BB0E41989320F00B977A1 /* THChannelDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THChannelDelegate.h; sourceTree = "<group>"; };
+		657BB0E51989320F00B977A1 /* THChannelDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THChannelDelegate.m; sourceTree = "<group>"; };
+		657BB0EC1989361E00B977A1 /* THMeshBuckets.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THMeshBuckets.h; sourceTree = "<group>"; };
+		657BB0ED1989361E00B977A1 /* THMeshBuckets.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THMeshBuckets.m; sourceTree = "<group>"; };
 		8207A0B818562A5E009EF845 /* thFieldTest.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = thFieldTest.xcodeproj; path = thFieldTest/thFieldTest.xcodeproj; sourceTree = "<group>"; };
 		820BADF118D77EFA003D7CBA /* THPeerRelay.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THPeerRelay.h; sourceTree = "<group>"; };
 		820BADF218D77EFA003D7CBA /* THPeerRelay.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THPeerRelay.m; sourceTree = "<group>"; };
@@ -283,8 +288,6 @@
 		82B70ACC18404D4900E819F3 /* THPacketBuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THPacketBuffer.h; sourceTree = "<group>"; };
 		82B70ACD18404D4900E819F3 /* THPacketBuffer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THPacketBuffer.m; sourceTree = "<group>"; };
 		82D221361871D3630015E7EA /* cryptopp.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = cryptopp.xcodeproj; path = cryptopp/cryptopp/cryptopp.xcodeproj; sourceTree = "<group>"; };
-		82DB2369187C8343002C74C9 /* THMeshBuckets.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THMeshBuckets.h; sourceTree = "<group>"; };
-		82DB236A187C8343002C74C9 /* THMeshBuckets.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THMeshBuckets.m; sourceTree = "<group>"; };
 		82DB2373187C83E4002C74C9 /* THPendingJob.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THPendingJob.h; sourceTree = "<group>"; };
 		82DB2374187C83E4002C74C9 /* THPendingJob.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THPendingJob.m; sourceTree = "<group>"; };
 		82EF372F1927AF3D001D3DB4 /* THRelay.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THRelay.h; sourceTree = "<group>"; };
@@ -503,8 +506,6 @@
 				82B1720F18009A6C00C29EAF /* GCDAsyncUdpSocket.m */,
 				82B1720417FDE90600C29EAF /* THSwitch.h */,
 				82B1720517FDE90600C29EAF /* THSwitch.m */,
-				82DB2369187C8343002C74C9 /* THMeshBuckets.h */,
-				82DB236A187C8343002C74C9 /* THMeshBuckets.m */,
 				82B172131800A51B00C29EAF /* THIdentity.h */,
 				82B172141800A51B00C29EAF /* THIdentity.m */,
 				820BADFA18D81476003D7CBA /* THPath.h */,
@@ -519,6 +520,8 @@
 				820BADF218D77EFA003D7CBA /* THPeerRelay.m */,
 				82B17209180095B100C29EAF /* THChannel.h */,
 				82B1720A180095B100C29EAF /* THChannel.m */,
+				657BB0E41989320F00B977A1 /* THChannelDelegate.h */,
+				657BB0E51989320F00B977A1 /* THChannelDelegate.m */,
 				827CB8A9190C887F001EB8F9 /* THUnreliableChannel.h */,
 				827CB8AA190C887F001EB8F9 /* THUnreliableChannel.m */,
 				827CB8B2190C8890001EB8F9 /* THReliableChannel.h */,
@@ -535,6 +538,8 @@
 				8249D6431906100C0009F03B /* THCipherSet3a.m */,
 				8249D647190627300009F03B /* THCipherSet2a.h */,
 				8249D648190627300009F03B /* THCipherSet2a.m */,
+				657BB0EC1989361E00B977A1 /* THMeshBuckets.h */,
+				657BB0ED1989361E00B977A1 /* THMeshBuckets.m */,
 				82A31BA1183457EB005077AD /* NSData+HexString.h */,
 				82A31BA2183457EB005077AD /* NSData+HexString.m */,
 				8231EBC31836BD3600BC41C1 /* NSString+HexString.h */,
@@ -570,10 +575,10 @@
 			files = (
 				8251ADBD18C05A26005CB9E2 /* THCipherSet.h in Headers */,
 				82DB2375187C83E4002C74C9 /* THPendingJob.h in Headers */,
+				657BB0E61989320F00B977A1 /* THChannelDelegate.h in Headers */,
 				820BADF318D77EFA003D7CBA /* THPeerRelay.h in Headers */,
 				8236E1A718F5EDB600169201 /* THTransport.h in Headers */,
 				82B70ACE18404D4900E819F3 /* THPacketBuffer.h in Headers */,
-				82DB236B187C8343002C74C9 /* THMeshBuckets.h in Headers */,
 				822C6D2F17FCCD0C008C04BA /* ECDH.h in Headers */,
 				8218D1C217FA6F410053AFAC /* THRSA.h in Headers */,
 				822C6D3417FCD3F6008C04BA /* CTRAES256.h in Headers */,
@@ -595,6 +600,7 @@
 				82A31BA3183457EB005077AD /* NSData+HexString.h in Headers */,
 				82B1720617FDE90600C29EAF /* THSwitch.h in Headers */,
 				820BADFC18D81476003D7CBA /* THPath.h in Headers */,
+				657BB0EE1989361E00B977A1 /* THMeshBuckets.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -796,17 +802,18 @@
 			files = (
 				8218D1C317FA6F410053AFAC /* RSA.mm in Sources */,
 				820BADF418D77EFA003D7CBA /* THPeerRelay.m in Sources */,
+				657BB0E71989320F00B977A1 /* THChannelDelegate.m in Sources */,
 				822C6D4517FCDB31008C04BA /* THPacket.m in Sources */,
 				822C6D3A17FCD754008C04BA /* SHA256.mm in Sources */,
 				8251ADBE18C05A26005CB9E2 /* THCipherSet.m in Sources */,
 				8231EC1C1836F37F00BC41C1 /* THLine.m in Sources */,
-				82DB236C187C8343002C74C9 /* THMeshBuckets.m in Sources */,
 				827CB8AC190C8880001EB8F9 /* THUnreliableChannel.m in Sources */,
 				82B1720717FDE90600C29EAF /* THSwitch.m in Sources */,
 				8249D64A190627300009F03B /* THCipherSet2a.m in Sources */,
 				822C6D3517FCD3F6008C04BA /* CTRAES256.mm in Sources */,
 				8249D6451906100C0009F03B /* THCipherSet3a.m in Sources */,
 				8236E1A818F5EDB600169201 /* THTransport.m in Sources */,
+				657BB0EF1989361E00B977A1 /* THMeshBuckets.m in Sources */,
 				82EF37321927AF3D001D3DB4 /* THRelay.m in Sources */,
 				82DB2376187C83E4002C74C9 /* THPendingJob.m in Sources */,
 				8231EBC61836BD3600BC41C1 /* NSString+HexString.m in Sources */,
@@ -843,7 +850,6 @@
 				822C6D3B17FCD754008C04BA /* SHA256.mm in Sources */,
 				8251ADBF18C05A26005CB9E2 /* THCipherSet.m in Sources */,
 				8231EC1D1836F37F00BC41C1 /* THLine.m in Sources */,
-				82DB236D187C8343002C74C9 /* THMeshBuckets.m in Sources */,
 				827CB8AD190C8880001EB8F9 /* THUnreliableChannel.m in Sources */,
 				82B1720817FDE90600C29EAF /* THSwitch.m in Sources */,
 				8249D64B190627300009F03B /* THCipherSet2a.m in Sources */,

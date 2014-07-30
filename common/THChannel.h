@@ -17,25 +17,10 @@
 @class THPacketBuffer;
 
 typedef enum {
-    THChannelOpening,
-    THChannelOpen,
-    THChannelPaused,
-    THChannelEnded,
-    THChannelErrored
-} THChannelState;
-
-typedef enum {
 	THChannelInbound,
 	THChannelOutbound
 } THChannelDirection;
 
-@protocol THChannelDelegate <NSObject>
-#pragma mark State Handling
--(void)channel:(THChannel*)channel didChangeStateTo:(THChannelState)channelState;
-#pragma mark Error Handling
--(void)channel:(THChannel*)channel didFailWithError:(NSError*)error;
--(BOOL)channel:(THChannel*)channel handlePacket:(THPacket*)packet;
-@end
 
 @interface THChannel : NSObject
 

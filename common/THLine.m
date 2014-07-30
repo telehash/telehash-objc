@@ -18,7 +18,6 @@
 #import "CTRAES256.h"
 #import "NSString+HexString.h"
 #import "THChannel.h"
-#import "THMeshBuckets.h"
 #import "THCipherSet.h"
 #import "THPeerRelay.h"
 #import "THPath.h"
@@ -144,20 +143,8 @@
         THPacket* response = [THPacket new];
         [response.json setObject:@(YES) forKey:@"end"];
         [response.json setObject:channelId forKey:@"c"];
-        THSwitch* defaultSwitch = [THSwitch defaultSwitch];
 		
-		THIdentity* identity = [THIdentity identityFromHashname:[innerPacket.json objectForKey:@"seek"]];
-        NSArray* seeIdentities = [defaultSwitch.meshBuckets closeInBucket:identity];
 		NSMutableArray* sees = [NSMutableArray array];
-		
-		if (seeIdentities != nil) {
-			for (THIdentity* seeIdentity in seeIdentities) {
-				NSString* seekString = [seeIdentity seekStringForIdentity:identity];
-				if (seekString) {
-					[sees addObject:seekString];
-				}
-			}
-		}
 		
         [response.json setObject:sees forKey:@"see"];
         
@@ -165,12 +152,10 @@
     } else if ([channelType isEqualToString:@"link"] && !channel) {
         THSwitch* defaultSwitch = [THSwitch defaultSwitch];
         
-        [defaultSwitch.meshBuckets addIdentity:self.toIdentity];
-        
         THUnreliableChannel* linkChannel = [[THUnreliableChannel alloc] initToIdentity:self.toIdentity];
         linkChannel.channelId = [innerPacket.json objectForKey:@"c"];
         linkChannel.type = @"link";
-        linkChannel.delegate = defaultSwitch.meshBuckets;
+        linkChannel.delegate = self.toIdentity;
         linkChannel.lastInActivity = time(NULL);
 		linkChannel.direction = THChannelInbound;
 		
@@ -179,7 +164,7 @@
             [self.toIdentity.channels removeObjectForKey:curChannel.channelId];
         }
         [defaultSwitch openChannel:linkChannel firstPacket:nil];
-        [defaultSwitch.meshBuckets channel:linkChannel handlePacket:innerPacket];
+        [self.toIdentity channel:linkChannel handlePacket:innerPacket];
     } else if ([channelType isEqualToString:@"peer"]) {
         // TODO:  Check this logic in association with the move to channels on identity
 		CLCLogInfo(@"peer request to %@", [innerPacket.json objectForKey:@"peer"]);
