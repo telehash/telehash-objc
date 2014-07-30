@@ -20,6 +20,8 @@
 
 @property THIdentity* toIdentity;
 @property THCipherSetLineInfo* cipherSetInfo;
+@property THPacket* cachedOpen;
+
 @property NSString* outLineId;
 @property NSString* inLineId;
 @property BOOL isOpen;

@@ -26,7 +26,8 @@
 
 @property (readonly) NSString* hashname;
 @property (readonly) BOOL hasLink;
-@property (readonly) BOOL isBridged;
+@property BOOL isSeed;
+@property BOOL isBridged;
 @property NSData* address;
 @property NSMutableArray* vias;
 @property NSMutableDictionary* channels;
@@ -45,6 +46,7 @@
 -(void)checkPriorityPath:(THPath*)path;
 
 -(void)addVia:(THIdentity*)viaIdentity;
+-(void)attachSeedVias;
 // TODO:  Method to create a channel for a type
 
 -(NSInteger)distanceFrom:(THIdentity*)identity;

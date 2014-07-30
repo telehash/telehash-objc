@@ -135,8 +135,7 @@ static uint8_t nonce3a[crypto_secretbox_NONCEBYTES] = {0, 0, 0, 0, 0, 0, 0, 0, 0
         CLCLogWarning(@"Attempted to reopen the line for %@ line id: %@", senderIdentity.hashname, senderIdentity.currentLine.outLineId);
         return nil;
     } else if (senderIdentity.currentLine.createdAt > 0 && senderIdentity.currentLine.createdAt < [[innerPacket.json objectForKey:@"at"] unsignedIntegerValue]) {
-        [senderIdentity.channels removeAllObjects];
-        senderIdentity.currentLine = nil;
+        [senderIdentity closeChannels];
     }
     
     THLine* newLine = senderIdentity.currentLine;

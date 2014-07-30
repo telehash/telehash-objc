@@ -105,6 +105,7 @@
         NSDictionary* keys = [entry objectForKey:@"keys"];
         // TODO:  XXX make this more generic
         THIdentity* seedIdentity = [THIdentity new];
+		seedIdentity.isSeed = YES;
         // 2a
         NSData* keyData = [[NSData alloc] initWithBase64EncodedString:[keys objectForKey:@"2a"] options:0];
         THCipherSet* cs = [[THCipherSet2a alloc] initWithPublicKey:keyData privateKey:nil];
@@ -212,9 +213,20 @@
 		// TODO:  XXX Check this timeout length
 		dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
 			if (!toIdentity.currentLine.inLineId) {
-				CLCLogWarning(@"Unable to finalize the line after 2s");
+				CLCLogWarning(@"Unable to finalize the line to %@ after 2s", toIdentity.hashname);
 				
 				toIdentity.currentLine = nil;
+				
+				// remove any pending channel jobs
+				[self.pendingJobs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+					THPendingJob* job = (THPendingJob*)obj;
+					if (job.type == PendingChannel) {
+						THChannel* channel = (THChannel*)job.pending;
+						if ([channel.toIdentity.hashname isEqualToString:toIdentity.hashname]) {
+							[self.pendingJobs removeObjectAtIndex:idx];
+						}
+					}
+				}];
 				
 				[self.pendingJobs removeObject:pendingJob];
 				if (lineOpenCompletion) lineOpenCompletion(nil);
@@ -286,11 +298,16 @@
 
 -(void)closeLine:(THLine *)line
 {
-    if (line.toIdentity.currentLine == line) {
+	if (line.cachedOpen) {
+		line.cachedOpen = nil;
+	}
+	
+	[self.meshBuckets removeLine:line];
+    if (line.inLineId) [self.openLines removeObjectForKey:line.inLineId];
+	
+	if (line.toIdentity.currentLine == line) {
         line.toIdentity.currentLine = nil;
     }
-    if (line.inLineId) [self.openLines removeObjectForKey:line.inLineId];
-    [self.meshBuckets removeLine:line];
 }
 
 -(BOOL)findPendingSeek:(THPacket *)packet;

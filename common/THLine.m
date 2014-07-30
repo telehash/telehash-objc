@@ -39,7 +39,6 @@
 {
     NSUInteger _nextChannelId;
     NSMutableArray* channelHandlers;
-	THPacket* cachedOpen;
 }
 
 -(id)init;
@@ -59,17 +58,17 @@
 	
     THSwitch* defaultSwitch = [THSwitch defaultSwitch];
 	
-	if (!cachedOpen) {
-		cachedOpen = [defaultSwitch generateOpen:self];
+	if (!self.cachedOpen) {
+		self.cachedOpen = [defaultSwitch generateOpen:self];
 	}
 	
     for (THPath* path in self.toIdentity.availablePaths) {
         CLCLogInfo(@"Sending open on %@ to %@", path.information, self.toIdentity.hashname);
-        [path sendPacket:cachedOpen];
+        [path sendPacket:self.cachedOpen];
     }
 	
     if (self.toIdentity.relay) {
-        [self.toIdentity.relay sendPacket:cachedOpen];
+        [self.toIdentity.relay sendPacket:self.cachedOpen];
     }
 }
 
@@ -241,27 +240,20 @@
         // If we already have a line to them, we assume it's dead
         if (peerIdentity.currentLine) {
             // TODO:  This should really try and reuse the line first, then fall back to full redo
-            
-			[peerIdentity reset];
-			/*
+            [thSwitch closeLine:peerIdentity.currentLine];
+			
 			[peerIdentity closeChannels];
             [peerIdentity.availablePaths removeAllObjects];
 			[peerIdentity.vias removeAllObjects];
 			
             peerIdentity.activePath = nil;
 			
-			// lets REALLY ensure relay is destroyed
 			if (peerIdentity.relay) {
 				if (peerIdentity.relay.peerChannel) {
 					[peerIdentity.relay.peerChannel close];
 				}
 				peerIdentity.relay = nil;
 			}
-			
-            [thSwitch closeLine:peerIdentity.currentLine];
-            
-            peerIdentity.currentLine = nil;
-			 */
         }
         
         // Add the available paths
@@ -275,6 +267,9 @@
         
         // Add a bridge route
         if ([innerPacket.json objectForKey:@"bridge"]) {
+			if (!peerIdentity.activePath) {
+				peerIdentity.isBridged = YES;
+			}
             [peerIdentity addPath:packet.returnPath];
         }
         

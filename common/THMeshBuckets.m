@@ -94,8 +94,8 @@
 					[identity.currentLine sendOpen];
 				}
 			} else {
-				CLCLogDebug(@"link channel missing for %@ within pingLines, attempting a re-open", identity.hashname);
-				[identity.currentLine sendOpen];
+				CLCLogDebug(@"link channel missing for %@ within pingLines, resetting identity", identity.hashname);
+				[identity reset];
 			}
         }];
     }];
@@ -238,7 +238,8 @@
     seekJob.seekingIdentity = toIdentity;
     seekJob.completion = completion;
     
-	NSPredicate* activeFilter = [NSPredicate predicateWithFormat:@"NOT (SELF.hashname MATCHES %@) AND SELF.hasLink == YES", toIdentity.hashname];
+	// NOTE shortterm hack to only query against seeds
+	NSPredicate* activeFilter = [NSPredicate predicateWithFormat:@"NOT (SELF.hashname MATCHES %@) AND SELF.isBridged == NO AND SELF.hasLink == YES", toIdentity.hashname];
 	NSArray* nearby = [[self nearby:toIdentity] filteredArrayUsingPredicate:activeFilter];
 	
 	CLCLogDebug(@"seek for %@ has %d nearby peers", toIdentity.hashname, nearby.count);
@@ -270,7 +271,7 @@
             [self.localSwitch.potentialBridges removeObjectAtIndex:0];
         }
     }
-    
+	
     THIPv4Transport* transport = [self.localSwitch.transports objectForKey:@"ipv4"];
     for (NSString* seeLine in [packet.json objectForKey:@"see"]) {
         NSArray* seeParts = [seeLine componentsSeparatedByString:@","];
@@ -304,6 +305,8 @@
 		[self.localSwitch openLine:seeIdentity];
     }
     
+	// lets not participate in the DHT anymore
+	
     NSUInteger now = time(NULL);
     if (channel.lastOutActivity + 10 < now) {
         THPacket* pingPacket = [THPacket new];

@@ -23,6 +23,7 @@
 @property (assign, nonatomic) id<THTransportDelegate> delegate;
 @property (assign, atomic) BOOL available;
 @property NSUInteger priority;
+@property BOOL isBridge;
 -(void)start;
 -(THPath*)returnPathTo:(NSData*)address;
 -(THPath*)pathTo:(NSDictionary*)pathInformation;
@@ -32,6 +33,7 @@
 typedef BOOL(^THInterfaceApproverBlock)(NSString* interface);
 
 @interface THIPv4Transport : THTransport<GCDAsyncUdpSocketDelegate>
+
 -(void)start;
 -(void)startOnPort:(unsigned short)port;
 -(NSArray*)gatherAvailableInterfacesApprovedBy:(THInterfaceApproverBlock)approver;

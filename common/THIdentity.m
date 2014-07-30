@@ -48,6 +48,7 @@ static NSMutableDictionary* identityCache;
         identity.cipherParts = @{cs.identifier:cs};
         identity.parts = parts;
     }
+	
     return identity;
 }
 
@@ -58,6 +59,7 @@ static NSMutableDictionary* identityCache;
         identity = [[THIdentity alloc] initWithHashname:hashname];
         if (identity) [identityCache setObject:identity forKey:hashname];
     }
+	
     return identity;
 }
 
@@ -129,14 +131,6 @@ static NSMutableDictionary* identityCache;
 	THChannel* linkChannel = [self channelForType:@"link"];
 	if (linkChannel) return YES;
 	
-	return NO;
-}
-
--(BOOL)isBridged
-{
-	if (!self.activePath) {
-		return YES;
-	}
 	return NO;
 }
 
@@ -317,6 +311,18 @@ int nlz(unsigned long x) {
 	[self.vias addObject:viaIdentity];
 }
 
+-(void)attachSeedVias
+{
+	if (!self.isSeed) {
+		NSPredicate* seedFilter = [NSPredicate predicateWithFormat:@"SELF.isSeed == YES"];
+		NSArray* seeds = [[identityCache allValues] filteredArrayUsingPredicate:seedFilter];
+		for (THIdentity* seed in seeds) {
+			[self addVia:seed];
+		}
+	}
+	
+}
+
 +(NSString*)hashnameForParts:(NSDictionary*)parts
 {
     NSData* shaBuffer = [NSData data];
@@ -339,7 +345,9 @@ int nlz(unsigned long x) {
 {
 	[self.channels enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
 		THChannel* curChannel = (THChannel*)obj;
-		curChannel.state = THChannelEnded;
+		if (curChannel.state != THChannelEnded) {
+			curChannel.state = THChannelEnded;
+		}
 	}];
 	
 	[self.channels removeAllObjects];
@@ -353,6 +361,9 @@ int nlz(unsigned long x) {
 	
 	[self.availablePaths removeAllObjects];
 	[self.vias removeAllObjects];
+	
+	self.cipherParts = [NSDictionary dictionary];
+	self.parts = [NSDictionary dictionary];
 	
 	self.activePath = nil;
 	

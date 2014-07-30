@@ -160,8 +160,7 @@ static unsigned char eccHeader[] = {0x04};
         */
         return nil;
     } else if (senderIdentity.currentLine.createdAt > 0 && senderIdentity.currentLine.createdAt < [[innerPacket.json objectForKey:@"at"] unsignedIntegerValue]) {
-        [senderIdentity.channels removeAllObjects];
-        senderIdentity.currentLine = nil;
+		[senderIdentity closeChannels];
     }
     
     THLine* newLine = senderIdentity.currentLine;

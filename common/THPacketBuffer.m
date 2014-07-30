@@ -100,7 +100,7 @@
 	CLCLogDebug(@"clearThrough: %d", lastAck);
 	
     THPacketNode* curNode = firstNode;
-	while (curNode && curNode.seq < lastAck) { // removing = for test
+	while (curNode && curNode.seq <= lastAck) {
         firstNode = curNode.next;
         THPacketNode* nextNode = curNode.next;
         curNode.next = nil;
@@ -109,6 +109,7 @@
     }
     if (firstNode == nil) tailNode = nil;
 }
+
 -(NSUInteger)frontSeq;
 {
     return firstNode.seq;

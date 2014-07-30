@@ -97,8 +97,13 @@
 	
     relayedPacket.returnPath = nil;
 	
+	
     if ([packet.json objectForKey:@"bridge"] || [relayedPacket.json objectForKey:@"json"]) {
         NSLog(@"Start a bridge on %@", packet.returnPath.information);
+		if (!self.toIdentity.activePath) {
+			self.toIdentity.isBridged = YES;
+		}
+		
         [self.toIdentity addPath:packet.returnPath];
     }
 	

@@ -162,21 +162,14 @@
 -(void)delegateHandlePackets;
 {
 	while (inPacketBuffer.length > 0) {
+		missing = [inPacketBuffer missingSeqFrom:self.nextExpectedSequence];
+
 		if (inPacketBuffer.frontSeq != self.nextExpectedSequence) {
 			CLCLogWarning(@"sequence out of order %d expecting %d", inPacketBuffer.frontSeq, self.nextExpectedSequence);
-			
-			// Immediately send a missing packet for any packets that are new missing
-			NSArray* curMissing = [inPacketBuffer missingSeqFrom:self.nextExpectedSequence];
-			NSMutableSet* newMissing = [NSMutableSet setWithCapacity:self.missing.count];
-			[newMissing addObjectsFromArray:curMissing];
-			[newMissing minusSet:[NSSet setWithArray:self.missing]];
-			
-			missing = curMissing;
-			
-			if (newMissing.count > 0) {
+
+			if (missing.count > 0) {
 				[self sendPacket:[THPacket new]];
 			}
-
 			
 			return;
 		}
