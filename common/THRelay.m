@@ -49,6 +49,7 @@
 	
 	NSArray* paths = [defaultSwitch.identity pathInformationTo:self.toIdentity allowLocal:NO];
 	if (paths) {
+		CLCLogDebug(@"sending paths %@ to %@ via relay", paths, self.toIdentity.hashname);
 		[peerPacket.json setObject:paths forKey:@"paths"];
 	}
 	
@@ -106,7 +107,7 @@
     relayedPacket.returnPath = nil;
 	
     if ([packet.json objectForKey:@"bridge"] || [relayedPacket.json objectForKey:@"json"]) {
-		NSLog(@"adding bridge on %@", packet.returnPath.information);
+		NSLog(@"adding bridge to %@", self.toIdentity.hashname);
 		packet.returnPath.isBridge = YES;
 		[self.toIdentity addPath:packet.returnPath];
 		

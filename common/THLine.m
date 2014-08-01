@@ -113,16 +113,6 @@
     }];
 
     self.isOpen = YES;
-	
-	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-		CLCLogDebug(@"initial path negotiation for %@", self.toIdentity.hashname);
-		[self negotiatePath];
-		
-		dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-			CLCLogDebug(@"secondary path negotiation for %@", self.toIdentity.hashname);
-			[self negotiatePath];
-		});
-	});
 }
 
 -(void)handlePacket:(THPacket *)packet;
@@ -293,7 +283,7 @@
         
         [thSwitch openLine:peerIdentity];
     } else if ([channelType isEqualToString:@"path"] && !channel) {
-		CLCLogInfo(@"line paths recieved on %@", self.toIdentity.hashname);
+		CLCLogInfo(@"line paths recieved for %@", self.toIdentity.hashname);
         [self handlePath:innerPacket];
     } else {
         NSNumber* seq = [innerPacket.json objectForKey:@"seq"];
@@ -479,7 +469,6 @@
 			[self sendPacket:pathPacket path:path];
 		}
     }
-	
 }
 
 

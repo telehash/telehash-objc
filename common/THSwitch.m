@@ -383,7 +383,15 @@
         }
     }];
 	
-
+	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(500 * NSEC_PER_MSEC)), dispatch_get_main_queue(), ^{
+		CLCLogDebug(@"initial path negotiation for %@", newLine.toIdentity.hashname);
+		[newLine negotiatePath];
+		
+		dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+			CLCLogDebug(@"secondary path negotiation for %@", newLine.toIdentity.hashname);
+			[newLine negotiatePath];
+		});
+	});
 }
 
 -(void)updateStatus:(THSwitchStatus)status

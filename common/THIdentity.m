@@ -246,7 +246,7 @@ int nlz(unsigned long x) {
 -(void)addPath:(THPath *)path
 {
 	if (!path) return;
-	
+		
     // Make sure we don't already have this path
     THPath* existingPath = [self pathMatching:path.information];
     if (existingPath) return;
@@ -262,7 +262,7 @@ int nlz(unsigned long x) {
     
 	CLCLogInfo(@"adding path %@ to %@", path.information, self.hashname);
 	
-    [self.availablePaths addObject:path];
+    [self.availablePaths addObject:path];	
 }
 
 -(NSArray*)pathInformationTo:(THIdentity *)toIdentity allowLocal:(BOOL)allowLocal
