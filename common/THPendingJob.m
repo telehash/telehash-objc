@@ -20,7 +20,6 @@
     if (itemClass == [THIdentity class]) pendingJob.type = PendingIdentity;
     if (itemClass == [THLine class]) pendingJob.type = PendingLine;
     if ([itemClass superclass] == [THChannel class]) pendingJob.type = PendingChannel;
-    if (itemClass == [THPacket class]) pendingJob.type = PendingSeek;
     pendingJob.pending = pendingItem;
     pendingJob.handler = onCompletion;
     

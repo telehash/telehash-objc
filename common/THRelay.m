@@ -46,6 +46,7 @@
 	[peerPacket.json setObject:self.toIdentity.hashname forKey:@"peer"];
 	[peerPacket.json setObject:@"peer" forKey:@"type"];
 	[peerPacket.json setObject:peerChannel.channelId forKey:@"c"];
+	
 	NSArray* paths = [defaultSwitch.identity pathInformationTo:self.toIdentity allowLocal:NO];
 	if (paths) {
 		[peerPacket.json setObject:paths forKey:@"paths"];
@@ -65,6 +66,13 @@
 	
 	// We blind send this and hope for the best!
 	[viaIdentity sendPacket:peerPacket];
+	
+	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+		if (self.peerChannel.lastInActivity == 0) {
+			CLCLogNotice(@"no response on relay peerChannel to %@", self.toIdentity.hashname);
+			[self.peerChannel close];
+		}
+	});
 }
 
 -(void)sendPacket:(THPacket *)packet
@@ -97,14 +105,15 @@
 	
     relayedPacket.returnPath = nil;
 	
-	
     if ([packet.json objectForKey:@"bridge"] || [relayedPacket.json objectForKey:@"json"]) {
-        NSLog(@"Start a bridge on %@", packet.returnPath.information);
-		if (!self.toIdentity.activePath) {
-			self.toIdentity.isBridged = YES;
-		}
+		NSLog(@"adding bridge on %@", packet.returnPath.information);
+		packet.returnPath.isBridge = YES;
+		[self.toIdentity addPath:packet.returnPath];
 		
-        [self.toIdentity addPath:packet.returnPath];
+		if (!self.toIdentity.activePath) {
+			CLCLogDebug(@"assigning bridge path to %@", self.toIdentity.hashname);
+			self.toIdentity.activePath = packet.returnPath;
+		}
     }
 	
 	// overwrite our peerChannel and relayIdentity with the one that actually responded

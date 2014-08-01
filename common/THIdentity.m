@@ -25,7 +25,6 @@ static NSMutableDictionary* identityCache;
 
 @interface THIdentity() {
     NSString* _hashnameCache;
-	NSTimer* pingTimer;
 }
 @end
 
@@ -102,9 +101,7 @@ static NSMutableDictionary* identityCache;
     self.isLocal = NO;
     self.cipherParts = [NSMutableDictionary dictionary];
     self.availablePaths = [NSMutableArray array];
-	self.vias = [NSMutableArray array];
-    self.channels = [NSMutableDictionary dictionary];
-	pingTimer = [NSTimer scheduledTimerWithTimeInterval:25 target:self selector:@selector(pingLink) userInfo:nil repeats:YES];
+    self.channels = [NSMutableDictionary dictionary];	
 }
 
 -(void)setIP:(NSString*)ip port:(NSUInteger)port;
@@ -248,6 +245,8 @@ int nlz(unsigned long x) {
 
 -(void)addPath:(THPath *)path
 {
+	if (!path) return;
+	
     // Make sure we don't already have this path
     THPath* existingPath = [self pathMatching:path.information];
     if (existingPath) return;
@@ -261,6 +260,8 @@ int nlz(unsigned long x) {
         }
     }
     
+	CLCLogInfo(@"adding path %@ to %@", path.information, self.hashname);
+	
     [self.availablePaths addObject:path];
 }
 
@@ -292,37 +293,26 @@ int nlz(unsigned long x) {
 
 -(void)checkPriorityPath:(THPath *)path
 {
-    path.priority = 0;
+    //path.priority = 0;
     
     // Local paths are preferred
-    if (self.isLocal && path.isLocal) ++path.priority;
+    if (self.isLocal && path.isLocal) {
+		CLCLogInfo(@"path for %@ to %@ is local", self.hashname, path.information);
+		++path.priority;
+	}
+	
     // IP Paths give us better bandwidth usually, prefer them
     if ([path class] == [THIPV4Path class]) ++path.priority;
     
-    // If the active path is preferred, go ahead and switch
-    if (path.priority > self.activePath.priority) {
-        CLCLogInfo(@"Setting active path for %@ to %@", self.hashname, path.information);
-        self.activePath = path;
-    }
-}
-
--(void)addVia:(THIdentity*)viaIdentity
-{
-	// quick and dirty to ensure no duups
-	[self.vias removeObject:viaIdentity];
-	[self.vias addObject:viaIdentity];
-}
-
--(void)attachSeedVias
-{
-	if (!self.isSeed) {
-		NSPredicate* seedFilter = [NSPredicate predicateWithFormat:@"SELF.isSeed == YES"];
-		NSArray* seeds = [[identityCache allValues] filteredArrayUsingPredicate:seedFilter];
-		for (THIdentity* seed in seeds) {
-			[self addVia:seed];
-		}
+	if (path.isBridge) {
+		path.priority = 0;
 	}
 	
+    // If the active path is preferred, go ahead and switch
+    if (path.priority > self.activePath.priority) {
+        CLCLogInfo(@"setting active path for %@ to %@ priority %d", self.hashname, path.information, path.priority);
+        self.activePath = path;
+    }
 }
 
 +(NSString*)hashnameForParts:(NSDictionary*)parts
@@ -343,63 +333,6 @@ int nlz(unsigned long x) {
     return [shaBuffer hexString];
 }
 
--(void)establishLink
-{
-	THPacket* linkPacket = [THPacket new];
-    [linkPacket.json setObject:@YES forKey:@"seed"]; // TODO:  Allow for opting out of seeding?
-    
-	// HAX for now
-    NSMutableArray* sees = [NSMutableArray array];
-    [linkPacket.json setObject:sees forKey:@"see"];
-    
-	THChannel* linkChannel = [self channelForType:@"link"];
-    if (!linkChannel) {
-        linkChannel = [[THUnreliableChannel alloc] initToIdentity:self];
-        [linkPacket.json setObject:@"link" forKey:@"type"];
-		
-        [[THSwitch defaultSwitch] openChannel:linkChannel firstPacket:linkPacket];
-    } else {
-        [linkChannel sendPacket:linkPacket];
-    }
-	
-    linkChannel.delegate = self;
-}
-
--(void)pingLink
-{
-    time_t checkTime = time(NULL);
-	
-    THChannel* linkChannel = [self channelForType:@"link"];
-	if (linkChannel) {
-		// if our lastInActivity > 50s and the channel is >5s old
-		if ((checkTime >= linkChannel.lastInActivity + 50) && (checkTime > linkChannel.createdAt + 25)) {
-			NSUInteger lastInDuration = checkTime - linkChannel.lastInActivity;
-			CLCLogWarning(@"line inactive for %@ (in duration %d), removing link channel", self.hashname, lastInDuration);
-
-			[self.channels removeObjectForKey:linkChannel.channelId];
-			
-			// TODO: this should be moved to line activity check
-			[self reset];
-			return;
-		}
-		
-		if (self.activePath || self.relay.peerChannel) {
-			THPacket* pingPacket = [THPacket new];
-			[pingPacket.json setObject:@YES forKey:@"seed"];
-			
-			[linkChannel sendPacket:pingPacket];
-		} else {
-			CLCLogWarning(@"no path or relay available for pingLines to %@, attempting a re-open", self.hashname);
-			[self.currentLine sendOpen];
-		}
-	} else {
-		CLCLogDebug(@"link channel missing for %@ within pingLines, resetting identity", self.hashname);
-		[self reset];
-	}
-
-}
-
-
 
 -(void)closeChannels
 {
@@ -416,11 +349,10 @@ int nlz(unsigned long x) {
 -(void)reset
 {
 	CLCLogWarning(@"resetting identity with hashname %@", self.hashname);
-
+		
 	[self closeChannels];
 	
 	[self.availablePaths removeAllObjects];
-	[self.vias removeAllObjects];
 	
 	self.cipherParts = [NSDictionary dictionary];
 	self.parts = [NSDictionary dictionary];
@@ -444,40 +376,5 @@ int nlz(unsigned long x) {
 
 
 
-
-
-// Channel delegate methods
-
--(BOOL)channel:(THChannel *)channel handlePacket:(THPacket *)packet
-{
-    THSwitch* defaultSwitch = [THSwitch defaultSwitch];
-    if (defaultSwitch.status != THSwitchOnline) {
-        [defaultSwitch updateStatus:THSwitchOnline];
-    }
-    
-    NSArray* bridges = [packet.json objectForKey:@"bridge"];
-    if (bridges) {
-        channel.toIdentity.availableBridges = bridges;
-        [defaultSwitch.potentialBridges addObject:bridges];
-        // Let's just maintain 5 potent
-        if (defaultSwitch.potentialBridges.count > 5) {
-            [defaultSwitch.potentialBridges removeObjectAtIndex:0];
-        }
-    }
-	   
-    return YES;
-}
-
--(void)channel:(THChannel *)channel didChangeStateTo:(THChannelState)channelState
-{
-    if (channelState == THChannelEnded || channelState == THChannelErrored) {
-		CLCLogWarning(@"link channel ended for hashname %@", self.hashname);
-    }
-}
-
--(void)channel:(THChannel *)channel didFailWithError:(NSError *)error
-{
-	CLCLogWarning(@"link channel errored for hashname %@ with error: %@", self.hashname, [error description]);
-}
 
 @end

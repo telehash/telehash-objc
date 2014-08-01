@@ -20,7 +20,6 @@
 #import "THPath.h"
 #import "THCipherSet2a.h"
 #import "THCipherSet3a.h"
-#import "THMeshBuckets.h"
 #import "THUnreliableChannel.h"
 #import "CLCLog.h"
 #import "THRelay.h"
@@ -56,7 +55,6 @@
 -(id)init;
 {
     if (self) {
-		self.meshBuckets = [THMeshBuckets new];
         self.openLines = [NSMutableDictionary dictionary];
         self.pendingJobs = [NSMutableArray array];
         self.transports = [NSMutableDictionary dictionary];
@@ -245,55 +243,41 @@
         
         [toIdentity.currentLine sendOpen];
 		
-		//return;
+		dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+			THChannel* linkChannel = [toIdentity channelForType:@"link"];
+			if (!linkChannel) {
+				CLCLogError(@"link channel not established 3 seconds after sendOpen, resetting %@", toIdentity.hashname);
+				[toIdentity reset];
+			}
+		});
+		
+		return;
     };
     
-    // Let's do a peer request
-    if (toIdentity.vias.count > 0 && !toIdentity.relay) {
-		CLCLogDebug(@"identity %@ has via set", toIdentity.hashname);
-		
-		// FW Helper
-		for (THPath* punchPath in toIdentity.availablePaths) {
-            if ([punchPath class] == [THIPV4Path class]) {
-                THIPV4Path* ipPath = (THIPV4Path*)punchPath;
-                [punchPath.transport send:[NSData data] to:ipPath.address];
-            }
-        }
-		
-		THRelay* relay = [THRelay new];
-		toIdentity.relay = relay;
-		toIdentity.relay.toIdentity = toIdentity;
 
-		for (THIdentity* viaIdentity in toIdentity.vias) {
-			// if the via has an active line that ISNT a bridge, lets try them
-			if (viaIdentity.currentLine && viaIdentity.activePath) {
-				[toIdentity.relay attachVia:viaIdentity];
-			}
+	// FW Helper
+	for (THPath* punchPath in toIdentity.availablePaths) {
+		if ([punchPath class] == [THIPV4Path class]) {
+			THIPV4Path* ipPath = (THIPV4Path*)punchPath;
+			[punchPath.transport send:[NSData data] to:ipPath.address];
 		}
-		
-		// we didnt have any valid via's, unset our relay again
-		if (!toIdentity.relay.peerChannel) {
-			toIdentity.relay = nil;
-		}
-		
-		// after attempting to use the, drop them
-		[toIdentity.vias removeAllObjects];
-		
-        return;
-    }
-
+	}
+	
+	// setup the relay
+	THRelay* relay = [THRelay new];
+	toIdentity.relay = relay;
+	toIdentity.relay.toIdentity = toIdentity;
 	
 	NSPredicate* seedFilter = [NSPredicate predicateWithFormat:@"SELF.toIdentity.isSeed == YES"];
 	NSArray* seedLines = [[self.openLines allValues] filteredArrayUsingPredicate:seedFilter];
 	for (THLine* seedLine in seedLines) {
-		[self.meshBuckets seek:toIdentity onSeed:seedLine.toIdentity completion:^(BOOL found) {
-			if (found) {
-				CLCLogDebug(@"identity %@ found in meshbuckets", toIdentity.hashname);
-				[self openLine:toIdentity completion:lineOpenCompletion];
-			}
-		}];
+		[toIdentity.relay attachVia:seedLine.toIdentity];
 	}
 	
+	// we didnt have any valid via's, unset our relay again
+	if (!toIdentity.relay.peerChannel) {
+		toIdentity.relay = nil;
+	}
 }
 
 -(void)closeLine:(THLine *)line
@@ -309,33 +293,15 @@
     }
 }
 
--(BOOL)findPendingSeek:(THPacket *)packet;
-{
-    if ([self.pendingJobs count] == 0) return NO;
-    __block BOOL handled = NO;
-    // We only handle results, seek requests are in the line
-    [self.pendingJobs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        THPendingJob* pendingJob = (THPendingJob*)obj;
-        if (pendingJob.type != PendingSeek) return;
-        THPacket* pendingPacket = (THPacket*)pendingJob.pending;
-        if ([[pendingPacket.json objectForKey:@"c"] isEqualToString:[packet.json objectForKey:@"c"]]) {
-            pendingJob.handler(packet);
-            *stop = YES;
-            handled = YES;
-            [self.pendingJobs removeObjectAtIndex:idx];
-        }
-    }];
-    return handled;
-}
-
 -(void)processOpen:(THPacket*)incomingPacket
 {
-    CLCLogInfo(@"Processing an open from %@ with type %@", incomingPacket.returnPath, [incomingPacket.body subdataWithRange:NSMakeRange(0, 1)]);
+    CLCLogInfo(@"Processing an open from %@ with type %@", incomingPacket.returnPath.information, [incomingPacket.body subdataWithRange:NSMakeRange(0, 1)]);
     THCipherSet* cipherSet = [self.identity.cipherParts objectForKey:[[incomingPacket.body subdataWithRange:NSMakeRange(0, 1)] hexString]];
     if (!cipherSet) {
         CLCLogInfo(@"Invalid cipher set requested %@", [[incomingPacket.body subdataWithRange:NSMakeRange(0, 1)] hexString]);
         return;
     }
+	
     THLine* newLine = [cipherSet processOpen:incomingPacket];
     if (!newLine) {
         CLCLogInfo(@"Unable to process open packet");
@@ -351,7 +317,7 @@
         }
 		
 		CLCLogDebug(@"processOpen setting activePath for %@ to %@", newLine.toIdentity.hashname, path.information);
-        newLine.toIdentity.activePath = path;
+		newLine.toIdentity.activePath = path;
     }
     
     // remove any existing lines to this hashname
@@ -383,7 +349,7 @@
         
         if (pendingLineJob) pendingLineJob.handler(newLine);
         
-        [pendingIdentity establishLink];
+        [newLine establishLink];
     } else {
         [newLine sendOpen];
         [newLine openLine];
@@ -399,20 +365,10 @@
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
             THChannel* linkChannel = [newLine.toIdentity channelForType:@"link"];
             if (!linkChannel) {
-                [newLine.toIdentity establishLink];
+                [newLine establishLink];
             }
         });
     }
-	
-	// negotiate path after a short delay to allow any bridge path to come in
-	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(200 * NSEC_PER_MSEC)), dispatch_get_main_queue(), ^{
-		[newLine negotiatePath];
-		
-		// then RE-negotiate 2s in.. just to be sure
-		dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-			[newLine negotiatePath];
-		});
-    });
 	
     // Check the pending jobs for any lines or channels
     [self.pendingJobs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
@@ -426,6 +382,8 @@
             // TODO:  What is a pending line job?
         }
     }];
+	
+
 }
 
 -(void)updateStatus:(THSwitchStatus)status

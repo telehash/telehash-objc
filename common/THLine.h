@@ -16,7 +16,7 @@
 @class THCipherSetLineInfo;
 @class THPath;
 
-@interface THLine : NSObject
+@interface THLine : NSObject<THChannelDelegate>
 
 @property THIdentity* toIdentity;
 @property THCipherSetLineInfo* cipherSetInfo;
@@ -42,5 +42,7 @@
 -(void)negotiatePath;
 -(void)addChannelHandler:(id)handler;
 -(void)removeChannelHandler:(id)handler;
+
+-(void)establishLink;
 
 @end

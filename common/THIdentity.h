@@ -18,7 +18,7 @@
 @class THPath;
 @class THRelay;
 
-@interface THIdentity : NSObject<THChannelDelegate>
+@interface THIdentity : NSObject
 
 +(id)identityFromParts:(NSDictionary*)parts key:(THCipherSet*)key;
 +(id)identityFromHashname:(NSString*)hashname;
@@ -31,7 +31,6 @@
 @property BOOL isSeed;
 @property BOOL isBridged;
 @property NSData* address;
-@property NSMutableArray* vias;
 @property NSMutableDictionary* channels;
 @property THLine* currentLine;
 @property NSDictionary* cipherParts;
@@ -46,10 +45,6 @@
 -(void)addCipherSet:(THCipherSet*)cipherSet;
 -(void)addPath:(THPath*)path;
 -(void)checkPriorityPath:(THPath*)path;
-
--(void)addVia:(THIdentity*)viaIdentity;
--(void)attachSeedVias;
-// TODO:  Method to create a channel for a type
 
 -(NSInteger)distanceFrom:(THIdentity*)identity;
 -(void)setIP:(NSString*)ip port:(NSUInteger)port;
@@ -66,7 +61,6 @@
 
 +(NSString*)hashnameForParts:(NSDictionary*)parts;
 
--(void)establishLink;
 
 -(void)closeChannels;
 -(void)reset;

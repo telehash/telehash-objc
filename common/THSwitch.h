@@ -13,7 +13,6 @@
 @class THChannel;
 @class THPacket;
 @class THLine;
-@class THMeshBuckets;
 @class THTransport;
 
 typedef enum {
@@ -43,7 +42,6 @@ typedef void(^LineOpenBlock)(THIdentity*);
 
 +(id)defaultSwitch;
 
-@property THMeshBuckets* meshBuckets;
 @property NSMutableDictionary* openLines;
 @property NSMutableArray* pendingJobs;
 @property THIdentity* identity;
@@ -72,7 +70,4 @@ typedef void(^LineOpenBlock)(THIdentity*);
 
 -(void)transport:(THTransport *)transport handlePacket:(THPacket *)packet;
 -(void)transportDidChangeActive:(THTransport *)transport;
-
-// This is an internal handling hack
--(BOOL)findPendingSeek:(THPacket*)packet;
 @end

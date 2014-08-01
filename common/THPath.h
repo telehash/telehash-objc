@@ -21,6 +21,7 @@ NSMutableArray* THPathTypeRegistry;
 @property (readonly) NSString* typeName;
 @property (assign, nonatomic) THTransport* transport;
 @property (readonly) BOOL isLocal;
+@property BOOL isBridge;
 @property NSUInteger priority;
 @property BOOL available;
 -(void)sendPacket:(THPacket*)packet;

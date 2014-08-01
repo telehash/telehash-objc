@@ -38,6 +38,7 @@
 {
     NSUInteger _nextChannelId;
     NSMutableArray* channelHandlers;
+	NSTimer* pingTimer;
 }
 
 -(id)init;
@@ -47,8 +48,15 @@
         channelHandlers = [NSMutableArray array];
         self.isOpen = NO;
         self.lastActitivy = time(NULL);
+		pingTimer = [NSTimer scheduledTimerWithTimeInterval:25 target:self selector:@selector(pingLink) userInfo:nil repeats:YES];
+		
     }
     return self;
+}
+
+-(void)dealloc
+{
+	[pingTimer invalidate];
 }
 
 -(void)sendOpen;
@@ -103,8 +111,18 @@
 
         [channel flushOut];
     }];
-    
+
     self.isOpen = YES;
+	
+	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+		CLCLogDebug(@"initial path negotiation for %@", self.toIdentity.hashname);
+		[self negotiatePath];
+		
+		dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+			CLCLogDebug(@"secondary path negotiation for %@", self.toIdentity.hashname);
+			[self negotiatePath];
+		});
+	});
 }
 
 -(void)handlePacket:(THPacket *)packet;
@@ -133,29 +151,22 @@
     
     THSwitch* thSwitch = [THSwitch defaultSwitch];
     
-    // if the switch is handling it bail
-    if ([thSwitch findPendingSeek:innerPacket]) return;
-    
     THChannel* channel = [self.toIdentity.channels objectForKey:channelId];
     
     if ([channelType isEqualToString:@"seek"]) {
-        // On a seek we send back what we know about
-        THPacket* response = [THPacket new];
-        [response.json setObject:@(YES) forKey:@"end"];
-        [response.json setObject:channelId forKey:@"c"];
+        THPacket* errPacket = [THPacket new];
+		[errPacket.json setObject:@"seek no longer supported" forKey:@"err"];
+		[errPacket.json setObject:channelId forKey:@"c"];
+		      
+        //[self sendPacket:errPacket]; // TODO: this causes a crash
 		
-		NSMutableArray* sees = [NSMutableArray array];
-		
-        [response.json setObject:sees forKey:@"see"];
-        
-        [self sendPacket:response];
     } else if ([channelType isEqualToString:@"link"] && !channel) {
         THSwitch* defaultSwitch = [THSwitch defaultSwitch];
         
         THUnreliableChannel* linkChannel = [[THUnreliableChannel alloc] initToIdentity:self.toIdentity];
         linkChannel.channelId = [innerPacket.json objectForKey:@"c"];
         linkChannel.type = @"link";
-        linkChannel.delegate = self.toIdentity;
+        linkChannel.delegate = self;
         linkChannel.lastInActivity = time(NULL);
 		linkChannel.direction = THChannelInbound;
 		
@@ -164,10 +175,11 @@
             [self.toIdentity.channels removeObjectForKey:curChannel.channelId];
         }
         [defaultSwitch openChannel:linkChannel firstPacket:nil];
-        [self.toIdentity channel:linkChannel handlePacket:innerPacket];
+        [self channel:linkChannel handlePacket:innerPacket];
     } else if ([channelType isEqualToString:@"peer"]) {
         // TODO:  Check this logic in association with the move to channels on identity
-		CLCLogInfo(@"peer request to %@", [innerPacket.json objectForKey:@"peer"]);
+		CLCLogInfo(@"peer request to %@ on %@", [innerPacket.json objectForKey:@"peer"], self.toIdentity.hashname);
+		
         THLine* peerLine = [thSwitch lineToHashname:[innerPacket.json objectForKey:@"peer"]];
         if (!peerLine) {
 			CLCLogWarning(@"unable to establish line for peer request");
@@ -206,11 +218,13 @@
         NSDictionary* fromParts = [innerPacket.json objectForKey:@"from"];
         NSString* highestPart = [[fromParts.allKeys sortedArrayUsingSelector:@selector(compare:)] lastObject];
         THCipherSet* cs;
-        if ([highestPart isEqualToString:@"3a"]) {
+        
+		if ([highestPart isEqualToString:@"3a"]) {
             cs = [[THCipherSet3a alloc] initWithPublicKey:innerPacket.body privateKey:nil];
         } else if ([highestPart isEqualToString:@"2a"]) {
             cs = [[THCipherSet2a alloc] initWithPublicKey:innerPacket.body privateKey:nil];
         }
+		
         THIdentity* peerIdentity = [THIdentity identityFromParts:fromParts key:cs];
         if (!peerIdentity) {
             // We couldn't verify the identity, so shut it down
@@ -222,6 +236,8 @@
             return;
         }
         
+		CLCLogInfo(@"connect recieved for %@ via %@", peerIdentity.hashname, self.toIdentity.hashname);
+		
         // If we already have a line to them, we assume it's dead
         if (peerIdentity.currentLine) {
             // TODO:  This should really try and reuse the line first, then fall back to full redo
@@ -229,7 +245,6 @@
 			
 			[peerIdentity closeChannels];
             [peerIdentity.availablePaths removeAllObjects];
-			[peerIdentity.vias removeAllObjects];
 			
             peerIdentity.activePath = nil;
 			
@@ -252,10 +267,14 @@
         
         // Add a bridge route
         if ([innerPacket.json objectForKey:@"bridge"]) {
+			NSLog(@"adding bridge on %@", packet.returnPath.information);
+			packet.returnPath.isBridge = YES;
+			[peerIdentity addPath:packet.returnPath];
+			
 			if (!peerIdentity.activePath) {
-				peerIdentity.isBridged = YES;
+				CLCLogDebug(@"assigning bridge path to %@", peerIdentity.hashname);
+				peerIdentity.activePath = packet.returnPath;
 			}
-            [peerIdentity addPath:packet.returnPath];
         }
         
         THUnreliableChannel* peerChannel = [[THUnreliableChannel alloc] initToIdentity:self.toIdentity];
@@ -274,6 +293,7 @@
         
         [thSwitch openLine:peerIdentity];
     } else if ([channelType isEqualToString:@"path"] && !channel) {
+		CLCLogInfo(@"line paths recieved on %@", self.toIdentity.hashname);
         [self handlePath:innerPacket];
     } else {
         NSNumber* seq = [innerPacket.json objectForKey:@"seq"];
@@ -357,6 +377,7 @@
 	
     [linePacketData appendData:[self.outLineId dataFromHexString]];
     [linePacketData appendData:innerPacketData];
+	
     THPacket* lineOutPacket = [THPacket new];
     lineOutPacket.body = linePacketData;
     lineOutPacket.jsonLength = 0;
@@ -400,9 +421,11 @@
     
     THUnreliableChannel* pathChannel = [[THUnreliableChannel alloc] initToIdentity:self.toIdentity];
     pathChannel.delegate = handler;
+	
     [thSwitch openChannel:pathChannel firstPacket:pathPacket];
     
     [self addChannelHandler:handler];
+	
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
 		CLCLogDebug(@"THLine removing pathChannel %@", pathChannel.channelId);
         [self removeChannelHandler:handler];
@@ -447,18 +470,115 @@
     THPacket* pathPacket = [THPacket new];
     [pathPacket.json setObject:[packet.json objectForKey:@"c"] forKey:@"c"];
     for (THPath* path in self.toIdentity.availablePaths) {
-        path.priority = 0;
-        NSDictionary* pathInfo = path.information;
-        if (pathInfo) {
-            [pathPacket.json setObject:pathInfo forKey:@"path"];
-        }
-        [self sendPacket:pathPacket path:path];
-        
-
+		if (!path.isBridge) {
+			NSDictionary* pathInfo = path.information;
+			//path.priority = 0;
+			if (pathInfo) {
+				[pathPacket.json setObject:pathInfo forKey:@"path"];
+			}
+			[self sendPacket:pathPacket path:path];
+		}
     }
-    
+	
 }
 
+
+-(void)establishLink
+{
+	THPacket* linkPacket = [THPacket new];
+    [linkPacket.json setObject:@YES forKey:@"seed"];
+    
+	// HAX for now
+    NSMutableArray* sees = [NSMutableArray array];
+    [linkPacket.json setObject:sees forKey:@"see"];
+    
+	THChannel* linkChannel = [self.toIdentity channelForType:@"link"];
+    if (!linkChannel) {
+        linkChannel = [[THUnreliableChannel alloc] initToIdentity:self.toIdentity];
+        [linkPacket.json setObject:@"link" forKey:@"type"];
+		
+        [[THSwitch defaultSwitch] openChannel:linkChannel firstPacket:linkPacket];
+    } else {
+        [linkChannel sendPacket:linkPacket];
+    }
+	
+    linkChannel.delegate = self;
+
+}
+
+
+-(void)pingLink
+{
+    THChannel* linkChannel = [self.toIdentity channelForType:@"link"];
+	if (linkChannel) {
+		time_t checkTime = time(NULL);
+		
+		// if our lastInActivity > 50s and the channel is >5s old
+		if ((checkTime >= linkChannel.lastInActivity + 50) && (checkTime > linkChannel.createdAt + 25)) {
+			NSUInteger lastInDuration = checkTime - linkChannel.lastInActivity;
+			if (linkChannel.lastInActivity > 0) {
+				CLCLogWarning(@"line inactive for %@ (in duration %d), removing link channel", self.toIdentity.hashname, lastInDuration);
+			} else {
+				CLCLogWarning(@"line inactive for %@ (no prior inbound activity), removing link channel", self.toIdentity.hashname, lastInDuration);
+			}
+			
+			[self.toIdentity.channels removeObjectForKey:linkChannel.channelId];
+			
+			// TODO: this should be moved to line activity check
+			[self.toIdentity reset];
+			return;
+		}
+		
+		if (self.toIdentity .activePath || self.toIdentity.relay.peerChannel) {
+			THPacket* pingPacket = [THPacket new];
+			[pingPacket.json setObject:@YES forKey:@"seed"];
+			
+			[linkChannel sendPacket:pingPacket];
+		} else {
+			CLCLogWarning(@"no path or relay available for pingLines to %@, attempting a re-open", self.toIdentity.hashname);
+			[self sendOpen];
+		}
+	} else {
+		CLCLogDebug(@"link channel missing %@ within pingLink, resetting identity", self.toIdentity.hashname);
+		[self.toIdentity reset];
+	}
+	
+}
+
+
+// Channel delegate methods
+
+-(BOOL)channel:(THChannel *)channel handlePacket:(THPacket *)packet
+{
+    THSwitch* defaultSwitch = [THSwitch defaultSwitch];
+    if (defaultSwitch.status != THSwitchOnline) {
+        [defaultSwitch updateStatus:THSwitchOnline];
+    }
+    
+    NSArray* bridges = [packet.json objectForKey:@"bridge"];
+    if (bridges) {
+        channel.toIdentity.availableBridges = bridges;
+        [defaultSwitch.potentialBridges addObject:bridges];
+        // Let's just maintain 5 potent
+        if (defaultSwitch.potentialBridges.count > 5) {
+            [defaultSwitch.potentialBridges removeObjectAtIndex:0];
+        }
+    }
+	
+    return YES;
+}
+
+-(void)channel:(THChannel *)channel didChangeStateTo:(THChannelState)channelState
+{
+    if (channelState == THChannelEnded || channelState == THChannelErrored) {
+		CLCLogWarning(@"link channel ended for hashname %@", self.toIdentity.hashname);
+    }
+}
+
+-(void)channel:(THChannel *)channel didFailWithError:(NSError *)error
+{
+	CLCLogWarning(@"link channel errored for hashname %@ with error: %@", self.toIdentity.hashname, [error description]);
+}
 
 
 @end
@@ -470,6 +590,8 @@
     THSwitch* thSwitch = [THSwitch defaultSwitch];
     NSDictionary* returnPath = [packet.json objectForKey:@"path"];
     
+	CLCLogInfo(@"recieved path response %@ from %@", packet.json, channel.toIdentity.hashname);
+	
     // See if our switch has this identity, we can learn our public IP this way
     if (![thSwitch.identity pathMatching:returnPath]) {
         if ([[returnPath objectForKey:@"type"] isEqualToString:@"ipv4"]) {
@@ -489,8 +611,10 @@
         [self.line.toIdentity addPath:packet.returnPath];
         path = packet.returnPath;
     }
+	
     path.available = YES;
     path.priority += 1; // Gets a +1 cause we know it's alive!
+	
     [self.line.toIdentity checkPriorityPath:path];
     
     return YES;
