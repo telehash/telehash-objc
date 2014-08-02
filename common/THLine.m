@@ -226,7 +226,7 @@
             return;
         }
         
-		CLCLogInfo(@"connect recieved for %@ via %@", peerIdentity.hashname, self.toIdentity.hashname);
+		CLCLogInfo(@"connect received for %@ via %@", peerIdentity.hashname, self.toIdentity.hashname);
 		
         // If we already have a line to them, we assume it's dead
         if (peerIdentity.currentLine) {
@@ -283,7 +283,7 @@
         
         [thSwitch openLine:peerIdentity];
     } else if ([channelType isEqualToString:@"path"] && !channel) {
-		CLCLogInfo(@"line paths recieved for %@", self.toIdentity.hashname);
+		CLCLogInfo(@"line paths received for %@", self.toIdentity.hashname);
         [self handlePath:innerPacket];
     } else {
         NSNumber* seq = [innerPacket.json objectForKey:@"seq"];
@@ -300,7 +300,7 @@
         } else {
 			// Are we getting a rogue packet from an old session, or something broken?
 			if (!channelType && ([innerPacket.json objectForKey:@"end"] || [innerPacket.json objectForKey:@"err"] || [innerPacket.json count] == 1)) {
-				CLCLogWarning(@"recieved a spurious packet %@ for a non-existant channel %@, ignoring", innerPacket.json, channelId);
+				CLCLogWarning(@"received a spurious packet %@ for a non-existant channel %@, ignoring", innerPacket.json, channelId);
 				return;
 			}
 			
@@ -460,14 +460,13 @@
     THPacket* pathPacket = [THPacket new];
     [pathPacket.json setObject:[packet.json objectForKey:@"c"] forKey:@"c"];
     for (THPath* path in self.toIdentity.availablePaths) {
-		if (!path.isBridge) {
-			NSDictionary* pathInfo = path.information;
-			//path.priority = 0;
-			if (pathInfo) {
-				[pathPacket.json setObject:pathInfo forKey:@"path"];
-			}
-			[self sendPacket:pathPacket path:path];
+		NSDictionary* pathInfo = path.information;
+		if (path.isBridge) path.priority = 0;
+		
+		if (pathInfo) {
+			[pathPacket.json setObject:pathInfo forKey:@"path"];
 		}
+		[self sendPacket:pathPacket path:path];
     }
 }
 
@@ -579,7 +578,7 @@
     THSwitch* thSwitch = [THSwitch defaultSwitch];
     NSDictionary* returnPath = [packet.json objectForKey:@"path"];
     
-	CLCLogInfo(@"recieved path response %@ from %@", packet.json, channel.toIdentity.hashname);
+	CLCLogInfo(@"received path response %@ from %@", packet.json, channel.toIdentity.hashname);
 	
     // See if our switch has this identity, we can learn our public IP this way
     if (![thSwitch.identity pathMatching:returnPath]) {

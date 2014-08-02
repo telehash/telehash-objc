@@ -41,6 +41,15 @@
 	
 	if (!peerChannel.channelId) return;
 	
+	
+	// gotta fire this before our return
+	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+		if (peerChannel.lastInActivity == 0) {
+			CLCLogNotice(@"no response on relay peerChannel to %@", self.toIdentity.hashname);
+			[peerChannel close];
+		}
+	});
+	
 	THPacket* peerPacket = [THPacket new];
 	[peerPacket.json setObject:[NSNumber numberWithUnsignedInteger:viaIdentity.currentLine.nextChannelId] forKey:@"c"];
 	[peerPacket.json setObject:self.toIdentity.hashname forKey:@"peer"];
@@ -52,6 +61,7 @@
 		CLCLogDebug(@"sending paths %@ to %@ via relay", paths, self.toIdentity.hashname);
 		[peerPacket.json setObject:paths forKey:@"paths"];
 	}
+
 	
 	THCipherSet* chosenCS = [defaultSwitch.identity.cipherParts objectForKey:self.toIdentity.suggestedCipherSet];
 	if (!chosenCS) {
@@ -67,13 +77,6 @@
 	
 	// We blind send this and hope for the best!
 	[viaIdentity sendPacket:peerPacket];
-	
-	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-		if (self.peerChannel.lastInActivity == 0) {
-			CLCLogNotice(@"no response on relay peerChannel to %@", self.toIdentity.hashname);
-			[self.peerChannel close];
-		}
-	});
 }
 
 -(void)sendPacket:(THPacket *)packet

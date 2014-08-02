@@ -70,7 +70,7 @@
 			CLCLogInfo(@"Putting on the incoming buffer: %@ ", packet.json);
 			[inPacketBuffer push:packet];
 		} else {
-			CLCLogWarning(@"recieved a packet seq earlier than our lastProcessed position");
+			CLCLogWarning(@"received a packet seq earlier than our lastProcessed position");
 		}
     }
     
