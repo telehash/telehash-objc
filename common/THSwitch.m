@@ -231,10 +231,17 @@
 		[self.pendingJobs addObject:pendingJob];
 	}
 
+	// FW Helper
+	for (THPath* punchPath in toIdentity.availablePaths) {
+		if ([punchPath class] == [THIPV4Path class]) {
+			THIPV4Path* ipPath = (THIPV4Path*)punchPath;
+			[punchPath.transport send:[NSData data] to:ipPath.address];
+		}
+	}
 
     // We have everything we need to direct request
-    if (toIdentity.availablePaths.count > 0 && toIdentity.cipherParts.count > 0) {
-		CLCLogDebug(@"identity %@ already has known paths", toIdentity.hashname);
+    if (toIdentity.relay || (toIdentity.availablePaths.count > 0 && toIdentity.cipherParts.count > 0)) {
+		CLCLogDebug(@"identity %@ already has relay or known paths", toIdentity.hashname);
 		
 		if (!toIdentity.currentLine) {
 			toIdentity.currentLine = [THLine new];
@@ -253,16 +260,7 @@
 		
 		return;
     };
-    
 
-	// FW Helper
-	for (THPath* punchPath in toIdentity.availablePaths) {
-		if ([punchPath class] == [THIPV4Path class]) {
-			THIPV4Path* ipPath = (THIPV4Path*)punchPath;
-			[punchPath.transport send:[NSData data] to:ipPath.address];
-		}
-	}
-	
 	// setup the relay
 	THRelay* relay = [THRelay new];
 	toIdentity.relay = relay;
