@@ -233,5 +233,5 @@ static void THReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     if ([transport.delegate respondsToSelector:@selector(transportDidChangeActive:)]) {
         [transport.delegate transportDidChangeActive:transport];
     }
-    CLCLogInfo(@"Interface changed!");
+    CLCLogInfo(@"Interface %@ changed available = %d", transport.typeName, transport.available);
 }

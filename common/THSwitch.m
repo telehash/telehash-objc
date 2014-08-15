@@ -268,9 +268,15 @@
 	
 	NSPredicate* seedFilter = [NSPredicate predicateWithFormat:@"SELF.toIdentity.isSeed == YES"];
 	NSArray* seedLines = [[self.openLines allValues] filteredArrayUsingPredicate:seedFilter];
-	for (THLine* seedLine in seedLines) {
-		[toIdentity.relay attachVia:seedLine.toIdentity];
+	
+	if ([seedLines count] > 0) {
+		for (THLine* seedLine in seedLines) {
+			[toIdentity.relay attachVia:seedLine.toIdentity];
+		}
+	} else {
+		CLCLogWarning(@"no active seed lines available");
 	}
+	
 	
 	// we didnt have any valid via's, unset our relay again
 	if (!toIdentity.relay.peerChannel) {
@@ -452,7 +458,7 @@
     }
     if (availableCount <= 0) {
         CLCLogInfo(@"Oh no, we're offline!");
-        // XXX TODO:  What to do?
+		[self updateStatus:THSWitchOffline];
     }
 }
 

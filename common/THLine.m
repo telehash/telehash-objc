@@ -63,9 +63,8 @@
 {
 	self.lastOutActivity = time(NULL);
 	
-    THSwitch* defaultSwitch = [THSwitch defaultSwitch];
-	
 	if (!self.cachedOpen) {
+		THSwitch* defaultSwitch = [THSwitch defaultSwitch];
 		self.cachedOpen = [defaultSwitch generateOpen:self];
 	}
 	
@@ -393,6 +392,7 @@
 
 -(void)close
 {
+	[pingTimer invalidate];
     [[THSwitch defaultSwitch] closeLine:self];
 }
 
@@ -517,7 +517,7 @@
 			return;
 		}
 		
-		if (self.toIdentity .activePath || self.toIdentity.relay.peerChannel) {
+		if (self.toIdentity.activePath || self.toIdentity.relay.peerChannel) {
 			THPacket* pingPacket = [THPacket new];
 			[pingPacket.json setObject:@YES forKey:@"seed"];
 			
@@ -526,7 +526,7 @@
 			CLCLogWarning(@"no path or relay available for pingLines to %@, attempting a re-open", self.toIdentity.hashname);
 			[self sendOpen];
 		}
-	} else {
+	} else if (self.toIdentity.currentLine) {
 		CLCLogDebug(@"link channel missing %@ within pingLink, resetting identity", self.toIdentity.hashname);
 		[self.toIdentity reset];
 	}

@@ -352,12 +352,14 @@ int nlz(unsigned long x) {
 		
 	[self closeChannels];
 	
-	[self.availablePaths removeAllObjects];
-	
-	self.cipherParts = [NSDictionary dictionary];
-	self.parts = [NSDictionary dictionary];
-	
-	self.activePath = nil;
+	if (!self.isSeed) {
+		[self.availablePaths removeAllObjects];
+		
+		self.cipherParts = [NSDictionary dictionary];
+		self.parts = [NSDictionary dictionary];
+		
+		self.activePath = nil;
+	}
 	
 	// lets REALLY ensure relay is destroyed
 	if (self.relay) {
@@ -368,7 +370,7 @@ int nlz(unsigned long x) {
 	}
 	
 	if (self.currentLine) {
-		[[THSwitch defaultSwitch] closeLine:self.currentLine];
+		[self.currentLine close];
 	}
 	
 	self.currentLine = nil;

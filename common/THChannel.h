@@ -28,7 +28,7 @@ typedef enum {
 @property NSArray* missing;
 @property (nonatomic, strong) id<THChannelDelegate> delegate;
 @property THIdentity* toIdentity;
-@property THLine* line;
+@property (weak) THLine* line;
 @property NSNumber* channelId;
 @property THChannelState state;
 @property THChannelDirection direction;
