@@ -1014,8 +1014,12 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/cryptopp",
 					"$(PROJECT_DIR)/libsodium/build/include",
+					/usr/local/include,
 				);
-				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/libsodium/build/lib";
+				LIBRARY_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/libsodium/build/lib",
+					/usr/local/lib,
+				);
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -1030,8 +1034,12 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/cryptopp",
 					"$(PROJECT_DIR)/libsodium/build/include",
+					/usr/local/include,
 				);
-				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/libsodium/build/lib";
+				LIBRARY_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/libsodium/build/lib",
+					/usr/local/lib,
+				);
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
