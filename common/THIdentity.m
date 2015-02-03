@@ -15,7 +15,7 @@
 #import "THSwitch.h"
 #import "THChannel.h"
 #import "CTRAES256.h"
-#import "THCipherSet.h"
+#import "E3XCipherSet.h"
 #import "THPath.h"
 #import "CLCLog.h"
 #import "THRelay.h"
@@ -36,7 +36,7 @@ static NSMutableDictionary* identityCache;
     }
 }
 
-+(id)identityFromParts:(NSDictionary *)parts key:(THCipherSet*)cs
++(id)identityFromParts:(NSDictionary *)parts key:(E3XCipherSet*)cs
 {
     THIdentity* identity = [identityCache objectForKey:[THIdentity hashnameForParts:parts]];
     if (!identity) {
@@ -70,7 +70,7 @@ static NSMutableDictionary* identityCache;
     return self;
 }
 
--(id)initWithParts:(NSDictionary *)parts key:(THCipherSet*)cs
+-(id)initWithParts:(NSDictionary *)parts key:(E3XCipherSet*)cs
 {
     self = [super init];
     if (self) {
@@ -226,7 +226,7 @@ int nlz(unsigned long x) {
 	return nil;
 }
 
--(void)addCipherSet:(THCipherSet *)cipherSet
+-(void)addCipherSet:(E3XCipherSet *)cipherSet
 {
     NSMutableDictionary* newParts = [NSMutableDictionary dictionaryWithDictionary:_cipherParts];
     if ([newParts objectForKey:cipherSet.identifier] != nil) {
@@ -238,7 +238,7 @@ int nlz(unsigned long x) {
     
     NSMutableDictionary* fingerprintParts = [NSMutableDictionary dictionaryWithCapacity:newParts.count];
     for (NSString* csid in newParts) {
-        THCipherSet* cs = [newParts objectForKey:csid];
+        E3XCipherSet* cs = [newParts objectForKey:csid];
         [fingerprintParts setObject:[cs.fingerprint hexString] forKey:csid];
     }
     _parts = fingerprintParts;

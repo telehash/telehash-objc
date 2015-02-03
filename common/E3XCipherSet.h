@@ -13,10 +13,10 @@
 @class THLine;
 @class THIdentity;
 
-@interface THCipherSet : NSObject
+@interface E3XCipherSet : NSObject
 @property (readonly) NSData* fingerprint;
 @property (readonly) NSData* publicKey;
-+(THCipherSet*)cipherSetForOpen:(THPacket*)openPacket;
++(E3XCipherSet*)cipherSetForOpen:(THPacket*)openPacket;
 -(THLine*)processOpen:(THPacket*)openPacket;
 -(void)finalizeLineKeys:(THLine*)line;
 -(THPacket*)generateOpen:(THLine*)line from:(THIdentity*)fromIdentity;
@@ -25,7 +25,7 @@
 @end
 
 @interface THCipherSetLineInfo : NSObject
-@property THCipherSet* cipherSet;
+@property E3XCipherSet* cipherSet;
 -(NSData*)encryptLinePacket:(THPacket*)packet;
 -(void)decryptLinePacket:(THPacket*)packet;
 @end

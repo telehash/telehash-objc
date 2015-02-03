@@ -6,7 +6,7 @@
 //  Copyright (c) 2014 Telehash Foundation. All rights reserved.
 //
 
-#import "THCipherSet2a.h"
+#import "E3XCipherSet2a.h"
 #import "THPacket.h"
 #import "THIdentity.h"
 #import "THSwitch.h"
@@ -61,7 +61,7 @@ static unsigned char eccHeader[] = {0x04};
 }
 @end
 
-@implementation THCipherSet2a
+@implementation E3XCipherSet2a
 -(NSString*)identifier
 {
     return @"2a";
@@ -106,7 +106,7 @@ static unsigned char eccHeader[] = {0x04};
         return nil;
     }
     
-    THCipherSet2a* incomingCS = [[THCipherSet2a alloc] initWithPublicKey:innerPacket.body privateKey:nil];
+    E3XCipherSet2a* incomingCS = [[E3XCipherSet2a alloc] initWithPublicKey:innerPacket.body privateKey:nil];
     if (!incomingCS) {
         CLCLogInfo(@"Unable to create cipher set for incoming key.");
         return nil;
@@ -222,7 +222,7 @@ static unsigned char eccHeader[] = {0x04};
         line.cipherSetInfo = lineInfo;
     }
     THCipherSetLineInfo2a* lineInfo = (THCipherSetLineInfo2a*)line.cipherSetInfo;
-    THCipherSet2a* remoteCS = (THCipherSet2a*)lineInfo.cipherSet;
+    E3XCipherSet2a* remoteCS = (E3XCipherSet2a*)lineInfo.cipherSet;
     
     THPacket* openPacket = [THPacket new];
     if (!lineInfo.ecdh) {
@@ -241,7 +241,7 @@ static unsigned char eccHeader[] = {0x04};
     [innerPacket.json setObject:[NSNumber numberWithInteger:at] forKey:@"at"];
     NSMutableDictionary* fingerprints = [NSMutableDictionary dictionaryWithCapacity:fromIdentity.cipherParts.count];
     for (NSString* csId in fromIdentity.cipherParts) {
-        THCipherSet* cipherSet = [fromIdentity.cipherParts objectForKey:csId];
+        E3XCipherSet* cipherSet = [fromIdentity.cipherParts objectForKey:csId];
         [fingerprints setObject:[cipherSet.fingerprint hexString] forKey:csId];
     }
     [innerPacket.json setObject:fingerprints forKey:@"from"];

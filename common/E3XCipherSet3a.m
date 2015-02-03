@@ -6,7 +6,7 @@
 //  Copyright (c) 2014 Telehash Foundation. All rights reserved.
 //
 
-#import "THCipherSet3a.h"
+#import "E3XCipherSet3a.h"
 #import "THPacket.h"
 #import "SHA256.h"
 #import "NSData+HexString.h"
@@ -19,7 +19,7 @@
 static unsigned char csId3a[1] = {0x3a};
 static uint8_t nonce3a[crypto_secretbox_NONCEBYTES] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
 
-@implementation THCipherSet3a
+@implementation E3XCipherSet3a
 -(NSString*)identifier
 {
     return @"3a";
@@ -91,7 +91,7 @@ static uint8_t nonce3a[crypto_secretbox_NONCEBYTES] = {0, 0, 0, 0, 0, 0, 0, 0, 0
     }
     innerPacket.returnPath = openPacket.returnPath;
     
-    THCipherSet3a* incomingCS = [[THCipherSet3a alloc] initWithPublicKey:innerPacket.body privateKey:nil];
+    E3XCipherSet3a* incomingCS = [[E3XCipherSet3a alloc] initWithPublicKey:innerPacket.body privateKey:nil];
     if (!incomingCS) {
         CLCLogInfo(@"Unable to create cipher set for incoming key.");
         return nil;
@@ -189,7 +189,7 @@ static uint8_t nonce3a[crypto_secretbox_NONCEBYTES] = {0, 0, 0, 0, 0, 0, 0, 0, 0
         line.cipherSetInfo = lineInfo;
     }
     THCipherSetLineInfo3a* lineInfo = (THCipherSetLineInfo3a*)line.cipherSetInfo;
-    THCipherSet3a* remoteCS = (THCipherSet3a*)lineInfo.cipherSet;
+    E3XCipherSet3a* remoteCS = (E3XCipherSet3a*)lineInfo.cipherSet;
     
     THPacket* innerPacket = [THPacket new];
     [innerPacket.json setObject:line.toIdentity.hashname forKey:@"to"];
@@ -199,7 +199,7 @@ static uint8_t nonce3a[crypto_secretbox_NONCEBYTES] = {0, 0, 0, 0, 0, 0, 0, 0, 0
     [innerPacket.json setObject:[NSNumber numberWithInteger:at] forKey:@"at"];
     NSMutableDictionary* fingerprints = [NSMutableDictionary dictionaryWithCapacity:fromIdentity.cipherParts.count];
     for (NSString* csId in fromIdentity.cipherParts) {
-        THCipherSet* cipherSet = [fromIdentity.cipherParts objectForKey:csId];
+        E3XCipherSet* cipherSet = [fromIdentity.cipherParts objectForKey:csId];
         [fingerprints setObject:[cipherSet.fingerprint hexString] forKey:csId];
     }
     [innerPacket.json setObject:fingerprints forKey:@"from"];

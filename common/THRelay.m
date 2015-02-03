@@ -11,7 +11,7 @@
 #import "THPacket.h"
 #import "CLCLog.h"
 #import "THPath.h"
-#import "THCipherSet.h"
+#import "E3XCipherSet.h"
 
 @implementation THRelay
 
@@ -51,7 +51,7 @@
 		[peerPacket.json setObject:paths forKey:@"paths"];
 	}
 	
-	THCipherSet* chosenCS = [defaultSwitch.identity.cipherParts objectForKey:self.toIdentity.suggestedCipherSet];
+	E3XCipherSet* chosenCS = [defaultSwitch.identity.cipherParts objectForKey:self.toIdentity.suggestedCipherSet];
 	if (!chosenCS) {
 		CLCLogError(@"We did not actually have a key for the CS %@ to connect to %@", self.toIdentity.suggestedCipherSet, self.toIdentity.hashname);
 		return;

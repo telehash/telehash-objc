@@ -14,13 +14,13 @@
 #import "THChannel.h"
 #import "THMeshBuckets.h"
 #import "THPendingJob.h"
-#import "THCipherSet.h"
+#import "E3XCipherSet.h"
 #import "NSData+HexString.h"
-#import "THCipherSet.h"
+#import "E3XCipherSet.h"
 #import "THTransport.h"
 #import "THPath.h"
-#import "THCipherSet2a.h"
-#import "THCipherSet3a.h"
+#import "E3XCipherSet2a.h"
+#import "E3XCipherSet3a.h"
 #import "THUnreliableChannel.h"
 #import "CLCLog.h"
 #import "THRelay.h"
@@ -108,12 +108,12 @@
 		seedIdentity.isSeed = YES;
         // 2a
         NSData* keyData = [[NSData alloc] initWithBase64EncodedString:[keys objectForKey:@"2a"] options:0];
-        THCipherSet* cs = [[THCipherSet2a alloc] initWithPublicKey:keyData privateKey:nil];
+        E3XCipherSet* cs = [[E3XCipherSet2a alloc] initWithPublicKey:keyData privateKey:nil];
         [seedIdentity addCipherSet:cs];
         // 3a
         keyData = [[NSData alloc] initWithBase64EncodedString:[keys objectForKey:@"3a"] options:0];
         if (keyData) {
-            cs = [[THCipherSet3a alloc] initWithPublicKey:keyData privateKey:nil];
+            cs = [[E3XCipherSet3a alloc] initWithPublicKey:keyData privateKey:nil];
             [seedIdentity addCipherSet:cs];
         }
         seedIdentity.parts = [entry objectForKey:@"parts"];
@@ -332,7 +332,7 @@
 -(void)processOpen:(THPacket*)incomingPacket
 {
     CLCLogInfo(@"Processing an open from %@ with type %@", incomingPacket.returnPath, [incomingPacket.body subdataWithRange:NSMakeRange(0, 1)]);
-    THCipherSet* cipherSet = [self.identity.cipherParts objectForKey:[[incomingPacket.body subdataWithRange:NSMakeRange(0, 1)] hexString]];
+    E3XCipherSet* cipherSet = [self.identity.cipherParts objectForKey:[[incomingPacket.body subdataWithRange:NSMakeRange(0, 1)] hexString]];
     if (!cipherSet) {
         CLCLogInfo(@"Invalid cipher set requested %@", [[incomingPacket.body subdataWithRange:NSMakeRange(0, 1)] hexString]);
         return;
@@ -453,7 +453,7 @@
     }
     NSSortDescriptor *sort = [NSSortDescriptor sortDescriptorWithKey:@"description" ascending:NO];
     NSArray* sortedCSIds = [ourIDs sortedArrayUsingDescriptors:@[sort]];
-    THCipherSet* cs = [self.identity.cipherParts objectForKey:[sortedCSIds objectAtIndex:0]];
+    E3XCipherSet* cs = [self.identity.cipherParts objectForKey:[sortedCSIds objectAtIndex:0]];
     return [cs generateOpen:toLine from:self.identity];
 }
 

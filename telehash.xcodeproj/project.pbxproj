@@ -59,20 +59,20 @@
 		8236E1A918F5EDB600169201 /* THTransport.m in Sources */ = {isa = PBXBuildFile; fileRef = 8236E1A618F5EDB600169201 /* THTransport.m */; };
 		8249D63F1905F6640009F03B /* libsodium.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8249D63E1905F6640009F03B /* libsodium.a */; };
 		8249D6411905F6730009F03B /* libsodium.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8249D6401905F6730009F03B /* libsodium.a */; };
-		8249D6441906100C0009F03B /* THCipherSet3a.h in Headers */ = {isa = PBXBuildFile; fileRef = 8249D6421906100C0009F03B /* THCipherSet3a.h */; };
-		8249D6451906100C0009F03B /* THCipherSet3a.m in Sources */ = {isa = PBXBuildFile; fileRef = 8249D6431906100C0009F03B /* THCipherSet3a.m */; };
-		8249D6461906100C0009F03B /* THCipherSet3a.m in Sources */ = {isa = PBXBuildFile; fileRef = 8249D6431906100C0009F03B /* THCipherSet3a.m */; };
-		8249D649190627300009F03B /* THCipherSet2a.h in Headers */ = {isa = PBXBuildFile; fileRef = 8249D647190627300009F03B /* THCipherSet2a.h */; };
-		8249D64A190627300009F03B /* THCipherSet2a.m in Sources */ = {isa = PBXBuildFile; fileRef = 8249D648190627300009F03B /* THCipherSet2a.m */; };
-		8249D64B190627300009F03B /* THCipherSet2a.m in Sources */ = {isa = PBXBuildFile; fileRef = 8249D648190627300009F03B /* THCipherSet2a.m */; };
+		8249D6441906100C0009F03B /* E3XCipherSet3a.h in Headers */ = {isa = PBXBuildFile; fileRef = 8249D6421906100C0009F03B /* E3XCipherSet3a.h */; };
+		8249D6451906100C0009F03B /* E3XCipherSet3a.m in Sources */ = {isa = PBXBuildFile; fileRef = 8249D6431906100C0009F03B /* E3XCipherSet3a.m */; };
+		8249D6461906100C0009F03B /* E3XCipherSet3a.m in Sources */ = {isa = PBXBuildFile; fileRef = 8249D6431906100C0009F03B /* E3XCipherSet3a.m */; };
+		8249D649190627300009F03B /* E3XCipherSet2a.h in Headers */ = {isa = PBXBuildFile; fileRef = 8249D647190627300009F03B /* E3XCipherSet2a.h */; };
+		8249D64A190627300009F03B /* E3XCipherSet2a.m in Sources */ = {isa = PBXBuildFile; fileRef = 8249D648190627300009F03B /* E3XCipherSet2a.m */; };
+		8249D64B190627300009F03B /* E3XCipherSet2a.m in Sources */ = {isa = PBXBuildFile; fileRef = 8249D648190627300009F03B /* E3XCipherSet2a.m */; };
 		824F74B3191061D300B4E807 /* CLCLog.h in Headers */ = {isa = PBXBuildFile; fileRef = 824F74B1191061D300B4E807 /* CLCLog.h */; };
 		824F74B4191061D300B4E807 /* CLCLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 824F74B2191061D300B4E807 /* CLCLog.m */; };
 		824F74B5191061D300B4E807 /* CLCLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 824F74B2191061D300B4E807 /* CLCLog.m */; };
 		8251ADB418C02349005CB9E2 /* libcryptopp-osx.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8263D95B18BD16F000DED8E5 /* libcryptopp-osx.a */; };
 		8251ADBA18C023DC005CB9E2 /* open.pkt in Resources */ = {isa = PBXBuildFile; fileRef = 8251ADB918C023DC005CB9E2 /* open.pkt */; };
-		8251ADBD18C05A26005CB9E2 /* THCipherSet.h in Headers */ = {isa = PBXBuildFile; fileRef = 8251ADBB18C05A26005CB9E2 /* THCipherSet.h */; };
-		8251ADBE18C05A26005CB9E2 /* THCipherSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 8251ADBC18C05A26005CB9E2 /* THCipherSet.m */; };
-		8251ADBF18C05A26005CB9E2 /* THCipherSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 8251ADBC18C05A26005CB9E2 /* THCipherSet.m */; };
+		8251ADBD18C05A26005CB9E2 /* E3XCipherSet.h in Headers */ = {isa = PBXBuildFile; fileRef = 8251ADBB18C05A26005CB9E2 /* E3XCipherSet.h */; };
+		8251ADBE18C05A26005CB9E2 /* E3XCipherSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 8251ADBC18C05A26005CB9E2 /* E3XCipherSet.m */; };
+		8251ADBF18C05A26005CB9E2 /* E3XCipherSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 8251ADBC18C05A26005CB9E2 /* E3XCipherSet.m */; };
 		827CB8AB190C887F001EB8F9 /* THUnreliableChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = 827CB8A9190C887F001EB8F9 /* THUnreliableChannel.h */; };
 		827CB8AC190C8880001EB8F9 /* THUnreliableChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = 827CB8AA190C887F001EB8F9 /* THUnreliableChannel.m */; };
 		827CB8AD190C8880001EB8F9 /* THUnreliableChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = 827CB8AA190C887F001EB8F9 /* THUnreliableChannel.m */; };
@@ -252,15 +252,15 @@
 		8236E1A618F5EDB600169201 /* THTransport.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THTransport.m; sourceTree = "<group>"; };
 		8249D63E1905F6640009F03B /* libsodium.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsodium.a; path = libsodium/build/lib/libsodium.a; sourceTree = "<group>"; };
 		8249D6401905F6730009F03B /* libsodium.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsodium.a; path = "libsodium/build-ios/lib/libsodium.a"; sourceTree = "<group>"; };
-		8249D6421906100C0009F03B /* THCipherSet3a.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THCipherSet3a.h; sourceTree = "<group>"; };
-		8249D6431906100C0009F03B /* THCipherSet3a.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THCipherSet3a.m; sourceTree = "<group>"; };
-		8249D647190627300009F03B /* THCipherSet2a.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THCipherSet2a.h; sourceTree = "<group>"; };
-		8249D648190627300009F03B /* THCipherSet2a.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THCipherSet2a.m; sourceTree = "<group>"; };
+		8249D6421906100C0009F03B /* E3XCipherSet3a.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = E3XCipherSet3a.h; sourceTree = "<group>"; };
+		8249D6431906100C0009F03B /* E3XCipherSet3a.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = E3XCipherSet3a.m; sourceTree = "<group>"; };
+		8249D647190627300009F03B /* E3XCipherSet2a.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = E3XCipherSet2a.h; sourceTree = "<group>"; };
+		8249D648190627300009F03B /* E3XCipherSet2a.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = E3XCipherSet2a.m; sourceTree = "<group>"; };
 		824F74B1191061D300B4E807 /* CLCLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CLCLog.h; sourceTree = "<group>"; };
 		824F74B2191061D300B4E807 /* CLCLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CLCLog.m; sourceTree = "<group>"; };
 		8251ADB918C023DC005CB9E2 /* open.pkt */ = {isa = PBXFileReference; lastKnownFileType = file; path = open.pkt; sourceTree = "<group>"; };
-		8251ADBB18C05A26005CB9E2 /* THCipherSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THCipherSet.h; sourceTree = "<group>"; };
-		8251ADBC18C05A26005CB9E2 /* THCipherSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THCipherSet.m; sourceTree = "<group>"; };
+		8251ADBB18C05A26005CB9E2 /* E3XCipherSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = E3XCipherSet.h; sourceTree = "<group>"; };
+		8251ADBC18C05A26005CB9E2 /* E3XCipherSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = E3XCipherSet.m; sourceTree = "<group>"; };
 		827CB8A9190C887F001EB8F9 /* THUnreliableChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THUnreliableChannel.h; sourceTree = "<group>"; };
 		827CB8AA190C887F001EB8F9 /* THUnreliableChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THUnreliableChannel.m; sourceTree = "<group>"; };
 		827CB8B2190C8890001EB8F9 /* THReliableChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THReliableChannel.h; sourceTree = "<group>"; };
@@ -529,12 +529,12 @@
 				82B70ACD18404D4900E819F3 /* THPacketBuffer.m */,
 				82DB2373187C83E4002C74C9 /* THPendingJob.h */,
 				82DB2374187C83E4002C74C9 /* THPendingJob.m */,
-				8251ADBB18C05A26005CB9E2 /* THCipherSet.h */,
-				8251ADBC18C05A26005CB9E2 /* THCipherSet.m */,
-				8249D6421906100C0009F03B /* THCipherSet3a.h */,
-				8249D6431906100C0009F03B /* THCipherSet3a.m */,
-				8249D647190627300009F03B /* THCipherSet2a.h */,
-				8249D648190627300009F03B /* THCipherSet2a.m */,
+				8251ADBB18C05A26005CB9E2 /* E3XCipherSet.h */,
+				8251ADBC18C05A26005CB9E2 /* E3XCipherSet.m */,
+				8249D6421906100C0009F03B /* E3XCipherSet3a.h */,
+				8249D6431906100C0009F03B /* E3XCipherSet3a.m */,
+				8249D647190627300009F03B /* E3XCipherSet2a.h */,
+				8249D648190627300009F03B /* E3XCipherSet2a.m */,
 				82A31BA1183457EB005077AD /* NSData+HexString.h */,
 				82A31BA2183457EB005077AD /* NSData+HexString.m */,
 				8231EBC31836BD3600BC41C1 /* NSString+HexString.h */,
@@ -568,7 +568,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8251ADBD18C05A26005CB9E2 /* THCipherSet.h in Headers */,
+				8251ADBD18C05A26005CB9E2 /* E3XCipherSet.h in Headers */,
 				82DB2375187C83E4002C74C9 /* THPendingJob.h in Headers */,
 				820BADF318D77EFA003D7CBA /* THPeerRelay.h in Headers */,
 				8236E1A718F5EDB600169201 /* THTransport.h in Headers */,
@@ -577,7 +577,7 @@
 				822C6D2F17FCCD0C008C04BA /* ECDH.h in Headers */,
 				8218D1C217FA6F410053AFAC /* THRSA.h in Headers */,
 				822C6D3417FCD3F6008C04BA /* CTRAES256.h in Headers */,
-				8249D649190627300009F03B /* THCipherSet2a.h in Headers */,
+				8249D649190627300009F03B /* E3XCipherSet2a.h in Headers */,
 				822C6D3E17FCD8C5008C04BA /* RNG.h in Headers */,
 				82B1721018009A6C00C29EAF /* GCDAsyncUdpSocket.h in Headers */,
 				8231EC1B1836F37F00BC41C1 /* THLine.h in Headers */,
@@ -586,7 +586,7 @@
 				822C6D4417FCDB31008C04BA /* THPacket.h in Headers */,
 				822C6D3917FCD754008C04BA /* SHA256.h in Headers */,
 				82B1720B180095B100C29EAF /* THChannel.h in Headers */,
-				8249D6441906100C0009F03B /* THCipherSet3a.h in Headers */,
+				8249D6441906100C0009F03B /* E3XCipherSet3a.h in Headers */,
 				827CB8B4190C8890001EB8F9 /* THReliableChannel.h in Headers */,
 				82B172151800A51B00C29EAF /* THIdentity.h in Headers */,
 				827CB8AB190C887F001EB8F9 /* THUnreliableChannel.h in Headers */,
@@ -798,14 +798,14 @@
 				820BADF418D77EFA003D7CBA /* THPeerRelay.m in Sources */,
 				822C6D4517FCDB31008C04BA /* THPacket.m in Sources */,
 				822C6D3A17FCD754008C04BA /* SHA256.mm in Sources */,
-				8251ADBE18C05A26005CB9E2 /* THCipherSet.m in Sources */,
+				8251ADBE18C05A26005CB9E2 /* E3XCipherSet.m in Sources */,
 				8231EC1C1836F37F00BC41C1 /* THLine.m in Sources */,
 				82DB236C187C8343002C74C9 /* THMeshBuckets.m in Sources */,
 				827CB8AC190C8880001EB8F9 /* THUnreliableChannel.m in Sources */,
 				82B1720717FDE90600C29EAF /* THSwitch.m in Sources */,
-				8249D64A190627300009F03B /* THCipherSet2a.m in Sources */,
+				8249D64A190627300009F03B /* E3XCipherSet2a.m in Sources */,
 				822C6D3517FCD3F6008C04BA /* CTRAES256.mm in Sources */,
-				8249D6451906100C0009F03B /* THCipherSet3a.m in Sources */,
+				8249D6451906100C0009F03B /* E3XCipherSet3a.m in Sources */,
 				8236E1A818F5EDB600169201 /* THTransport.m in Sources */,
 				82EF37321927AF3D001D3DB4 /* THRelay.m in Sources */,
 				82DB2376187C83E4002C74C9 /* THPendingJob.m in Sources */,
@@ -841,14 +841,14 @@
 				820BADF518D77EFA003D7CBA /* THPeerRelay.m in Sources */,
 				822C6D4617FCDB31008C04BA /* THPacket.m in Sources */,
 				822C6D3B17FCD754008C04BA /* SHA256.mm in Sources */,
-				8251ADBF18C05A26005CB9E2 /* THCipherSet.m in Sources */,
+				8251ADBF18C05A26005CB9E2 /* E3XCipherSet.m in Sources */,
 				8231EC1D1836F37F00BC41C1 /* THLine.m in Sources */,
 				82DB236D187C8343002C74C9 /* THMeshBuckets.m in Sources */,
 				827CB8AD190C8880001EB8F9 /* THUnreliableChannel.m in Sources */,
 				82B1720817FDE90600C29EAF /* THSwitch.m in Sources */,
-				8249D64B190627300009F03B /* THCipherSet2a.m in Sources */,
+				8249D64B190627300009F03B /* E3XCipherSet2a.m in Sources */,
 				822C6D3617FCD3F6008C04BA /* CTRAES256.mm in Sources */,
-				8249D6461906100C0009F03B /* THCipherSet3a.m in Sources */,
+				8249D6461906100C0009F03B /* E3XCipherSet3a.m in Sources */,
 				8236E1A918F5EDB600169201 /* THTransport.m in Sources */,
 				82EF37331927AF3D001D3DB4 /* THRelay.m in Sources */,
 				82DB2377187C83E4002C74C9 /* THPendingJob.m in Sources */,

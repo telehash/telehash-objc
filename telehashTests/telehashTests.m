@@ -11,7 +11,7 @@
 #import "THSwitch.h"
 #import "THIdentity.h"
 #import "THPacketBuffer.h"
-#import "THCipherSet.h"
+#import "E3XCipherSet.h"
 #import "THPath.h"
 #import "THReliableChannel.h"
 #import "THChannel.h"

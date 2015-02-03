@@ -10,13 +10,13 @@
 #import "THIdentity.h"
 #import <THPacket.h>
 #import "THSwitch.h"
-#import "THCipherSet.h"
+#import "E3XCipherSet.h"
 #import "NSData+HexString.h"
 #import "THTransport.h"
 #import "THPath.h"
 #import "THChannel.h"
-#import "THCipherSet2a.h"
-#import "THCipherSet3a.h"
+#import "E3XCipherSet2a.h"
+#import "E3XCipherSet3a.h"
 #import <THReliableChannel.h>
 #import <CLCLog.h>
 
@@ -49,22 +49,22 @@
     thSwitch.delegate = self;
     THIdentity* baseIdentity = [THIdentity new];
     self.identityPath = pathField.stringValue;
-    THCipherSet3a* cs3a = [[THCipherSet3a alloc] initWithPublicKeyPath:[NSString stringWithFormat:@"%@/server3.pkey", self.identityPath] privateKeyPath:[NSString stringWithFormat:@"%@/server3.key", self.identityPath]];
+    E3XCipherSet3a* cs3a = [[E3XCipherSet3a alloc] initWithPublicKeyPath:[NSString stringWithFormat:@"%@/server3.pkey", self.identityPath] privateKeyPath:[NSString stringWithFormat:@"%@/server3.key", self.identityPath]];
     if (!cs3a) {
-        cs3a = [THCipherSet3a new];
+        cs3a = [E3XCipherSet3a new];
         [cs3a generateKeys];
         [cs3a savePublicKeyPath:[NSString stringWithFormat:@"%@/server3.pkey", self.identityPath] privateKeyPath:[NSString stringWithFormat:@"%@/server3.key", self.identityPath]];
     }
     [baseIdentity addCipherSet:cs3a];
     NSLog(@"3a fingerprint %@", [cs3a.fingerprint hexString]);
-    THCipherSet2a* cs2a = [[THCipherSet2a alloc] initWithPublicKeyPath:[NSString stringWithFormat:@"%@/server.pder", self.identityPath] privateKeyPath:[NSString stringWithFormat:@"%@/server.der", self.identityPath]];
+    E3XCipherSet2a* cs2a = [[E3XCipherSet2a alloc] initWithPublicKeyPath:[NSString stringWithFormat:@"%@/server.pder", self.identityPath] privateKeyPath:[NSString stringWithFormat:@"%@/server.der", self.identityPath]];
     if (!cs2a) {
         /*
         NSFileManager* fm = [NSFileManager defaultManager];
         NSError* err;
         [fm createDirectoryAtPath:@"/tmp/telehash" withIntermediateDirectories:NO attributes:nil error:&err];
         */
-        cs2a = [THCipherSet2a new];
+        cs2a = [E3XCipherSet2a new];
         [cs2a generateKeys];
         [cs2a.rsaKeys savePublicKey:[NSString stringWithFormat:@"%@/server.pder", self.identityPath] privateKey:[NSString stringWithFormat:@"%@/server.der", self.identityPath]];
     }

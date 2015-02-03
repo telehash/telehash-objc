@@ -12,17 +12,17 @@
 @class THPacket;
 @class THLine;
 @class THChannel;
-@class THCipherSet;
+@class E3XCipherSet;
 @class THPath;
 @class THRelay;
 
 @interface THIdentity : NSObject
 
-+(id)identityFromParts:(NSDictionary*)parts key:(THCipherSet*)key;
++(id)identityFromParts:(NSDictionary*)parts key:(E3XCipherSet*)key;
 +(id)identityFromHashname:(NSString*)hashname;
 
 -(id)initWithHashname:(NSString*)hashname;
--(id)initWithParts:(NSDictionary*)parts key:(THCipherSet*)key;
+-(id)initWithParts:(NSDictionary*)parts key:(E3XCipherSet*)key;
 
 @property (readonly) NSString* hashname;
 @property (readonly) BOOL hasLink;
@@ -41,7 +41,7 @@
 @property THRelay* relay;
 @property NSArray* availableBridges;
 
--(void)addCipherSet:(THCipherSet*)cipherSet;
+-(void)addCipherSet:(E3XCipherSet*)cipherSet;
 -(void)addPath:(THPath*)path;
 -(void)checkPriorityPath:(THPath*)path;
 

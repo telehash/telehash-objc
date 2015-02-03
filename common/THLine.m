@@ -19,14 +19,14 @@
 #import "NSString+HexString.h"
 #import "THChannel.h"
 #import "THMeshBuckets.h"
-#import "THCipherSet.h"
+#import "E3XCipherSet.h"
 #import "THPeerRelay.h"
 #import "THPath.h"
-#import "THCipherSet2a.h"
+#import "E3XCipherSet2a.h"
 #import "THUnreliableChannel.h"
 #import "THReliableChannel.h"
 #import "CLCLog.h"
-#import "THCipherSet3a.h"
+#import "E3XCipherSet3a.h"
 #import "THRelay.h"
 
 #include <arpa/inet.h>
@@ -220,11 +220,11 @@
         // TODO:  XXX Can this become a function?  is it a generic pattern?
         NSDictionary* fromParts = [innerPacket.json objectForKey:@"from"];
         NSString* highestPart = [[fromParts.allKeys sortedArrayUsingSelector:@selector(compare:)] lastObject];
-        THCipherSet* cs;
+        E3XCipherSet* cs;
         if ([highestPart isEqualToString:@"3a"]) {
-            cs = [[THCipherSet3a alloc] initWithPublicKey:innerPacket.body privateKey:nil];
+            cs = [[E3XCipherSet3a alloc] initWithPublicKey:innerPacket.body privateKey:nil];
         } else if ([highestPart isEqualToString:@"2a"]) {
-            cs = [[THCipherSet2a alloc] initWithPublicKey:innerPacket.body privateKey:nil];
+            cs = [[E3XCipherSet2a alloc] initWithPublicKey:innerPacket.body privateKey:nil];
         }
         THIdentity* peerIdentity = [THIdentity identityFromParts:fromParts key:cs];
         if (!peerIdentity) {

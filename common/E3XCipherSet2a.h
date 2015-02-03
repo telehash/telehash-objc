@@ -6,12 +6,12 @@
 //  Copyright (c) 2014 Telehash Foundation. All rights reserved.
 //
 
-#import "THCipherSet.h"
+#import "E3XCipherSet.h"
 
 @class ECDH;
 @class RSA;
 
-@interface THCipherSet2a : THCipherSet
+@interface E3XCipherSet2a : E3XCipherSet
 @property (retain) RSA* rsaKeys;
 -(void)generateKeys;
 -(id)initWithPublicKeyPath:(NSString*)publicKeyPath privateKeyPath:(NSString*)privateKeyPath;

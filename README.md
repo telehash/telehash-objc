@@ -1,5 +1,26 @@
 #Telehash for Objective-C#
 
+## migration from v2 -> v3 progress
+
+TODO:
+
+* remove meshbuckets
+* refactor THPath into THPipe, clean up transports
+* update cs2a/cs3a encodings
+* handle multiple handshakes to app callback
+* rework e3x interface/abstraction to match the spec api
+* reorg how the peer/connect works (only need send/receive, not relay to start)
+
+DONE:
+
+* renamed THCipherSet* to E3XCipherSet*
+* renamed THChannel* to E3XChannel*
+* renamed THLine to E3XExchange
+* renamed THIdentity to THLink
+* renamed THSwitch to THMesh
+
+
+
 Using with CocoaPods
 --------------------
 

@@ -6,10 +6,10 @@
 //  Copyright (c) 2014 Telehash Foundation. All rights reserved.
 //
 
-#import "THCipherSet.h"
+#import "E3XCipherSet.h"
 #include <sodium.h>
 
-@interface THCipherSet3a : THCipherSet
+@interface E3XCipherSet3a : E3XCipherSet
 {
     uint8_t publicKey[crypto_box_PUBLICKEYBYTES];
     uint8_t secretKey[crypto_box_SECRETKEYBYTES];
