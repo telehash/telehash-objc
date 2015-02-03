@@ -12,7 +12,6 @@
 #import "NSString+HexString.h"
 #import "E3XExchange.h"
 #import "E3XChannel.h"
-#import "THMeshBuckets.h"
 #import "THPendingJob.h"
 #import "E3XCipherSet.h"
 #import "NSData+HexString.h"
@@ -56,8 +55,6 @@
 -(id)init;
 {
     if (self) {
-        self.meshBuckets = [THMeshBuckets new];
-        self.meshBuckets.localSwitch = self;
         self.openLines = [NSMutableDictionary dictionary];
         self.pendingJobs = [NSMutableArray array];
         self.transports = [NSMutableDictionary dictionary];
@@ -70,7 +67,6 @@
 -(void)setIdentity:(THLink *)identity
 {
     _identity = identity;
-    self.meshBuckets.localIdentity = identity;
 }
 
 -(THLink*)identity
@@ -80,7 +76,6 @@
 
 -(void)start
 {
-    self.meshBuckets.localIdentity = self.identity;
     // XXX TODO FIXME For each path start it
     for (NSString* key in self.transports) {
         [[self.transports objectForKey:key] start];
@@ -285,15 +280,7 @@
         return;
     }
     
-    // Find a way to it from the mesh
-	if (!existingPendingJob) {
-		[self.meshBuckets seek:toIdentity completion:^(BOOL found) {
-			if (found) {
-				CLCLogDebug(@"identity %@ found in meshbuckets", toIdentity.hashname);
-				[self openLine:toIdentity completion:lineOpenCompletion];
-			}
-		}];
-	}
+    // TODO ask a router
 }
 
 -(void)closeLine:(E3XExchange *)line
@@ -302,7 +289,6 @@
 		line.cachedOpen = nil;
 	}
 	
-	[self.meshBuckets removeLine:line];
     if (line.inLineId) [self.openLines removeObjectForKey:line.inLineId];
 	
 	if (line.toIdentity.currentLine == line) {
@@ -356,7 +342,6 @@
     }
     
     // remove any existing lines to this hashname
-    [self.meshBuckets removeLine:newLine];
     if (newLine.inLineId) [self.openLines removeObjectForKey:newLine.inLineId];
     
     __block THPendingJob* pendingLineJob = nil;
@@ -385,7 +370,6 @@
         
         if (pendingLineJob) pendingLineJob.handler(newLine);
         
-        [self.meshBuckets linkToIdentity:newLine.toIdentity];
     } else {
         [newLine sendOpen];
         [newLine openLine];
@@ -400,12 +384,9 @@
         
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
             E3XChannel* linkChannel = [newLine.toIdentity channelForType:@"link"];
-            if (!linkChannel) {
-                [self.meshBuckets linkToIdentity:newLine.toIdentity];
-            }
+            // TODO what to do here??
         });
 		
-        [self.meshBuckets addIdentity:newLine.toIdentity];
     }
 	
 	// negotiate path after a short delay to allow any bridge path to come in

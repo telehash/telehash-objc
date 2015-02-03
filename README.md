@@ -4,7 +4,6 @@
 
 TODO:
 
-* remove meshbuckets
 * refactor THPath into THPipe, clean up transports
 * update cs2a/cs3a encodings
 * handle multiple handshakes to app callback
@@ -18,7 +17,7 @@ DONE:
 * renamed THLine to E3XExchange
 * renamed THIdentity to THLink
 * renamed THSwitch to THMesh
-
+* removed THMeshBuckets, casualties of "seek" and "link" channel handlers
 
 
 Using with CocoaPods

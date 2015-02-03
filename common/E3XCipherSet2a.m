@@ -14,7 +14,6 @@
 #import "GCMAES256.h"
 #import "NSString+HexString.h"
 #import "E3XExchange.h"
-#import "THMeshBuckets.h"
 #import "THPendingJob.h"
 #import "ECDH.h"
 #import "RNG.h"

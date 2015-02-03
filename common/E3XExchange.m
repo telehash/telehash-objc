@@ -18,7 +18,6 @@
 #import "CTRAES256.h"
 #import "NSString+HexString.h"
 #import "E3XChannel.h"
-#import "THMeshBuckets.h"
 #import "E3XCipherSet.h"
 #import "THPeerRelay.h"
 #import "THPath.h"
@@ -139,48 +138,7 @@
     
     E3XChannel* channel = [self.toIdentity.channels objectForKey:channelId];
     
-    if ([channelType isEqualToString:@"seek"]) {
-        // On a seek we send back what we know about
-        THPacket* response = [THPacket new];
-        [response.json setObject:@(YES) forKey:@"end"];
-        [response.json setObject:channelId forKey:@"c"];
-        THMesh* defaultSwitch = [THMesh defaultSwitch];
-		
-		THLink* identity = [THLink identityFromHashname:[innerPacket.json objectForKey:@"seek"]];
-        NSArray* seeIdentities = [defaultSwitch.meshBuckets closeInBucket:identity];
-		NSMutableArray* sees = [NSMutableArray array];
-		
-		if (seeIdentities != nil) {
-			for (THLink* seeIdentity in seeIdentities) {
-				NSString* seekString = [seeIdentity seekStringForIdentity:identity];
-				if (seekString) {
-					[sees addObject:seekString];
-				}
-			}
-		}
-		
-        [response.json setObject:sees forKey:@"see"];
-        
-        [self sendPacket:response];
-    } else if ([channelType isEqualToString:@"link"] && !channel) {
-        THMesh* defaultSwitch = [THMesh defaultSwitch];
-        
-        [defaultSwitch.meshBuckets addIdentity:self.toIdentity];
-        
-        E3XUnreliableChannel* linkChannel = [[E3XUnreliableChannel alloc] initToIdentity:self.toIdentity];
-        linkChannel.channelId = [innerPacket.json objectForKey:@"c"];
-        linkChannel.type = @"link";
-        linkChannel.delegate = defaultSwitch.meshBuckets;
-        linkChannel.lastInActivity = time(NULL);
-		linkChannel.direction = THChannelInbound;
-		
-        E3XUnreliableChannel* curChannel = (E3XUnreliableChannel*)[self.toIdentity channelForType:@"link"];
-        if (curChannel) {
-            [self.toIdentity.channels removeObjectForKey:curChannel.channelId];
-        }
-        [defaultSwitch openChannel:linkChannel firstPacket:nil];
-        [defaultSwitch.meshBuckets channel:linkChannel handlePacket:innerPacket];
-    } else if ([channelType isEqualToString:@"peer"]) {
+    if ([channelType isEqualToString:@"peer"]) {
         // TODO:  Check this logic in association with the move to channels on identity
 		CLCLogInfo(@"peer request to %@", [innerPacket.json objectForKey:@"peer"]);
         E3XExchange* peerLine = [thSwitch lineToHashname:[innerPacket.json objectForKey:@"peer"]];

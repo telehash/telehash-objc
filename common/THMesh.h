@@ -13,7 +13,6 @@
 @class E3XChannel;
 @class THPacket;
 @class E3XExchange;
-@class THMeshBuckets;
 @class THTransport;
 
 typedef enum {
@@ -43,7 +42,6 @@ typedef void(^LineOpenBlock)(THLink*);
 
 +(id)defaultSwitch;
 
-@property THMeshBuckets* meshBuckets;
 @property NSMutableDictionary* openLines;
 @property NSMutableArray* pendingJobs;
 @property THLink* identity;
