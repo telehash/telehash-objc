@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "THChannel.h"
 
-@class THIdentity;
+@class THLink;
 @class THChannel;
 
 @interface THPeerRelay : NSObject<THChannelDelegate>

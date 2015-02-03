@@ -7,14 +7,14 @@
 //  Copyright (c) 2013 Telehash Foundation. All rights reserved.
 //
 
-#import "THLine.h"
+#import "E3XExchange.h"
 #import "THPacket.h"
 #import "RNG.h"
 #import "NSData+HexString.h"
 #import "SHA256.h"
-#import "THIdentity.h"
+#import "THLink.h"
 #import "THRSA.h"
-#import "THSwitch.h"
+#import "THMesh.h"
 #import "CTRAES256.h"
 #import "NSString+HexString.h"
 #import "THChannel.h"
@@ -32,10 +32,10 @@
 #include <arpa/inet.h>
 
 @interface THPathHandler : NSObject<THChannelDelegate>
-@property THLine* line;
+@property E3XExchange* line;
 @end
 
-@implementation THLine
+@implementation E3XExchange
 {
     NSUInteger _nextChannelId;
     NSMutableArray* channelHandlers;
@@ -56,7 +56,7 @@
 {
 	self.lastOutActivity = time(NULL);
 	
-    THSwitch* defaultSwitch = [THSwitch defaultSwitch];
+    THMesh* defaultSwitch = [THMesh defaultSwitch];
 	
 	if (!self.cachedOpen) {
 		self.cachedOpen = [defaultSwitch generateOpen:self];
@@ -88,7 +88,7 @@
 -(void)openLine;
 {
     // Do the distance calc and see if we start at 1 or 2
-    THSwitch* thSwitch = [THSwitch defaultSwitch];
+    THMesh* thSwitch = [THMesh defaultSwitch];
     if ([self.toIdentity.hashname compare:thSwitch.identity.hashname] == NSOrderedAscending) {
         _nextChannelId = 1;
     } else {
@@ -132,7 +132,7 @@
     }
     NSString* channelType = [innerPacket.json objectForKey:@"type"];
     
-    THSwitch* thSwitch = [THSwitch defaultSwitch];
+    THMesh* thSwitch = [THMesh defaultSwitch];
     
     // if the switch is handling it bail
     if ([thSwitch findPendingSeek:innerPacket]) return;
@@ -144,14 +144,14 @@
         THPacket* response = [THPacket new];
         [response.json setObject:@(YES) forKey:@"end"];
         [response.json setObject:channelId forKey:@"c"];
-        THSwitch* defaultSwitch = [THSwitch defaultSwitch];
+        THMesh* defaultSwitch = [THMesh defaultSwitch];
 		
-		THIdentity* identity = [THIdentity identityFromHashname:[innerPacket.json objectForKey:@"seek"]];
+		THLink* identity = [THLink identityFromHashname:[innerPacket.json objectForKey:@"seek"]];
         NSArray* seeIdentities = [defaultSwitch.meshBuckets closeInBucket:identity];
 		NSMutableArray* sees = [NSMutableArray array];
 		
 		if (seeIdentities != nil) {
-			for (THIdentity* seeIdentity in seeIdentities) {
+			for (THLink* seeIdentity in seeIdentities) {
 				NSString* seekString = [seeIdentity seekStringForIdentity:identity];
 				if (seekString) {
 					[sees addObject:seekString];
@@ -163,7 +163,7 @@
         
         [self sendPacket:response];
     } else if ([channelType isEqualToString:@"link"] && !channel) {
-        THSwitch* defaultSwitch = [THSwitch defaultSwitch];
+        THMesh* defaultSwitch = [THMesh defaultSwitch];
         
         [defaultSwitch.meshBuckets addIdentity:self.toIdentity];
         
@@ -183,7 +183,7 @@
     } else if ([channelType isEqualToString:@"peer"]) {
         // TODO:  Check this logic in association with the move to channels on identity
 		CLCLogInfo(@"peer request to %@", [innerPacket.json objectForKey:@"peer"]);
-        THLine* peerLine = [thSwitch lineToHashname:[innerPacket.json objectForKey:@"peer"]];
+        E3XExchange* peerLine = [thSwitch lineToHashname:[innerPacket.json objectForKey:@"peer"]];
         if (!peerLine) {
 			CLCLogWarning(@"unable to establish line for peer request");
             // What? We don't know about this person, bye bye
@@ -226,7 +226,7 @@
         } else if ([highestPart isEqualToString:@"2a"]) {
             cs = [[E3XCipherSet2a alloc] initWithPublicKey:innerPacket.body privateKey:nil];
         }
-        THIdentity* peerIdentity = [THIdentity identityFromParts:fromParts key:cs];
+        THLink* peerIdentity = [THLink identityFromParts:fromParts key:cs];
         if (!peerIdentity) {
             // We couldn't verify the identity, so shut it down
             THPacket* closePacket = [THPacket new];
@@ -334,7 +334,7 @@
 			newChannel.direction = THChannelInbound;
             newChannel.type = channelType;
 			
-            THSwitch* defaultSwitch = [THSwitch defaultSwitch];
+            THMesh* defaultSwitch = [THMesh defaultSwitch];
             [self.toIdentity.channels setObject:newChannel forKey:channelId];
             [newChannel handlePacket:innerPacket];
 			
@@ -384,7 +384,7 @@
         [self.toIdentity.relay sendPacket:lineOutPacket];
     } else {
 		CLCLogWarning(@"no path or relay available on line to %@, attempting a re-open", self.toIdentity.hashname);
-		[[THSwitch defaultSwitch] openLine:self.toIdentity];
+		[[THMesh defaultSwitch] openLine:self.toIdentity];
 		//TODO: we need to pause the channel and buffer before we actually get here...
 	}
     
@@ -397,12 +397,12 @@
 
 -(void)close
 {
-    [[THSwitch defaultSwitch] closeLine:self];
+    [[THMesh defaultSwitch] closeLine:self];
 }
 
 -(void)negotiatePath
 {
-    THSwitch* thSwitch = [THSwitch defaultSwitch];
+    THMesh* thSwitch = [THMesh defaultSwitch];
 
     THPacket* pathPacket = [THPacket new];
     [pathPacket.json setObject:[thSwitch.identity pathInformationTo:self.toIdentity allowLocal:YES] forKey:@"paths"];
@@ -437,7 +437,7 @@
 
 -(void)handlePath:(THPacket*)packet
 {
-    THSwitch* thSwitch = [THSwitch defaultSwitch];
+    THMesh* thSwitch = [THMesh defaultSwitch];
     
     // Add the given paths to the identity
     NSArray* offeredPaths = [packet.json objectForKey:@"paths"];
@@ -482,7 +482,7 @@
 
 -(BOOL)channel:(THChannel *)channel handlePacket:(THPacket *)packet
 {
-    THSwitch* thSwitch = [THSwitch defaultSwitch];
+    THMesh* thSwitch = [THMesh defaultSwitch];
     NSDictionary* returnPath = [packet.json objectForKey:@"path"];
     
     // See if our switch has this identity, we can learn our public IP this way

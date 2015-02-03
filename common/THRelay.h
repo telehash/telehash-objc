@@ -12,11 +12,11 @@
 #import "THPath.h"
 
 @interface THRelay : NSObject<THChannelDelegate>
-@property (assign) THIdentity* toIdentity;
-@property (retain) THIdentity* relayIdentity;
+@property (assign) THLink* toIdentity;
+@property (retain) THLink* relayIdentity;
 @property (retain) THPath* relayedPath;
 @property (weak) THUnreliableChannel* peerChannel;
 -(id)initOnChannel:(THUnreliableChannel*)channel;
--(void)attachVia:(THIdentity*)viaIdentity;
+-(void)attachVia:(THLink*)viaIdentity;
 -(void)sendPacket:(THPacket *)packet;
 @end

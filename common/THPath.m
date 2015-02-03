@@ -8,7 +8,7 @@
 
 #import "THPath.h"
 #import "THPeerRelay.h"
-#import "THSwitch.h"
+#import "THMesh.h"
 #import "GCDAsyncUdpSocket.h"
 #import "THPacket.h"
 #import "THTransport.h"

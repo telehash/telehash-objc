@@ -17,7 +17,7 @@
     NSUInteger lastProcessed;
 }
 @property NSUInteger nextExpectedSequence;
--(id)initToIdentity:(THIdentity*)identity;
+-(id)initToIdentity:(THLink*)identity;
 -(void)handlePacket:(THPacket*)packet;
 -(void)sendPacket:(THPacket*)packet;
 -(void)flushOut;

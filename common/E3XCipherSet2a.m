@@ -8,12 +8,12 @@
 
 #import "E3XCipherSet2a.h"
 #import "THPacket.h"
-#import "THIdentity.h"
-#import "THSwitch.h"
+#import "THLink.h"
+#import "THMesh.h"
 #import "SHA256.h"
 #import "GCMAES256.h"
 #import "NSString+HexString.h"
-#import "THLine.h"
+#import "E3XExchange.h"
 #import "THMeshBuckets.h"
 #import "THPendingJob.h"
 #import "ECDH.h"
@@ -77,7 +77,7 @@ static unsigned char eccHeader[] = {0x04};
     return self.rsaKeys.DERPublicKey;
 }
 
--(THLine*)processOpen:(THPacket *)openPacket
+-(E3XExchange*)processOpen:(THPacket *)openPacket
 {
     // Process an open packet
     NSData* remoteECCKey = [self.rsaKeys decrypt:[openPacket.body subdataWithRange:NSMakeRange(1, 256)]];
@@ -116,7 +116,7 @@ static unsigned char eccHeader[] = {0x04};
         CLCLogInfo(@"Unable to verify the incoming key fingerprint");
         return nil;
     }
-    THIdentity* senderIdentity = [THIdentity identityFromParts:[innerPacket.json objectForKey:@"from"] key:incomingCS];
+    THLink* senderIdentity = [THLink identityFromParts:[innerPacket.json objectForKey:@"from"] key:incomingCS];
     if (!senderIdentity) {
         CLCLogInfo(@"Unable to validate and verify identity");
         return nil;
@@ -163,7 +163,7 @@ static unsigned char eccHeader[] = {0x04};
 		[senderIdentity closeChannels];
     }
     
-    THLine* newLine = senderIdentity.currentLine;
+    E3XExchange* newLine = senderIdentity.currentLine;
     
     if (newLine) {
         // This is a partially opened line
@@ -173,7 +173,7 @@ static unsigned char eccHeader[] = {0x04};
 		// TODO temas review
 		//newLine.cipherSetInfo = lineInfo; //??
     } else {
-        newLine = [THLine new];
+        newLine = [E3XExchange new];
         newLine.toIdentity = senderIdentity;
         senderIdentity.currentLine = newLine;
         
@@ -188,7 +188,7 @@ static unsigned char eccHeader[] = {0x04};
     return newLine;
 }
 
--(void)finalizeLineKeys:(THLine*)line
+-(void)finalizeLineKeys:(E3XExchange*)line
 {
     THCipherSetLineInfo2a* lineInfo = (THCipherSetLineInfo2a*)line.cipherSetInfo;
     // Make sure we have a valid ECDH context
@@ -213,7 +213,7 @@ static unsigned char eccHeader[] = {0x04};
     lineInfo.encryptorKey = [SHA256 hashWithData:keyingMaterial];
 }
 
--(THPacket*)generateOpen:(THLine*)line from:(THIdentity*)fromIdentity
+-(THPacket*)generateOpen:(E3XExchange*)line from:(THLink*)fromIdentity
 {
     if (!line.cipherSetInfo) {
         // FIXME, should be the remote cipherSet

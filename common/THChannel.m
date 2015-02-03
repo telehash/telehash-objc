@@ -8,13 +8,13 @@
 
 #import "THChannel.h"
 #import "THPacket.h"
-#import "THIdentity.h"
+#import "THLink.h"
 #import "RNG.h"
 #import "NSData+HexString.h"
 #import "SHA256.h"
-#import "THSwitch.h"
+#import "THMesh.h"
 #import "CTRAES256.h"
-#import "THLine.h"
+#import "E3XExchange.h"
 #import "THPacketBuffer.h"
 
 @implementation THChannel
@@ -22,7 +22,7 @@
     THChannelState _state;
 }
 
--(id)initToIdentity:(THIdentity*)identity
+-(id)initToIdentity:(THLink*)identity
 {
     self = [super init];
     if (self) {
@@ -33,7 +33,7 @@
 		self.createdAt = time(NULL);
         self.lastInActivity = 0;
         self.lastOutActivity = 0;
-        THSwitch* defaultSwitch = [THSwitch defaultSwitch];
+        THMesh* defaultSwitch = [THMesh defaultSwitch];
         self.line = [defaultSwitch lineToHashname:self.toIdentity.hashname];
     }
     return self;

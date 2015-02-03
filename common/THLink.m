@@ -6,13 +6,13 @@
 //  Copyright (c) 2013 Telehash Foundation. All rights reserved.
 //
 
-#import "THIdentity.h"
+#import "THLink.h"
 #import "SHA256.h"
 #import "NSData+HexString.h"
 #import "NSString+HexString.h"
 #import "THPacket.h"
-#import "THLine.h"
-#import "THSwitch.h"
+#import "E3XExchange.h"
+#import "THMesh.h"
 #import "THChannel.h"
 #import "CTRAES256.h"
 #import "E3XCipherSet.h"
@@ -23,25 +23,25 @@
 
 static NSMutableDictionary* identityCache;
 
-@interface THIdentity() {
+@interface THLink() {
     NSString* _hashnameCache;
 }
 @end
 
-@implementation THIdentity
+@implementation THLink
 
 + (void)initialize {
-    if (self == [THIdentity self]) {
+    if (self == [THLink self]) {
         identityCache = [NSMutableDictionary dictionary];
     }
 }
 
 +(id)identityFromParts:(NSDictionary *)parts key:(E3XCipherSet*)cs
 {
-    THIdentity* identity = [identityCache objectForKey:[THIdentity hashnameForParts:parts]];
+    THLink* identity = [identityCache objectForKey:[THLink hashnameForParts:parts]];
     if (!identity) {
         // Load the parts and validate the key
-        identity = [[THIdentity alloc] initWithParts:parts key:cs];
+        identity = [[THLink alloc] initWithParts:parts key:cs];
         if (identity) [identityCache setObject:identity forKey:identity.hashname];
     } else {
         // Let's make sure we get it set
@@ -54,9 +54,9 @@ static NSMutableDictionary* identityCache;
 
 +(id)identityFromHashname:(NSString *)hashname;
 {
-    THIdentity* identity = [identityCache objectForKey:hashname];
+    THLink* identity = [identityCache objectForKey:hashname];
     if (!identity) {
-        identity = [[THIdentity alloc] initWithHashname:hashname];
+        identity = [[THLink alloc] initWithHashname:hashname];
         if (identity) [identityCache setObject:identity forKey:hashname];
     }
 	
@@ -121,7 +121,7 @@ static NSMutableDictionary* identityCache;
 -(NSString*)hashname;
 {
     if (!_hashnameCache) {
-        _hashnameCache = [THIdentity hashnameForParts:self.parts];
+        _hashnameCache = [THLink hashnameForParts:self.parts];
     }
     return _hashnameCache;
 }
@@ -142,7 +142,7 @@ int nlz(unsigned long x) {
     return 3;
 }
 
--(NSInteger)distanceFrom:(THIdentity *)identity;
+-(NSInteger)distanceFrom:(THLink *)identity;
 {
     NSData* ourHashname = [self.hashname dataUsingEncoding:NSASCIIStringEncoding allowLossyConversion:NO];
     const char* ourHashBytes = (const char*)[ourHashname bytes];
@@ -167,7 +167,7 @@ int nlz(unsigned long x) {
 -(void)sendPacket:(THPacket *)packet path:(THPath*)path
 {
     if (!self.currentLine) {
-        [[THSwitch defaultSwitch] openLine:self completion:^(THIdentity* lineIdentity) {
+        [[THMesh defaultSwitch] openLine:self completion:^(THLink* lineIdentity) {
             [self.currentLine sendPacket:packet path:path];
         }];
     } else {
@@ -206,7 +206,7 @@ int nlz(unsigned long x) {
     }
 }
 
--(NSString*)seekStringForIdentity:(THIdentity*)identity
+-(NSString*)seekStringForIdentity:(THLink*)identity
 {
 	NSMutableSet* ourIDs = [NSMutableSet setWithArray:[self.cipherParts allKeys]];
     [ourIDs intersectSet:[NSSet setWithArray:[identity.cipherParts allKeys]]];
@@ -251,7 +251,7 @@ int nlz(unsigned long x) {
     if (existingPath) return;
     
     // See if this path matches any of ours and flag it as local
-    THSwitch* thSwitch = [THSwitch defaultSwitch];
+    THMesh* thSwitch = [THMesh defaultSwitch];
     for (THPath* switchPath in thSwitch.identity.availablePaths) {
         if ([switchPath pathIsLocalTo:path]) {
             self.isLocal = YES;
@@ -262,7 +262,7 @@ int nlz(unsigned long x) {
     [self.availablePaths addObject:path];
 }
 
--(NSArray*)pathInformationTo:(THIdentity *)toIdentity allowLocal:(BOOL)allowLocal
+-(NSArray*)pathInformationTo:(THLink *)toIdentity allowLocal:(BOOL)allowLocal
 {
     NSMutableArray* paths = [NSMutableArray arrayWithCapacity:self.availablePaths.count];
     for(THPath* path in self.availablePaths) {
@@ -304,7 +304,7 @@ int nlz(unsigned long x) {
     }
 }
 
--(void)addVia:(THIdentity*)viaIdentity
+-(void)addVia:(THLink*)viaIdentity
 {
 	// quick and dirty to ensure no duups
 	[self.vias removeObject:viaIdentity];
@@ -316,7 +316,7 @@ int nlz(unsigned long x) {
 	if (!self.isSeed) {
 		NSPredicate* seedFilter = [NSPredicate predicateWithFormat:@"SELF.isSeed == YES"];
 		NSArray* seeds = [[identityCache allValues] filteredArrayUsingPredicate:seedFilter];
-		for (THIdentity* seed in seeds) {
+		for (THLink* seed in seeds) {
 			[self addVia:seed];
 		}
 	}
@@ -376,7 +376,7 @@ int nlz(unsigned long x) {
 	}
 	
 	if (self.currentLine) {
-		[[THSwitch defaultSwitch] closeLine:self.currentLine];
+		[[THMesh defaultSwitch] closeLine:self.currentLine];
 	}
 	
 	self.currentLine = nil;

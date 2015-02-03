@@ -9,17 +9,17 @@
 #import <Foundation/Foundation.h>
 
 @class THPacket;
-@class THSwitch;
-@class THLine;
-@class THIdentity;
+@class THMesh;
+@class E3XExchange;
+@class THLink;
 
 @interface E3XCipherSet : NSObject
 @property (readonly) NSData* fingerprint;
 @property (readonly) NSData* publicKey;
 +(E3XCipherSet*)cipherSetForOpen:(THPacket*)openPacket;
--(THLine*)processOpen:(THPacket*)openPacket;
--(void)finalizeLineKeys:(THLine*)line;
--(THPacket*)generateOpen:(THLine*)line from:(THIdentity*)fromIdentity;
+-(E3XExchange*)processOpen:(THPacket*)openPacket;
+-(void)finalizeLineKeys:(E3XExchange*)line;
+-(THPacket*)generateOpen:(E3XExchange*)line from:(THLink*)fromIdentity;
 -(void)generateKeys;
 -(NSString*)identifier;
 @end

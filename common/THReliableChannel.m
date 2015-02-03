@@ -22,7 +22,7 @@
 @end
 
 @implementation THReliableChannel
--(id)initToIdentity:(THIdentity *)identity;
+-(id)initToIdentity:(THLink *)identity;
 {
     self = [super initToIdentity:identity];
     if (self) {

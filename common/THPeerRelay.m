@@ -7,7 +7,7 @@
 //
 
 #import "THPeerRelay.h"
-#import "THIdentity.h"
+#import "THLink.h"
 #import "THPacket.h"
 #import "CLCLog.h"
 

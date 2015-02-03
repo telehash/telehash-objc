@@ -7,7 +7,7 @@
 //
 
 #import <Cocoa/Cocoa.h>
-#import <THSwitch.h>
+#import <THMesh.h>
 #import <THChannel.h>
 
 @interface THAppDelegate : NSObject <THSwitchDelegate, THChannelDelegate, NSTableViewDataSource, NSTableViewDelegate> {
@@ -19,7 +19,7 @@
     IBOutlet NSTextField* pathField;
     IBOutlet NSObjectController* objController;
     IBOutlet NSArrayController* channelArrayController;
-    THSwitch* thSwitch;
+    THMesh* thSwitch;
 }
 
 @property NSString* identityPath;

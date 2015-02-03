@@ -21,7 +21,7 @@
     CLCLogDebug(@"gone for unreliable %@", self.channelId);
 }
 
--(id)initToIdentity:(THIdentity *)identity;
+-(id)initToIdentity:(THLink *)identity;
 {
     self = [super initToIdentity:identity];
     return self;

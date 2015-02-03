@@ -8,8 +8,8 @@
 
 #import "E3XCipherSet.h"
 #import "THPacket.h"
-#import "THIdentity.h"
-#import "THLine.h"
+#import "THLink.h"
+#import "E3XExchange.h"
 #import "E3XCipherSet2a.h"
 #import "E3XCipherSet3a.h"
 #import "CLCLog.h"
@@ -28,7 +28,7 @@
     }
 }
 
--(THLine*)processOpen:(THPacket*)openPacket switch:(THSwitch*)thSwitch
+-(E3XExchange*)processOpen:(THPacket*)openPacket switch:(THMesh*)thSwitch
 {
     CLCLogError(@"Not implemented");
     return nil;
@@ -40,7 +40,7 @@
     return nil;
 }
 
--(void)finalizeLineKeys:(THLine *)line
+-(void)finalizeLineKeys:(E3XExchange *)line
 {
     CLCLogError(@"Not implemented THCipherSet finalizeKeys");
 }

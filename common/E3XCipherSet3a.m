@@ -10,8 +10,8 @@
 #import "THPacket.h"
 #import "SHA256.h"
 #import "NSData+HexString.h"
-#import "THIdentity.h"
-#import "THLine.h"
+#import "THLink.h"
+#import "E3XExchange.h"
 #import "NSString+HexString.h"
 #import "RNG.h"
 #import "CLCLog.h"
@@ -68,7 +68,7 @@ static uint8_t nonce3a[crypto_secretbox_NONCEBYTES] = {0, 0, 0, 0, 0, 0, 0, 0, 0
     return [SHA256 hashWithData:[NSData dataWithBytesNoCopy:publicKey length:crypto_box_PUBLICKEYBYTES freeWhenDone:NO]];
 }
 
--(THLine*)processOpen:(THPacket*)openPacket;
+-(E3XExchange*)processOpen:(THPacket*)openPacket;
 {
     // Process an open packet
     NSData* pubLineKey = [openPacket.body subdataWithRange:NSMakeRange(crypto_onetimeauth_BYTES + 1, crypto_box_PUBLICKEYBYTES)];
@@ -113,7 +113,7 @@ static uint8_t nonce3a[crypto_secretbox_NONCEBYTES] = {0, 0, 0, 0, 0, 0, 0, 0, 0
         return nil;
     }
     
-    THIdentity* senderIdentity = [THIdentity identityFromParts:[innerPacket.json objectForKey:@"from"] key:incomingCS];
+    THLink* senderIdentity = [THLink identityFromParts:[innerPacket.json objectForKey:@"from"] key:incomingCS];
     if (!senderIdentity) {
         CLCLogInfo(@"Unable to validate and verify identity");
         return nil;
@@ -138,13 +138,13 @@ static uint8_t nonce3a[crypto_secretbox_NONCEBYTES] = {0, 0, 0, 0, 0, 0, 0, 0, 0
         [senderIdentity closeChannels];
     }
     
-    THLine* newLine = senderIdentity.currentLine;
+    E3XExchange* newLine = senderIdentity.currentLine;
     if (newLine) {
         // This is a partially opened line
         THCipherSetLineInfo3a* lineInfo = (THCipherSetLineInfo3a*)newLine.cipherSetInfo;
         lineInfo.remoteLineKey = pubLineKey;
     } else {
-        newLine = [THLine new];
+        newLine = [E3XExchange new];
         newLine.toIdentity = senderIdentity;
         senderIdentity.currentLine = newLine;
         
@@ -160,7 +160,7 @@ static uint8_t nonce3a[crypto_secretbox_NONCEBYTES] = {0, 0, 0, 0, 0, 0, 0, 0, 0
     
 }
 
--(void)finalizeLineKeys:(THLine*)line
+-(void)finalizeLineKeys:(E3XExchange*)line
 {
     THCipherSetLineInfo3a* lineInfo = (THCipherSetLineInfo3a*)line.cipherSetInfo;
     
@@ -181,7 +181,7 @@ static uint8_t nonce3a[crypto_secretbox_NONCEBYTES] = {0, 0, 0, 0, 0, 0, 0, 0, 0
     //CLCLogDebug(@"Encryptor key %@",  lineInfo.encryptorKey);
     
 }
--(THPacket*)generateOpen:(THLine*)line from:(THIdentity*)fromIdentity
+-(THPacket*)generateOpen:(E3XExchange*)line from:(THLink*)fromIdentity
 {
     if (!line.cipherSetInfo) {
         THCipherSetLineInfo3a* lineInfo = [THCipherSetLineInfo3a new];

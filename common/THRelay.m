@@ -30,9 +30,9 @@
     return self;
 }
 
--(void)attachVia:(THIdentity*)viaIdentity
+-(void)attachVia:(THLink*)viaIdentity
 {
-	THSwitch* defaultSwitch = [THSwitch defaultSwitch];
+	THMesh* defaultSwitch = [THMesh defaultSwitch];
 	
 	THUnreliableChannel* peerChannel = [[THUnreliableChannel alloc] initToIdentity:viaIdentity];
 	peerChannel.type = @"peer";
@@ -113,7 +113,7 @@
 		self.relayIdentity = channel.toIdentity;
 	}
 
-    [[THSwitch defaultSwitch] handlePacket:relayedPacket];
+    [[THMesh defaultSwitch] handlePacket:relayedPacket];
     
     return YES;
 }

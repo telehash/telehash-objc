@@ -7,12 +7,12 @@
 //
 
 #import "THMeshBuckets.h"
-#import "THIdentity.h"
-#import "THLine.h"
+#import "THLink.h"
+#import "E3XExchange.h"
 #import "THPacket.h"
 #import "RNG.h"
 #import "NSData+HexString.h"
-#import "THSwitch.h"
+#import "THMesh.h"
 #import "THPendingJob.h"
 #import "THChannel.h"
 #import "THPath.h"
@@ -25,9 +25,9 @@
 #define MAX_POTENTIAL_BRIDGES 5
 
 @interface PendingSeekJob : NSObject<THChannelDelegate>
-@property THIdentity* localIdentity;
-@property THIdentity* seekingIdentity;
-@property THSwitch* localSwitch;
+@property THLink* localIdentity;
+@property THLink* seekingIdentity;
+@property THMesh* localSwitch;
 @property NSMutableArray* nearby;
 @property NSUInteger runningSearches;
 @property (nonatomic, copy) SeekCompletionBlock completion;
@@ -64,7 +64,7 @@
         NSMutableArray* bucket = (NSMutableArray*)obj;
 		
         [bucket enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            THIdentity* identity = (THIdentity*)obj;
+            THLink* identity = (THLink*)obj;
 			THChannel* linkChannel = [identity channelForType:@"link"];
 			
 			if (linkChannel) {
@@ -101,7 +101,7 @@
     }];
 }
 
--(void)linkToIdentity:(THIdentity*)identity
+-(void)linkToIdentity:(THLink*)identity
 {
     [self addIdentity:identity];
 	
@@ -112,7 +112,7 @@
     NSMutableArray* sees = [NSMutableArray array];
 	
 	if (seeIdentities != nil) {
-		for (THIdentity* seeIdentity in seeIdentities) {
+		for (THLink* seeIdentity in seeIdentities) {
 			NSString* seekString = [seeIdentity seekStringForIdentity:identity];
 			if (seekString) {
 				[sees addObject:seekString];
@@ -127,7 +127,7 @@
         linkChannel = [[THUnreliableChannel alloc] initToIdentity:identity];
         [linkPacket.json setObject:@"link" forKey:@"type"];
 		
-        [[THSwitch defaultSwitch] openChannel:linkChannel firstPacket:linkPacket];
+        [[THMesh defaultSwitch] openChannel:linkChannel firstPacket:linkPacket];
     } else {
         [linkChannel sendPacket:linkPacket];
     }
@@ -135,7 +135,7 @@
     linkChannel.delegate = self;
 }
 
--(void)addIdentity:(THIdentity *)identity
+-(void)addIdentity:(THLink *)identity
 {
     NSInteger bucketIndex = [self.localIdentity distanceFrom:identity];
     NSMutableArray* bucket = [self.buckets objectAtIndex:bucketIndex];
@@ -162,7 +162,7 @@
     }
 
     for (NSUInteger i = 0; i < bucket.count; ++i) {
-        THIdentity* curIdentity = (THIdentity*)[bucket objectAtIndex:i];
+        THLink* curIdentity = (THLink*)[bucket objectAtIndex:i];
         if ([curIdentity.hashname isEqualToString:identity.hashname]) {
             return;
         }
@@ -171,14 +171,14 @@
     [bucket addObject:identity];
 }
 
--(void)removeLine:(THLine *)line
+-(void)removeLine:(E3XExchange *)line
 {
 	if (!line) return;
     NSInteger bucketIndex = [self.localIdentity distanceFrom:line.toIdentity];
     [[self.buckets objectAtIndex:bucketIndex] removeObject:line];
 }
 
--(NSArray*)closeInBucket:(THIdentity*)seekIdentity
+-(NSArray*)closeInBucket:(THLink*)seekIdentity
 {
     NSInteger bucketIndex = [self.localIdentity distanceFrom:seekIdentity];
     NSArray* bucket = [self.buckets objectAtIndex:bucketIndex];
@@ -197,7 +197,7 @@
     return [results subarrayWithRange:NSMakeRange(0, MIN(5, results.count))];
 }
 
--(NSArray*)nearby:(THIdentity*)seekIdentity;
+-(NSArray*)nearby:(THLink*)seekIdentity;
 {
     NSMutableArray* entries = [NSMutableArray array];
     NSInteger initialBucketIndex = [self.localIdentity distanceFrom:seekIdentity];
@@ -228,7 +228,7 @@
     return entries;
 }
 
--(void)seek:(THIdentity*)toIdentity completion:(SeekCompletionBlock)completion
+-(void)seek:(THLink*)toIdentity completion:(SeekCompletionBlock)completion
 {
     CLCLogDebug(@"Seeking for %@", toIdentity.hashname);
     
@@ -257,7 +257,7 @@
 
 -(BOOL)channel:(THChannel *)channel handlePacket:(THPacket *)packet
 {
-    THSwitch* defaultSwitch = [THSwitch defaultSwitch];
+    THMesh* defaultSwitch = [THMesh defaultSwitch];
     if (defaultSwitch.status != THSwitchOnline) {
         [defaultSwitch updateStatus:THSwitchOnline];
     }
@@ -278,7 +278,7 @@
         if (seeParts.count < 2) continue; // Minimum of hash,cs
         
         if ([[seeParts objectAtIndex:0] isEqualToString:self.localIdentity.hashname]) continue;
-        THIdentity* seeIdentity = [THIdentity identityFromHashname:[seeParts objectAtIndex:0]];
+        THLink* seeIdentity = [THLink identityFromHashname:[seeParts objectAtIndex:0]];
         NSInteger bucketIndex = [self.localIdentity distanceFrom:seeIdentity];
         NSMutableArray* bucket = [self.buckets objectAtIndex:bucketIndex];
         if (bucket == nil) {
@@ -317,7 +317,7 @@
 			NSMutableArray* sees = [NSMutableArray array];
 			
 			if (seeIdentities != nil) {
-				for (THIdentity* seeIdentity in seeIdentities) {
+				for (THLink* seeIdentity in seeIdentities) {
 					NSString* seekString = [seeIdentity seekStringForIdentity:channel.toIdentity];
 					if (seekString) {
 						[sees addObject:seekString];
@@ -357,10 +357,10 @@
     if (self.nearby.count == 0) return;
     
     // Resort and run the seek
-    THIdentity* identity = [self.nearby objectAtIndex:0];
+    THLink* identity = [self.nearby objectAtIndex:0];
     [self.nearby removeObjectAtIndex:0];
     
-    THSwitch* defaultSwitch = [THSwitch defaultSwitch];
+    THMesh* defaultSwitch = [THMesh defaultSwitch];
     ++self.runningSearches;
     
 	if (!identity.activePath) return;
@@ -414,7 +414,7 @@
             if ([[seeParts objectAtIndex:0] isEqualToString:self.localIdentity.hashname]) return;
 			
             // If we're moving closer we want to go ahead and start a seek to it
-            THIdentity* nearIdentity = [THIdentity identityFromHashname:[seeParts objectAtIndex:0]];
+            THLink* nearIdentity = [THLink identityFromHashname:[seeParts objectAtIndex:0]];
             [nearIdentity addVia:channel.toIdentity];
 			nearIdentity.suggestedCipherSet = [seeParts objectAtIndex:1];
             [self.nearby addObject:nearIdentity];

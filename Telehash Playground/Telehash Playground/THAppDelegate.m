@@ -7,9 +7,9 @@
 //
 
 #import "THAppDelegate.h"
-#import "THIdentity.h"
+#import "THLink.h"
 #import <THPacket.h>
-#import "THSwitch.h"
+#import "THMesh.h"
 #import "E3XCipherSet.h"
 #import "NSData+HexString.h"
 #import "THTransport.h"
@@ -45,9 +45,9 @@
 -(void)startSwitch:(id)sender
 {
     // Insert code here to initialize your application
-    thSwitch = [THSwitch defaultSwitch];
+    thSwitch = [THMesh defaultSwitch];
     thSwitch.delegate = self;
-    THIdentity* baseIdentity = [THIdentity new];
+    THLink* baseIdentity = [THLink new];
     self.identityPath = pathField.stringValue;
     E3XCipherSet3a* cs3a = [[E3XCipherSet3a alloc] initWithPublicKeyPath:[NSString stringWithFormat:@"%@/server3.pkey", self.identityPath] privateKeyPath:[NSString stringWithFormat:@"%@/server3.key", self.identityPath]];
     if (!cs3a) {
@@ -103,7 +103,7 @@
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex;
 {
     NSArray* keys = [thSwitch.openLines allKeys];
-    THLine* line = [thSwitch.openLines objectForKey:[keys objectAtIndex:rowIndex]];
+    E3XExchange* line = [thSwitch.openLines objectForKey:[keys objectAtIndex:rowIndex]];
     return line.toIdentity.hashname;
 }
 
@@ -114,7 +114,7 @@
     }
     
     NSArray* keys = [thSwitch.openLines allKeys];
-    THLine* line = [thSwitch.openLines objectForKey:[keys objectAtIndex:tableView.selectedRow]];
+    E3XExchange* line = [thSwitch.openLines objectForKey:[keys objectAtIndex:tableView.selectedRow]];
     if (line) {
         objController.content = line;
         channelArrayController.content = line.toIdentity.channels.allValues;
@@ -124,7 +124,7 @@
     }
 }
 
--(void)openedLine:(THLine *)line;
+-(void)openedLine:(E3XExchange *)line;
 {
     [tableView reloadData];
 }
@@ -142,7 +142,7 @@
 
 -(IBAction)connectToHashname:(id)sender
 {
-    THIdentity* connectToIdentity;
+    THLink* connectToIdentity;
     NSString* key = [keyField stringValue];
     if (key.length > 0) {
 /*
@@ -155,16 +155,16 @@
         }
 */
     } else {
-        connectToIdentity = [THIdentity identityFromHashname:[hashnameField stringValue]];
+        connectToIdentity = [THLink identityFromHashname:[hashnameField stringValue]];
     }
     if (connectToIdentity) {
-        [thSwitch openLine:connectToIdentity completion:^(THIdentity* openIdentity) {
+        [thSwitch openLine:connectToIdentity completion:^(THLink* openIdentity) {
             NSLog(@"We're in the app and connected to %@", connectToIdentity.hashname);
         }];
     }
 }
 
--(void)thSwitch:(THSwitch *)inSwitch status:(THSwitchStatus)status
+-(void)thSwitch:(THMesh *)inSwitch status:(THSwitchStatus)status
 {
     NSLog(@"Switch status is now %d", status);
     if (status == THSwitchOnline && !pingChannel) {

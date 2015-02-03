@@ -7,8 +7,8 @@
 //
 
 #import "THPendingJob.h"
-#import "THIdentity.h"
-#import "THLine.h"
+#import "THLink.h"
+#import "E3XExchange.h"
 #import "THChannel.h"
 #import "THPacket.h"
 
@@ -17,8 +17,8 @@
 {
     THPendingJob* pendingJob = [THPendingJob new];
     Class itemClass = [pendingItem class];
-    if (itemClass == [THIdentity class]) pendingJob.type = PendingIdentity;
-    if (itemClass == [THLine class]) pendingJob.type = PendingLine;
+    if (itemClass == [THLink class]) pendingJob.type = PendingIdentity;
+    if (itemClass == [E3XExchange class]) pendingJob.type = PendingLine;
     if ([itemClass superclass] == [THChannel class]) pendingJob.type = PendingChannel;
     if (itemClass == [THPacket class]) pendingJob.type = PendingSeek;
     pendingJob.pending = pendingItem;

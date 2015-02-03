@@ -9,10 +9,10 @@
 #import <Foundation/Foundation.h>
 #import "THTransport.h"
 
-@class THIdentity;
+@class THLink;
 @class THChannel;
 @class THPacket;
-@class THLine;
+@class E3XExchange;
 @class THMeshBuckets;
 @class THTransport;
 
@@ -27,47 +27,47 @@ typedef enum {
     THSwitchOnline
 } THSwitchStatus;
 
-typedef void(^LineOpenBlock)(THIdentity*);
+typedef void(^LineOpenBlock)(THLink*);
 
-@class THSwitch;
+@class THMesh;
 
 @protocol THSwitchDelegate <NSObject>
 
--(void)openedLine:(THLine*)line;
+-(void)openedLine:(E3XExchange*)line;
 -(void)channelReady:(THChannel*)channel type:(THChannelType)type firstPacket:(THPacket*)packet;
--(void)thSwitch:(THSwitch*)thSwitch status:(THSwitchStatus)status;
+-(void)thSwitch:(THMesh*)thSwitch status:(THSwitchStatus)status;
 
 @end
 
-@interface THSwitch : NSObject <THTransportDelegate>
+@interface THMesh : NSObject <THTransportDelegate>
 
 +(id)defaultSwitch;
 
 @property THMeshBuckets* meshBuckets;
 @property NSMutableDictionary* openLines;
 @property NSMutableArray* pendingJobs;
-@property THIdentity* identity;
+@property THLink* identity;
 @property id<THSwitchDelegate> delegate;
 @property THSwitchStatus status;
 @property NSMutableDictionary* transports;
 @property NSMutableArray* potentialBridges;
 
-+(id)THSWitchWithIdentity:(THIdentity*)identity;
++(id)THSWitchWithIdentity:(THLink*)identity;
 
 -(void)start;
 -(void)addTransport:(THTransport*)transport;
--(THLine*)lineToHashname:(NSString*)hashname;
+-(E3XExchange*)lineToHashname:(NSString*)hashname;
 -(void)openChannel:(THChannel*)channel firstPacket:(THPacket*)packet;
 /// Open a line to the given identity
 // The identity can be either a complete identity (RSA keys and address filled in) or
 // just a hashname.  The switch will do everything it can to open the line.
 // The completion block is optional.
--(void)openLine:(THIdentity*)toIdentity completion:(LineOpenBlock)lineOpenCompletion;
--(void)openLine:(THIdentity*)toIdentity;
--(void)closeLine:(THLine*)line;
+-(void)openLine:(THLink*)toIdentity completion:(LineOpenBlock)lineOpenCompletion;
+-(void)openLine:(THLink*)toIdentity;
+-(void)closeLine:(E3XExchange*)line;
 -(void)loadSeeds:(NSData*)seedData;
 -(void)updateStatus:(THSwitchStatus)status;
--(THPacket*)generateOpen:(THLine*)toLine;
+-(THPacket*)generateOpen:(E3XExchange*)toLine;
 -(void)handlePacket:(THPacket*)packet;
 
 -(void)transport:(THTransport *)transport handlePacket:(THPacket *)packet;

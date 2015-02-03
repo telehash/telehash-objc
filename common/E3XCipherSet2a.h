@@ -16,9 +16,9 @@
 -(void)generateKeys;
 -(id)initWithPublicKeyPath:(NSString*)publicKeyPath privateKeyPath:(NSString*)privateKeyPath;
 -(id)initWithPublicKey:(NSData *)publicKey privateKey:(NSData *)privateKey;
--(THLine*)processOpen:(THPacket*)openPacket;
--(void)finalizeLineKeys:(THLine*)line;
--(THPacket*)generateOpen:(THLine*)line from:(THIdentity*)fromIdentity;
+-(E3XExchange*)processOpen:(THPacket*)openPacket;
+-(void)finalizeLineKeys:(E3XExchange*)line;
+-(THPacket*)generateOpen:(E3XExchange*)line from:(THLink*)fromIdentity;
 @end
 
 @interface THCipherSetLineInfo2a : THCipherSetLineInfo

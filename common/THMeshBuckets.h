@@ -9,23 +9,23 @@
 #import <Foundation/Foundation.h>
 #import "THChannel.h"
 
-@class THIdentity;
-@class THLine;
-@class THSwitch;
+@class THLink;
+@class E3XExchange;
+@class THMesh;
 
 typedef void(^SeekCompletionBlock)(BOOL found);
 
 @interface THMeshBuckets : NSObject<THChannelDelegate>
 
-@property (nonatomic, assign) THSwitch* localSwitch;
-@property THIdentity* localIdentity;
+@property (nonatomic, assign) THMesh* localSwitch;
+@property THLink* localIdentity;
 @property NSMutableArray* buckets;
 @property NSMutableArray* pendingSeeks;
 
--(void)linkToIdentity:(THIdentity*)identity;
--(void)addIdentity:(THIdentity*)identity;
--(void)removeLine:(THLine*)line;
--(NSArray*)closeInBucket:(THIdentity*)seekIdentity;
--(NSArray*)nearby:(THIdentity*)seekIdentity;
--(void)seek:(THIdentity*)seekIdentity completion:(SeekCompletionBlock)completion;
+-(void)linkToIdentity:(THLink*)identity;
+-(void)addIdentity:(THLink*)identity;
+-(void)removeLine:(E3XExchange*)line;
+-(NSArray*)closeInBucket:(THLink*)seekIdentity;
+-(NSArray*)nearby:(THLink*)seekIdentity;
+-(void)seek:(THLink*)seekIdentity completion:(SeekCompletionBlock)completion;
 @end

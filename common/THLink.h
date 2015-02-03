@@ -10,13 +10,13 @@
 #import "THRSA.h"
 
 @class THPacket;
-@class THLine;
+@class E3XExchange;
 @class THChannel;
 @class E3XCipherSet;
 @class THPath;
 @class THRelay;
 
-@interface THIdentity : NSObject
+@interface THLink : NSObject
 
 +(id)identityFromParts:(NSDictionary*)parts key:(E3XCipherSet*)key;
 +(id)identityFromHashname:(NSString*)hashname;
@@ -31,7 +31,7 @@
 @property NSData* address;
 @property NSMutableArray* vias;
 @property NSMutableDictionary* channels;
-@property THLine* currentLine;
+@property E3XExchange* currentLine;
 @property NSDictionary* cipherParts;
 @property NSDictionary* parts;
 @property NSMutableArray* availablePaths;
@@ -45,21 +45,21 @@
 -(void)addPath:(THPath*)path;
 -(void)checkPriorityPath:(THPath*)path;
 
--(void)addVia:(THIdentity*)viaIdentity;
+-(void)addVia:(THLink*)viaIdentity;
 -(void)attachSeedVias;
 // TODO:  Method to create a channel for a type
 
--(NSInteger)distanceFrom:(THIdentity*)identity;
+-(NSInteger)distanceFrom:(THLink*)identity;
 -(void)setIP:(NSString*)ip port:(NSUInteger)port;
 
 -(void)sendPacket:(THPacket*)packet;
 -(void)sendPacket:(THPacket*)packet path:(THPath*)path;
 -(NSString*)seekString;
--(NSString*)seekStringForIdentity:(THIdentity*)identity;
+-(NSString*)seekStringForIdentity:(THLink*)identity;
 
 -(THChannel*)channelForType:(NSString*)type;
 
--(NSArray*)pathInformationTo:(THIdentity *)toIdentity allowLocal:(BOOL)allowLocal;
+-(NSArray*)pathInformationTo:(THLink *)toIdentity allowLocal:(BOOL)allowLocal;
 -(THPath*)pathMatching:(NSDictionary*)pathInfo;
 
 +(NSString*)hashnameForParts:(NSDictionary*)parts;

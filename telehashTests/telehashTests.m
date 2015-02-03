@@ -8,8 +8,8 @@
 
 #import <XCTest/XCTest.h>
 #import "THPacket.h"
-#import "THSwitch.h"
-#import "THIdentity.h"
+#import "THMesh.h"
+#import "THLink.h"
 #import "THPacketBuffer.h"
 #import "E3XCipherSet.h"
 #import "THPath.h"
@@ -86,10 +86,10 @@
 
 -(void)testIdentityDistance
 {
-    THIdentity* origin = [THIdentity new];
+    THLink* origin = [THLink new];
     [origin setValue:@"736711cf55ff95fa967aa980855a0ee9f7af47d6287374a8cd65e1a36171ef08" forKey:@"_hashnameCache"];
     
-    THIdentity* remote = [THIdentity new];
+    THLink* remote = [THLink new];
     [remote setValue:@"73654507a9fd1202c6a9381b626d1903a36eafe8a6240bcc726fc668a35d6268" forKey:@"_hashnameCache"];
     XCTAssert([origin distanceFrom:remote] == 241, @"Distance should be 241 got %ld", [origin distanceFrom:remote]);
     
@@ -195,7 +195,7 @@
 
 -(void)testReliableChannelSeq
 {
-    THIdentity* testIdentity = [THIdentity identityFromHashname:@"abcdef1234567890abcdef1234567890"];
+    THLink* testIdentity = [THLink identityFromHashname:@"abcdef1234567890abcdef1234567890"];
     THReliableChannel* testChannel = [[THReliableChannel alloc] initToIdentity:testIdentity];
     testChannel.channelId = @42;
     
