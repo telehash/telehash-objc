@@ -11,7 +11,7 @@
 #import "THLink.h"
 #import "NSString+HexString.h"
 #import "E3XExchange.h"
-#import "THChannel.h"
+#import "E3XChannel.h"
 #import "THMeshBuckets.h"
 #import "THPendingJob.h"
 #import "E3XCipherSet.h"
@@ -21,7 +21,7 @@
 #import "THPath.h"
 #import "E3XCipherSet2a.h"
 #import "E3XCipherSet3a.h"
-#import "THUnreliableChannel.h"
+#import "E3XUnreliableChannel.h"
 #import "CLCLog.h"
 #import "THRelay.h"
 
@@ -147,7 +147,7 @@
     return ret;
 }
 
--(void)channel:(THChannel*)channel line:(E3XExchange*)line firstPacket:(THPacket*)packet
+-(void)channel:(E3XChannel*)channel line:(E3XExchange*)line firstPacket:(THPacket*)packet
 {
     channel.line = line;
     if (!channel.channelId || [channel.channelId isEqualToNumber:@0]) {
@@ -158,7 +158,7 @@
     if (packet) [channel sendPacket:packet];
 }
 
--(void)openChannel:(THChannel *)channel firstPacket:(THPacket *)packet;
+-(void)openChannel:(E3XChannel *)channel firstPacket:(THPacket *)packet;
 {
     // Check for an already open lines
     E3XExchange* channelLine = channel.toIdentity.currentLine;
@@ -221,7 +221,7 @@
 				[self.pendingJobs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
 					THPendingJob* job = (THPendingJob*)obj;
 					if (job.type == PendingChannel) {
-						THChannel* channel = (THChannel*)job.pending;
+						E3XChannel* channel = (E3XChannel*)job.pending;
 						if ([channel.toIdentity.hashname isEqualToString:toIdentity.hashname]) {
 							[self.pendingJobs removeObjectAtIndex:idx];
 						}
@@ -399,7 +399,7 @@
         if (pendingLineJob) pendingLineJob.handler(newLine);
         
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            THChannel* linkChannel = [newLine.toIdentity channelForType:@"link"];
+            E3XChannel* linkChannel = [newLine.toIdentity channelForType:@"link"];
             if (!linkChannel) {
                 [self.meshBuckets linkToIdentity:newLine.toIdentity];
             }
@@ -422,7 +422,7 @@
     [self.pendingJobs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         THPendingJob* job = (THPendingJob*)obj;
         if (job.type == PendingChannel) {
-            THChannel* channel = (THChannel*)job.pending;
+            E3XChannel* channel = (E3XChannel*)job.pending;
             if (![channel.toIdentity.hashname isEqualToString:newLine.toIdentity.hashname]) return;
             [self.pendingJobs removeObjectAtIndex:idx];
             job.handler(newLine);

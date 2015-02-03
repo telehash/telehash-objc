@@ -7,16 +7,16 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "THChannel.h"
-#import "THUnreliableChannel.h"
+#import "E3XChannel.h"
+#import "E3XUnreliableChannel.h"
 #import "THPath.h"
 
 @interface THRelay : NSObject<THChannelDelegate>
 @property (assign) THLink* toIdentity;
 @property (retain) THLink* relayIdentity;
 @property (retain) THPath* relayedPath;
-@property (weak) THUnreliableChannel* peerChannel;
--(id)initOnChannel:(THUnreliableChannel*)channel;
+@property (weak) E3XUnreliableChannel* peerChannel;
+-(id)initOnChannel:(E3XUnreliableChannel*)channel;
 -(void)attachVia:(THLink*)viaIdentity;
 -(void)sendPacket:(THPacket *)packet;
 @end

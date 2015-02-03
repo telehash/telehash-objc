@@ -7,11 +7,11 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "THChannel.h"
+#import "E3XChannel.h"
 #import "GCDAsyncUdpSocket.h"
 
 @class THPacket;
-@class THUnreliableChannel;
+@class E3XUnreliableChannel;
 @class THTransport;
 @class THPath;
 

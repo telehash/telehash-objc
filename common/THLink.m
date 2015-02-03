@@ -13,7 +13,7 @@
 #import "THPacket.h"
 #import "E3XExchange.h"
 #import "THMesh.h"
-#import "THChannel.h"
+#import "E3XChannel.h"
 #import "CTRAES256.h"
 #import "E3XCipherSet.h"
 #import "THPath.h"
@@ -128,7 +128,7 @@ static NSMutableDictionary* identityCache;
 
 -(BOOL)hasLink
 {
-	THChannel* linkChannel = [self channelForType:@"link"];
+	E3XChannel* linkChannel = [self channelForType:@"link"];
 	if (linkChannel) return YES;
 	
 	return NO;
@@ -180,11 +180,11 @@ int nlz(unsigned long x) {
     [self sendPacket:packet path:nil];
 }
 
--(THChannel*)channelForType:(NSString *)type
+-(E3XChannel*)channelForType:(NSString *)type
 {
-    __block THChannel* foundChannel = nil;
+    __block E3XChannel* foundChannel = nil;
     [self.channels enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-        THChannel* channel = (THChannel*)obj;
+        E3XChannel* channel = (E3XChannel*)obj;
         if ([channel.type isEqualToString:type]) {
             foundChannel = channel;
             *stop = YES;
@@ -344,7 +344,7 @@ int nlz(unsigned long x) {
 -(void)closeChannels
 {
 	[self.channels enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-		THChannel* curChannel = (THChannel*)obj;
+		E3XChannel* curChannel = (E3XChannel*)obj;
 		if (curChannel.state != THChannelEnded) {
 			curChannel.state = THChannelEnded;
 		}

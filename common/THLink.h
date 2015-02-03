@@ -11,7 +11,7 @@
 
 @class THPacket;
 @class E3XExchange;
-@class THChannel;
+@class E3XChannel;
 @class E3XCipherSet;
 @class THPath;
 @class THRelay;
@@ -57,7 +57,7 @@
 -(NSString*)seekString;
 -(NSString*)seekStringForIdentity:(THLink*)identity;
 
--(THChannel*)channelForType:(NSString*)type;
+-(E3XChannel*)channelForType:(NSString*)type;
 
 -(NSArray*)pathInformationTo:(THLink *)toIdentity allowLocal:(BOOL)allowLocal;
 -(THPath*)pathMatching:(NSDictionary*)pathInfo;

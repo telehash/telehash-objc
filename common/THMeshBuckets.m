@@ -14,10 +14,10 @@
 #import "NSData+HexString.h"
 #import "THMesh.h"
 #import "THPendingJob.h"
-#import "THChannel.h"
+#import "E3XChannel.h"
 #import "THPath.h"
 #import "THRelay.h"
-#import "THUnreliableChannel.h"
+#import "E3XUnreliableChannel.h"
 #import "CLCLog.h"
 
 #define K_BUCKET_SIZE 8
@@ -33,7 +33,7 @@
 @property (nonatomic, copy) SeekCompletionBlock completion;
 
 -(void)runSeek;
--(BOOL)channel:(THChannel *)channel handlePacket:(THPacket *)packet;
+-(BOOL)channel:(E3XChannel *)channel handlePacket:(THPacket *)packet;
 @end
 
 @implementation THMeshBuckets
@@ -65,7 +65,7 @@
 		
         [bucket enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
             THLink* identity = (THLink*)obj;
-			THChannel* linkChannel = [identity channelForType:@"link"];
+			E3XChannel* linkChannel = [identity channelForType:@"link"];
 			
 			if (linkChannel) {
 				// if our lastInActivity > 50s and the channel is >5s old
@@ -74,7 +74,7 @@
 					CLCLogWarning(@"line inactive for %@ (in duration %d), removing link channel", identity.hashname, lastInDuration);
 					
 					[bucket removeObjectAtIndex:idx];
-					THChannel* channel = [identity channelForType:@"link"];
+					E3XChannel* channel = [identity channelForType:@"link"];
 					if (channel) {
 						[identity.channels removeObjectForKey:channel.channelId];
 					}
@@ -122,9 +122,9 @@
 	
     [linkPacket.json setObject:sees forKey:@"see"];
     
-	THChannel* linkChannel = [identity channelForType:@"link"];
+	E3XChannel* linkChannel = [identity channelForType:@"link"];
     if (!linkChannel) {
-        linkChannel = [[THUnreliableChannel alloc] initToIdentity:identity];
+        linkChannel = [[E3XUnreliableChannel alloc] initToIdentity:identity];
         [linkPacket.json setObject:@"link" forKey:@"type"];
 		
         [[THMesh defaultSwitch] openChannel:linkChannel firstPacket:linkPacket];
@@ -143,7 +143,7 @@
         bucket = [NSMutableArray array];
     }
 	
-	THChannel* linkChannel = [identity channelForType:@"link"];
+	E3XChannel* linkChannel = [identity channelForType:@"link"];
 	
     // TODO:  Check our hints for age on this entry, if it's older we should bump the newest from the bucket if it's full
     if (linkTotal >= MAX_LINKS && bucket.count >= K_BUCKET_SIZE) {
@@ -255,7 +255,7 @@
 
 // Channel delegate methods
 
--(BOOL)channel:(THChannel *)channel handlePacket:(THPacket *)packet
+-(BOOL)channel:(E3XChannel *)channel handlePacket:(THPacket *)packet
 {
     THMesh* defaultSwitch = [THMesh defaultSwitch];
     if (defaultSwitch.status != THSwitchOnline) {
@@ -286,7 +286,7 @@
         }
         
         // If we have a link channel already, just skip it
-        THChannel* linkChannel = [seeIdentity channelForType:@"link"];
+        E3XChannel* linkChannel = [seeIdentity channelForType:@"link"];
         if (seeIdentity.activePath || linkChannel) continue;
         
         seeIdentity.suggestedCipherSet = [seeParts objectAtIndex:1];
@@ -333,7 +333,7 @@
     return YES;
 }
 
--(void)channel:(THChannel *)channel didChangeStateTo:(THChannelState)channelState
+-(void)channel:(E3XChannel *)channel didChangeStateTo:(THChannelState)channelState
 {
     if (channelState == THChannelEnded || channelState == THChannelErrored) {
 		CLCLogWarning(@"link channel ended");
@@ -342,7 +342,7 @@
     }
 }
 
--(void)channel:(THChannel *)channel didFailWithError:(NSError *)error
+-(void)channel:(E3XChannel *)channel didFailWithError:(NSError *)error
 {
 	CLCLogWarning(@"link channel errored with error: %@", [error description]);
     NSMutableArray* bucket = [self.buckets objectAtIndex:[self.localIdentity distanceFrom:channel.toIdentity]];
@@ -365,7 +365,7 @@
     
 	if (!identity.activePath) return;
 	
-    THChannel* seekChannel = [[THUnreliableChannel alloc] initToIdentity:identity];
+    E3XChannel* seekChannel = [[E3XUnreliableChannel alloc] initToIdentity:identity];
     seekChannel.delegate = self;
     
     THPacket* seekPacket = [THPacket new];
@@ -375,7 +375,7 @@
     [defaultSwitch openChannel:seekChannel firstPacket:seekPacket];
 }
 
- -(BOOL)channel:(THChannel*)channel handlePacket:(THPacket*)packet
+ -(BOOL)channel:(E3XChannel*)channel handlePacket:(THPacket*)packet
 {
      
     NSString* error = [packet.json objectForKey:@"err"];

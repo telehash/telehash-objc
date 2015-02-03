@@ -6,9 +6,9 @@
 //  Copyright (c) 2014 Telehash Foundation. All rights reserved.
 //
 
-#import "THChannel.h"
+#import "E3XChannel.h"
 
-@interface THReliableChannel : THChannel {
+@interface E3XReliableChannel : E3XChannel {
     NSUInteger sequence;
     NSMutableOrderedSet* inBuffer;
     THPacketBuffer* inPacketBuffer;

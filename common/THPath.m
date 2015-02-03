@@ -12,7 +12,7 @@
 #import "GCDAsyncUdpSocket.h"
 #import "THPacket.h"
 #import "THTransport.h"
-#import "THUnreliableChannel.h"
+#import "E3XUnreliableChannel.h"
 #import "CLCLog.h"
 #include <arpa/inet.h>
 

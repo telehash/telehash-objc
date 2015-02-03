@@ -14,10 +14,10 @@
 #import "NSData+HexString.h"
 #import "THTransport.h"
 #import "THPath.h"
-#import "THChannel.h"
+#import "E3XChannel.h"
 #import "E3XCipherSet2a.h"
 #import "E3XCipherSet3a.h"
-#import <THReliableChannel.h>
+#import <E3XReliableChannel.h>
 #import <CLCLog.h>
 
 #include <arpa/inet.h>
@@ -26,7 +26,7 @@
 
 @interface THAppDelegate () {
     NSString* startChannelId;
-    THReliableChannel* pingChannel;
+    E3XReliableChannel* pingChannel;
 }
 @end
 
@@ -129,7 +129,7 @@
     [tableView reloadData];
 }
 
--(void)channelReady:(THChannel *)channel type:(THChannelType)type firstPacket:(THPacket *)packet;
+-(void)channelReady:(E3XChannel *)channel type:(THChannelType)type firstPacket:(THPacket *)packet;
 {
     NSLog(@"Channel is ready");
     NSLog(@"First packet is %@", packet.json);
@@ -183,12 +183,12 @@
     }
 }
 
--(void)channel:(THChannel *)channel didFailWithError:(NSError *)error
+-(void)channel:(E3XChannel *)channel didFailWithError:(NSError *)error
 {
     NSLog(@"Got an error: %@", error);
 }
 
--(BOOL)channel:(THChannel *)channel handlePacket:(THPacket *)packet
+-(BOOL)channel:(E3XChannel *)channel handlePacket:(THPacket *)packet
 {
     NSLog(@"Handling packet on channel %@ (%@): %@", channel.channelId, channel.type, packet.json);
     if ([channel.type isEqualToString:@"ping"]) {

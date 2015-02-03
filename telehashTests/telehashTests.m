@@ -13,8 +13,8 @@
 #import "THPacketBuffer.h"
 #import "E3XCipherSet.h"
 #import "THPath.h"
-#import "THReliableChannel.h"
-#import "THChannel.h"
+#import "E3XReliableChannel.h"
+#import "E3XChannel.h"
 #include <arpa/inet.h>
 
 @interface telehashTests : XCTestCase
@@ -196,7 +196,7 @@
 -(void)testReliableChannelSeq
 {
     THLink* testIdentity = [THLink identityFromHashname:@"abcdef1234567890abcdef1234567890"];
-    THReliableChannel* testChannel = [[THReliableChannel alloc] initToIdentity:testIdentity];
+    E3XReliableChannel* testChannel = [[E3XReliableChannel alloc] initToIdentity:testIdentity];
     testChannel.channelId = @42;
     
     THPacket* testPacket = [THPacket new];

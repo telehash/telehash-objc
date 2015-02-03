@@ -12,7 +12,7 @@
 
 @class THPacket;
 @class THLink;
-@class THChannel;
+@class E3XChannel;
 @class E3XExchange;
 @class THPacketBuffer;
 
@@ -31,13 +31,13 @@ typedef enum {
 
 @protocol THChannelDelegate <NSObject>
 #pragma mark State Handling
--(void)channel:(THChannel*)channel didChangeStateTo:(THChannelState)channelState;
+-(void)channel:(E3XChannel*)channel didChangeStateTo:(THChannelState)channelState;
 #pragma mark Error Handling
--(void)channel:(THChannel*)channel didFailWithError:(NSError*)error;
--(BOOL)channel:(THChannel*)channel handlePacket:(THPacket*)packet;
+-(void)channel:(E3XChannel*)channel didFailWithError:(NSError*)error;
+-(BOOL)channel:(E3XChannel*)channel handlePacket:(THPacket*)packet;
 @end
 
-@interface THChannel : NSObject
+@interface E3XChannel : NSObject
 
 @property NSNumber* maxSeen;
 @property NSArray* missing;

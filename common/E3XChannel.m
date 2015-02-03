@@ -6,7 +6,7 @@
 //  Copyright (c) 2013 Telehash Foundation. All rights reserved.
 //
 
-#import "THChannel.h"
+#import "E3XChannel.h"
 #import "THPacket.h"
 #import "THLink.h"
 #import "RNG.h"
@@ -17,7 +17,7 @@
 #import "E3XExchange.h"
 #import "THPacketBuffer.h"
 
-@implementation THChannel
+@implementation E3XChannel
 {
     THChannelState _state;
 }

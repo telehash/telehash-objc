@@ -10,7 +10,7 @@
 #import "THTransport.h"
 
 @class THLink;
-@class THChannel;
+@class E3XChannel;
 @class THPacket;
 @class E3XExchange;
 @class THMeshBuckets;
@@ -34,7 +34,7 @@ typedef void(^LineOpenBlock)(THLink*);
 @protocol THSwitchDelegate <NSObject>
 
 -(void)openedLine:(E3XExchange*)line;
--(void)channelReady:(THChannel*)channel type:(THChannelType)type firstPacket:(THPacket*)packet;
+-(void)channelReady:(E3XChannel*)channel type:(THChannelType)type firstPacket:(THPacket*)packet;
 -(void)thSwitch:(THMesh*)thSwitch status:(THSwitchStatus)status;
 
 @end
@@ -57,7 +57,7 @@ typedef void(^LineOpenBlock)(THLink*);
 -(void)start;
 -(void)addTransport:(THTransport*)transport;
 -(E3XExchange*)lineToHashname:(NSString*)hashname;
--(void)openChannel:(THChannel*)channel firstPacket:(THPacket*)packet;
+-(void)openChannel:(E3XChannel*)channel firstPacket:(THPacket*)packet;
 /// Open a line to the given identity
 // The identity can be either a complete identity (RSA keys and address filled in) or
 // just a hashname.  The switch will do everything it can to open the line.

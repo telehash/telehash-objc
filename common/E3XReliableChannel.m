@@ -6,7 +6,7 @@
 //  Copyright (c) 2014 Telehash Foundation. All rights reserved.
 //
 
-#import "THReliableChannel.h"
+#import "E3XReliableChannel.h"
 #import "THPacketBuffer.h"
 #import "THPacket.h"
 #import "CLCLog.h"
@@ -14,14 +14,14 @@
 
 //#define FUZZY_LOSS YES
 
-@interface THReliableChannel() {
+@interface E3XReliableChannel() {
     NSArray* missing;
 }
 -(void)checkAckPing:(NSUInteger)packetTime;
 -(void)delegateHandlePackets;
 @end
 
-@implementation THReliableChannel
+@implementation E3XReliableChannel
 -(id)initToIdentity:(THLink *)identity;
 {
     self = [super initToIdentity:identity];

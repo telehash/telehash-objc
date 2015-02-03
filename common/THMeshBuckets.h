@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "THChannel.h"
+#import "E3XChannel.h"
 
 @class THLink;
 @class E3XExchange;

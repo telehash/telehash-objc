@@ -23,7 +23,7 @@
 	CLCLogWarning(@"THPeerRelay sendPacket called!");
 }
 
--(BOOL)channel:(THChannel *)channel handlePacket:(THPacket *)packet
+-(BOOL)channel:(E3XChannel *)channel handlePacket:(THPacket *)packet
 {
     CLCLogDebug(@"Relay got %@", packet.json);
 	
@@ -41,12 +41,12 @@
     return YES;
 }
 
--(void)channel:(THChannel *)channel didChangeStateTo:(THChannelState)channelState
+-(void)channel:(E3XChannel *)channel didChangeStateTo:(THChannelState)channelState
 {
     CLCLogWarning(@"THPeerRelay channel didChangeStateTo: %d", channelState);
 }
 
--(void)channel:(THChannel *)channel didFailWithError:(NSError *)error
+-(void)channel:(E3XChannel *)channel didFailWithError:(NSError *)error
 {
 	CLCLogWarning(@"THPeerRelay channel didFailWithError: %@", [error description]);
 }

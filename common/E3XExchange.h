@@ -9,10 +9,10 @@
 #import <Foundation/Foundation.h>
 #import "THLink.h"
 #import "THMesh.h"
-#import "THChannel.h"
+#import "E3XChannel.h"
 
 @class THPacket;
-@class THChannel;
+@class E3XChannel;
 @class THCipherSetLineInfo;
 @class THPath;
 
