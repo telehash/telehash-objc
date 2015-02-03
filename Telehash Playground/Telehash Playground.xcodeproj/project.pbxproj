@@ -406,7 +406,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
-					"$(PROJECT_DIR)/../../**",
+					"$(PROJECT_DIR)/../**",
 				);
 				INFOPLIST_FILE = "Telehash Playground/Telehash Playground-Info.plist";
 				LIBRARY_SEARCH_PATHS = (
@@ -433,7 +433,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
-					"$(PROJECT_DIR)/../../**",
+					"$(PROJECT_DIR)/../**",
 				);
 				INFOPLIST_FILE = "Telehash Playground/Telehash Playground-Info.plist";
 				LIBRARY_SEARCH_PATHS = (

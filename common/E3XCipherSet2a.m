@@ -6,15 +6,14 @@
 //  Copyright (c) 2014 Telehash Foundation. All rights reserved.
 //
 
-#import "THCipherSet2a.h"
+#import "E3XCipherSet2a.h"
 #import "THPacket.h"
-#import "THIdentity.h"
-#import "THSwitch.h"
+#import "THLink.h"
+#import "THMesh.h"
 #import "SHA256.h"
 #import "GCMAES256.h"
 #import "NSString+HexString.h"
-#import "THLine.h"
-#import "THMeshBuckets.h"
+#import "E3XExchange.h"
 #import "THPendingJob.h"
 #import "ECDH.h"
 #import "RNG.h"
@@ -61,7 +60,7 @@ static unsigned char eccHeader[] = {0x04};
 }
 @end
 
-@implementation THCipherSet2a
+@implementation E3XCipherSet2a
 -(NSString*)identifier
 {
     return @"2a";
@@ -77,7 +76,7 @@ static unsigned char eccHeader[] = {0x04};
     return self.rsaKeys.DERPublicKey;
 }
 
--(THLine*)processOpen:(THPacket *)openPacket
+-(E3XExchange*)processOpen:(THPacket *)openPacket
 {
     // Process an open packet
     NSData* remoteECCKey = [self.rsaKeys decrypt:[openPacket.body subdataWithRange:NSMakeRange(1, 256)]];
@@ -106,7 +105,7 @@ static unsigned char eccHeader[] = {0x04};
         return nil;
     }
     
-    THCipherSet2a* incomingCS = [[THCipherSet2a alloc] initWithPublicKey:innerPacket.body privateKey:nil];
+    E3XCipherSet2a* incomingCS = [[E3XCipherSet2a alloc] initWithPublicKey:innerPacket.body privateKey:nil];
     if (!incomingCS) {
         CLCLogInfo(@"Unable to create cipher set for incoming key.");
         return nil;
@@ -116,7 +115,7 @@ static unsigned char eccHeader[] = {0x04};
         CLCLogInfo(@"Unable to verify the incoming key fingerprint");
         return nil;
     }
-    THIdentity* senderIdentity = [THIdentity identityFromParts:[innerPacket.json objectForKey:@"from"] key:incomingCS];
+    THLink* senderIdentity = [THLink identityFromParts:[innerPacket.json objectForKey:@"from"] key:incomingCS];
     if (!senderIdentity) {
         CLCLogInfo(@"Unable to validate and verify identity");
         return nil;
@@ -163,7 +162,7 @@ static unsigned char eccHeader[] = {0x04};
 		[senderIdentity closeChannels];
     }
     
-    THLine* newLine = senderIdentity.currentLine;
+    E3XExchange* newLine = senderIdentity.currentLine;
     
     if (newLine) {
         // This is a partially opened line
@@ -173,7 +172,7 @@ static unsigned char eccHeader[] = {0x04};
 		// TODO temas review
 		//newLine.cipherSetInfo = lineInfo; //??
     } else {
-        newLine = [THLine new];
+        newLine = [E3XExchange new];
         newLine.toIdentity = senderIdentity;
         senderIdentity.currentLine = newLine;
         
@@ -188,7 +187,7 @@ static unsigned char eccHeader[] = {0x04};
     return newLine;
 }
 
--(void)finalizeLineKeys:(THLine*)line
+-(void)finalizeLineKeys:(E3XExchange*)line
 {
     THCipherSetLineInfo2a* lineInfo = (THCipherSetLineInfo2a*)line.cipherSetInfo;
     // Make sure we have a valid ECDH context
@@ -213,7 +212,7 @@ static unsigned char eccHeader[] = {0x04};
     lineInfo.encryptorKey = [SHA256 hashWithData:keyingMaterial];
 }
 
--(THPacket*)generateOpen:(THLine*)line from:(THIdentity*)fromIdentity
+-(THPacket*)generateOpen:(E3XExchange*)line from:(THLink*)fromIdentity
 {
     if (!line.cipherSetInfo) {
         // FIXME, should be the remote cipherSet
@@ -222,7 +221,7 @@ static unsigned char eccHeader[] = {0x04};
         line.cipherSetInfo = lineInfo;
     }
     THCipherSetLineInfo2a* lineInfo = (THCipherSetLineInfo2a*)line.cipherSetInfo;
-    THCipherSet2a* remoteCS = (THCipherSet2a*)lineInfo.cipherSet;
+    E3XCipherSet2a* remoteCS = (E3XCipherSet2a*)lineInfo.cipherSet;
     
     THPacket* openPacket = [THPacket new];
     if (!lineInfo.ecdh) {
@@ -241,7 +240,7 @@ static unsigned char eccHeader[] = {0x04};
     [innerPacket.json setObject:[NSNumber numberWithInteger:at] forKey:@"at"];
     NSMutableDictionary* fingerprints = [NSMutableDictionary dictionaryWithCapacity:fromIdentity.cipherParts.count];
     for (NSString* csId in fromIdentity.cipherParts) {
-        THCipherSet* cipherSet = [fromIdentity.cipherParts objectForKey:csId];
+        E3XCipherSet* cipherSet = [fromIdentity.cipherParts objectForKey:csId];
         [fingerprints setObject:[cipherSet.fingerprint hexString] forKey:csId];
     }
     [innerPacket.json setObject:fingerprints forKey:@"from"];

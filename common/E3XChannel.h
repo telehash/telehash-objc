@@ -8,12 +8,12 @@
 
 #import <Foundation/Foundation.h>
 #import "ECDH.h"
-#import "THLine.h"
+#import "E3XExchange.h"
 
 @class THPacket;
-@class THIdentity;
-@class THChannel;
-@class THLine;
+@class THLink;
+@class E3XChannel;
+@class E3XExchange;
 @class THPacketBuffer;
 
 typedef enum {
@@ -31,19 +31,19 @@ typedef enum {
 
 @protocol THChannelDelegate <NSObject>
 #pragma mark State Handling
--(void)channel:(THChannel*)channel didChangeStateTo:(THChannelState)channelState;
+-(void)channel:(E3XChannel*)channel didChangeStateTo:(THChannelState)channelState;
 #pragma mark Error Handling
--(void)channel:(THChannel*)channel didFailWithError:(NSError*)error;
--(BOOL)channel:(THChannel*)channel handlePacket:(THPacket*)packet;
+-(void)channel:(E3XChannel*)channel didFailWithError:(NSError*)error;
+-(BOOL)channel:(E3XChannel*)channel handlePacket:(THPacket*)packet;
 @end
 
-@interface THChannel : NSObject
+@interface E3XChannel : NSObject
 
 @property NSNumber* maxSeen;
 @property NSArray* missing;
 @property (nonatomic, strong) id<THChannelDelegate> delegate;
-@property THIdentity* toIdentity;
-@property THLine* line;
+@property THLink* toIdentity;
+@property E3XExchange* line;
 @property NSNumber* channelId;
 @property THChannelState state;
 @property THChannelDirection direction;
@@ -52,7 +52,7 @@ typedef enum {
 @property NSUInteger lastInActivity;
 @property NSUInteger lastOutActivity;
 
--(id)initToIdentity:(THIdentity*)identity;
+-(id)initToIdentity:(THLink*)identity;
 -(void)sendPacket:(THPacket*)packet;
 -(void)handlePacket:(THPacket*)packet;
 -(void)close;

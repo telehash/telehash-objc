@@ -7,17 +7,17 @@
 //
 
 #import "THAppDelegate.h"
-#import "THIdentity.h"
+#import "THLink.h"
 #import <THPacket.h>
-#import "THSwitch.h"
-#import "THCipherSet.h"
+#import "THMesh.h"
+#import "E3XCipherSet.h"
 #import "NSData+HexString.h"
 #import "THTransport.h"
 #import "THPath.h"
-#import "THChannel.h"
-#import "THCipherSet2a.h"
-#import "THCipherSet3a.h"
-#import <THReliableChannel.h>
+#import "E3XChannel.h"
+#import "E3XCipherSet2a.h"
+#import "E3XCipherSet3a.h"
+#import <E3XReliableChannel.h>
 #import <CLCLog.h>
 
 #include <arpa/inet.h>
@@ -26,7 +26,7 @@
 
 @interface THAppDelegate () {
     NSString* startChannelId;
-    THReliableChannel* pingChannel;
+    E3XReliableChannel* pingChannel;
 }
 @end
 
@@ -45,26 +45,26 @@
 -(void)startSwitch:(id)sender
 {
     // Insert code here to initialize your application
-    thSwitch = [THSwitch defaultSwitch];
+    thSwitch = [THMesh defaultSwitch];
     thSwitch.delegate = self;
-    THIdentity* baseIdentity = [THIdentity new];
+    THLink* baseIdentity = [THLink new];
     self.identityPath = pathField.stringValue;
-    THCipherSet3a* cs3a = [[THCipherSet3a alloc] initWithPublicKeyPath:[NSString stringWithFormat:@"%@/server3.pkey", self.identityPath] privateKeyPath:[NSString stringWithFormat:@"%@/server3.key", self.identityPath]];
+    E3XCipherSet3a* cs3a = [[E3XCipherSet3a alloc] initWithPublicKeyPath:[NSString stringWithFormat:@"%@/server3.pkey", self.identityPath] privateKeyPath:[NSString stringWithFormat:@"%@/server3.key", self.identityPath]];
     if (!cs3a) {
-        cs3a = [THCipherSet3a new];
+        cs3a = [E3XCipherSet3a new];
         [cs3a generateKeys];
         [cs3a savePublicKeyPath:[NSString stringWithFormat:@"%@/server3.pkey", self.identityPath] privateKeyPath:[NSString stringWithFormat:@"%@/server3.key", self.identityPath]];
     }
     [baseIdentity addCipherSet:cs3a];
     NSLog(@"3a fingerprint %@", [cs3a.fingerprint hexString]);
-    THCipherSet2a* cs2a = [[THCipherSet2a alloc] initWithPublicKeyPath:[NSString stringWithFormat:@"%@/server.pder", self.identityPath] privateKeyPath:[NSString stringWithFormat:@"%@/server.der", self.identityPath]];
+    E3XCipherSet2a* cs2a = [[E3XCipherSet2a alloc] initWithPublicKeyPath:[NSString stringWithFormat:@"%@/server.pder", self.identityPath] privateKeyPath:[NSString stringWithFormat:@"%@/server.der", self.identityPath]];
     if (!cs2a) {
         /*
         NSFileManager* fm = [NSFileManager defaultManager];
         NSError* err;
         [fm createDirectoryAtPath:@"/tmp/telehash" withIntermediateDirectories:NO attributes:nil error:&err];
         */
-        cs2a = [THCipherSet2a new];
+        cs2a = [E3XCipherSet2a new];
         [cs2a generateKeys];
         [cs2a.rsaKeys savePublicKey:[NSString stringWithFormat:@"%@/server.pder", self.identityPath] privateKey:[NSString stringWithFormat:@"%@/server.der", self.identityPath]];
     }
@@ -103,7 +103,7 @@
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex;
 {
     NSArray* keys = [thSwitch.openLines allKeys];
-    THLine* line = [thSwitch.openLines objectForKey:[keys objectAtIndex:rowIndex]];
+    E3XExchange* line = [thSwitch.openLines objectForKey:[keys objectAtIndex:rowIndex]];
     return line.toIdentity.hashname;
 }
 
@@ -114,7 +114,7 @@
     }
     
     NSArray* keys = [thSwitch.openLines allKeys];
-    THLine* line = [thSwitch.openLines objectForKey:[keys objectAtIndex:tableView.selectedRow]];
+    E3XExchange* line = [thSwitch.openLines objectForKey:[keys objectAtIndex:tableView.selectedRow]];
     if (line) {
         objController.content = line;
         channelArrayController.content = line.toIdentity.channels.allValues;
@@ -124,12 +124,12 @@
     }
 }
 
--(void)openedLine:(THLine *)line;
+-(void)openedLine:(E3XExchange *)line;
 {
     [tableView reloadData];
 }
 
--(void)channelReady:(THChannel *)channel type:(THChannelType)type firstPacket:(THPacket *)packet;
+-(void)channelReady:(E3XChannel *)channel type:(THChannelType)type firstPacket:(THPacket *)packet;
 {
     NSLog(@"Channel is ready");
     NSLog(@"First packet is %@", packet.json);
@@ -142,7 +142,7 @@
 
 -(IBAction)connectToHashname:(id)sender
 {
-    THIdentity* connectToIdentity;
+    THLink* connectToIdentity;
     NSString* key = [keyField stringValue];
     if (key.length > 0) {
 /*
@@ -155,16 +155,16 @@
         }
 */
     } else {
-        connectToIdentity = [THIdentity identityFromHashname:[hashnameField stringValue]];
+        connectToIdentity = [THLink identityFromHashname:[hashnameField stringValue]];
     }
     if (connectToIdentity) {
-        [thSwitch openLine:connectToIdentity completion:^(THIdentity* openIdentity) {
+        [thSwitch openLine:connectToIdentity completion:^(THLink* openIdentity) {
             NSLog(@"We're in the app and connected to %@", connectToIdentity.hashname);
         }];
     }
 }
 
--(void)thSwitch:(THSwitch *)inSwitch status:(THSwitchStatus)status
+-(void)thSwitch:(THMesh *)inSwitch status:(THSwitchStatus)status
 {
     NSLog(@"Switch status is now %d", status);
     if (status == THSwitchOnline && !pingChannel) {
@@ -183,12 +183,12 @@
     }
 }
 
--(void)channel:(THChannel *)channel didFailWithError:(NSError *)error
+-(void)channel:(E3XChannel *)channel didFailWithError:(NSError *)error
 {
     NSLog(@"Got an error: %@", error);
 }
 
--(BOOL)channel:(THChannel *)channel handlePacket:(THPacket *)packet
+-(BOOL)channel:(E3XChannel *)channel handlePacket:(THPacket *)packet
 {
     NSLog(@"Handling packet on channel %@ (%@): %@", channel.channelId, channel.type, packet.json);
     if ([channel.type isEqualToString:@"ping"]) {

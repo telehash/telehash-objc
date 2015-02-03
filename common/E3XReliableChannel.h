@@ -6,9 +6,9 @@
 //  Copyright (c) 2014 Telehash Foundation. All rights reserved.
 //
 
-#import "THChannel.h"
+#import "E3XChannel.h"
 
-@interface THReliableChannel : THChannel {
+@interface E3XReliableChannel : E3XChannel {
     NSUInteger sequence;
     NSMutableOrderedSet* inBuffer;
     THPacketBuffer* inPacketBuffer;
@@ -17,7 +17,7 @@
     NSUInteger lastProcessed;
 }
 @property NSUInteger nextExpectedSequence;
--(id)initToIdentity:(THIdentity*)identity;
+-(id)initToIdentity:(THLink*)identity;
 -(void)handlePacket:(THPacket*)packet;
 -(void)sendPacket:(THPacket*)packet;
 -(void)flushOut;

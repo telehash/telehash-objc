@@ -11,7 +11,7 @@
 #import "THPacket.h"
 #import "CLCLog.h"
 #import "THPath.h"
-#import "THCipherSet.h"
+#import "E3XCipherSet.h"
 
 @implementation THRelay
 
@@ -20,7 +20,7 @@
     CLCLogDebug(@"We lost a relay to %@!", self.toIdentity.hashname);
 }
 
--(id)initOnChannel:(THUnreliableChannel *)channel
+-(id)initOnChannel:(E3XUnreliableChannel *)channel
 {
     self = [super init];
     if (self) {
@@ -30,11 +30,11 @@
     return self;
 }
 
--(void)attachVia:(THIdentity*)viaIdentity
+-(void)attachVia:(THLink*)viaIdentity
 {
-	THSwitch* defaultSwitch = [THSwitch defaultSwitch];
+	THMesh* defaultSwitch = [THMesh defaultSwitch];
 	
-	THUnreliableChannel* peerChannel = [[THUnreliableChannel alloc] initToIdentity:viaIdentity];
+	E3XUnreliableChannel* peerChannel = [[E3XUnreliableChannel alloc] initToIdentity:viaIdentity];
 	peerChannel.type = @"peer";
 	peerChannel.delegate = self;
 	[defaultSwitch openChannel:peerChannel firstPacket:nil];
@@ -51,7 +51,7 @@
 		[peerPacket.json setObject:paths forKey:@"paths"];
 	}
 	
-	THCipherSet* chosenCS = [defaultSwitch.identity.cipherParts objectForKey:self.toIdentity.suggestedCipherSet];
+	E3XCipherSet* chosenCS = [defaultSwitch.identity.cipherParts objectForKey:self.toIdentity.suggestedCipherSet];
 	if (!chosenCS) {
 		CLCLogError(@"We did not actually have a key for the CS %@ to connect to %@", self.toIdentity.suggestedCipherSet, self.toIdentity.hashname);
 		return;
@@ -87,7 +87,7 @@
     [self.peerChannel sendPacket:relayPacket];
 }
 
--(BOOL)channel:(THChannel *)channel handlePacket:(THPacket *)packet
+-(BOOL)channel:(E3XChannel *)channel handlePacket:(THPacket *)packet
 {
     THPacket* relayedPacket = [THPacket packetData:packet.body];
     if (!relayedPacket) {
@@ -109,16 +109,16 @@
 	
 	// overwrite our peerChannel and relayIdentity with the one that actually responded
 	if (self.peerChannel.lastInActivity == 0) {
-		self.peerChannel = (THUnreliableChannel*)channel;
+		self.peerChannel = (E3XUnreliableChannel*)channel;
 		self.relayIdentity = channel.toIdentity;
 	}
 
-    [[THSwitch defaultSwitch] handlePacket:relayedPacket];
+    [[THMesh defaultSwitch] handlePacket:relayedPacket];
     
     return YES;
 }
 
--(void)channel:(THChannel *)channel didFailWithError:(NSError *)error
+-(void)channel:(E3XChannel *)channel didFailWithError:(NSError *)error
 {
 	CLCLogWarning(@"relay peerChannel for %@ didFailWithError: %@", self.toIdentity.hashname, [error description]);
 	
@@ -127,7 +127,7 @@
 	}
 }
 
--(void)channel:(THChannel *)channel didChangeStateTo:(THChannelState)channelState
+-(void)channel:(E3XChannel *)channel didChangeStateTo:(THChannelState)channelState
 {
 	CLCLogDebug(@"relay peerChannel for %@ didChangeStateTo: %d", self.toIdentity.hashname, channelState);
 	

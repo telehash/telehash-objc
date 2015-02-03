@@ -6,37 +6,36 @@
 //  Copyright (c) 2013 Telehash Foundation. All rights reserved.
 //
 
-#import "THSwitch.h"
+#import "THMesh.h"
 #import "THPacket.h"
-#import "THIdentity.h"
+#import "THLink.h"
 #import "NSString+HexString.h"
-#import "THLine.h"
-#import "THChannel.h"
-#import "THMeshBuckets.h"
+#import "E3XExchange.h"
+#import "E3XChannel.h"
 #import "THPendingJob.h"
-#import "THCipherSet.h"
+#import "E3XCipherSet.h"
 #import "NSData+HexString.h"
-#import "THCipherSet.h"
+#import "E3XCipherSet.h"
 #import "THTransport.h"
 #import "THPath.h"
-#import "THCipherSet2a.h"
-#import "THCipherSet3a.h"
-#import "THUnreliableChannel.h"
+#import "E3XCipherSet2a.h"
+#import "E3XCipherSet3a.h"
+#import "E3XUnreliableChannel.h"
 #import "CLCLog.h"
 #import "THRelay.h"
 
-@interface THSwitch()
+@interface THMesh()
 
 @end
 
-@implementation THSwitch
+@implementation THMesh
 {
-    THIdentity* _identity;
+    THLink* _identity;
 }
 
 +(id)defaultSwitch;
 {
-    static THSwitch* sharedSwitch;
+    static THMesh* sharedSwitch;
     static dispatch_once_t oneTime;
     dispatch_once(&oneTime, ^{
         sharedSwitch = [[self alloc] init];
@@ -44,9 +43,9 @@
     return sharedSwitch;
 }
 
-+(id)THSWitchWithIdentity:(THIdentity*)identity;
++(id)THSWitchWithIdentity:(THLink*)identity;
 {
-    THSwitch* thSwitch = [THSwitch new];
+    THMesh* thSwitch = [THMesh new];
     if (thSwitch) {
         
     }
@@ -56,8 +55,6 @@
 -(id)init;
 {
     if (self) {
-        self.meshBuckets = [THMeshBuckets new];
-        self.meshBuckets.localSwitch = self;
         self.openLines = [NSMutableDictionary dictionary];
         self.pendingJobs = [NSMutableArray array];
         self.transports = [NSMutableDictionary dictionary];
@@ -67,20 +64,18 @@
     return self;
 }
 
--(void)setIdentity:(THIdentity *)identity
+-(void)setIdentity:(THLink *)identity
 {
     _identity = identity;
-    self.meshBuckets.localIdentity = identity;
 }
 
--(THIdentity*)identity
+-(THLink*)identity
 {
     return _identity;
 }
 
 -(void)start
 {
-    self.meshBuckets.localIdentity = self.identity;
     // XXX TODO FIXME For each path start it
     for (NSString* key in self.transports) {
         [[self.transports objectForKey:key] start];
@@ -104,16 +99,16 @@
         NSArray* paths = [entry objectForKey:@"paths"];
         NSDictionary* keys = [entry objectForKey:@"keys"];
         // TODO:  XXX make this more generic
-        THIdentity* seedIdentity = [THIdentity new];
+        THLink* seedIdentity = [THLink new];
 		seedIdentity.isSeed = YES;
         // 2a
         NSData* keyData = [[NSData alloc] initWithBase64EncodedString:[keys objectForKey:@"2a"] options:0];
-        THCipherSet* cs = [[THCipherSet2a alloc] initWithPublicKey:keyData privateKey:nil];
+        E3XCipherSet* cs = [[E3XCipherSet2a alloc] initWithPublicKey:keyData privateKey:nil];
         [seedIdentity addCipherSet:cs];
         // 3a
         keyData = [[NSData alloc] initWithBase64EncodedString:[keys objectForKey:@"3a"] options:0];
         if (keyData) {
-            cs = [[THCipherSet3a alloc] initWithPublicKey:keyData privateKey:nil];
+            cs = [[E3XCipherSet3a alloc] initWithPublicKey:keyData privateKey:nil];
             [seedIdentity addCipherSet:cs];
         }
         seedIdentity.parts = [entry objectForKey:@"parts"];
@@ -131,13 +126,13 @@
     }];
 }
 
--(THLine*)lineToHashname:(NSString*)hashname;
+-(E3XExchange*)lineToHashname:(NSString*)hashname;
 {
     // XXX: If we don't have a line should we do an open here?
     // XXX: This is a common lookup, should we cache this another way as well?
-    __block THLine* ret = nil;
+    __block E3XExchange* ret = nil;
     [self.openLines enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-        THLine* line = (THLine*)obj;
+        E3XExchange* line = (E3XExchange*)obj;
         if ([line.toIdentity.hashname isEqualToString:hashname]) {
             ret = line;
             *stop = YES;
@@ -147,7 +142,7 @@
     return ret;
 }
 
--(void)channel:(THChannel*)channel line:(THLine*)line firstPacket:(THPacket*)packet
+-(void)channel:(E3XChannel*)channel line:(E3XExchange*)line firstPacket:(THPacket*)packet
 {
     channel.line = line;
     if (!channel.channelId || [channel.channelId isEqualToNumber:@0]) {
@@ -158,13 +153,13 @@
     if (packet) [channel sendPacket:packet];
 }
 
--(void)openChannel:(THChannel *)channel firstPacket:(THPacket *)packet;
+-(void)openChannel:(E3XChannel *)channel firstPacket:(THPacket *)packet;
 {
     // Check for an already open lines
-    THLine* channelLine = channel.toIdentity.currentLine;
+    E3XExchange* channelLine = channel.toIdentity.currentLine;
     if (!channelLine) {
         [self.pendingJobs addObject:[THPendingJob pendingJobFor:channel completion:^(id result) {
-            [self channel:channel line:(THLine*)result firstPacket:packet];
+            [self channel:channel line:(E3XExchange*)result firstPacket:packet];
         }]];
         [self openLine:channel.toIdentity];
     } else {
@@ -173,12 +168,12 @@
 
 }
 
--(void)openLine:(THIdentity *)toIdentity
+-(void)openLine:(THLink *)toIdentity
 {
     [self openLine:toIdentity completion:nil];
 }
 
--(void)openLine:(THIdentity *)toIdentity completion:(LineOpenBlock)lineOpenCompletion
+-(void)openLine:(THLink *)toIdentity completion:(LineOpenBlock)lineOpenCompletion
 {
     if (toIdentity.currentLine && (toIdentity.activePath || toIdentity.relay.peerChannel)) {
 		CLCLogDebug(@"openLine returning currentLine for identity %@", toIdentity.hashname);
@@ -191,7 +186,7 @@
 	
     for (THPendingJob* pendingJobItem in self.pendingJobs) {
         if (pendingJobItem.type == PendingIdentity) {
-            THIdentity* pendingIdentity = (THIdentity*)pendingJobItem.pending;
+            THLink* pendingIdentity = (THLink*)pendingJobItem.pending;
             if ([pendingIdentity.hashname isEqualToString:toIdentity.hashname]) {
                 // We're already trying, bail on this one
                 CLCLogWarning(@"Tried to open another line to identity %@ while one pending", toIdentity.hashname);
@@ -221,7 +216,7 @@
 				[self.pendingJobs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
 					THPendingJob* job = (THPendingJob*)obj;
 					if (job.type == PendingChannel) {
-						THChannel* channel = (THChannel*)job.pending;
+						E3XChannel* channel = (E3XChannel*)job.pending;
 						if ([channel.toIdentity.hashname isEqualToString:toIdentity.hashname]) {
 							[self.pendingJobs removeObjectAtIndex:idx];
 						}
@@ -242,7 +237,7 @@
 		CLCLogDebug(@"identity %@ already has known paths", toIdentity.hashname);
 		
 		if (!toIdentity.currentLine) {
-			toIdentity.currentLine = [THLine new];
+			toIdentity.currentLine = [E3XExchange new];
 			toIdentity.currentLine.toIdentity = toIdentity;
 		}
         
@@ -267,7 +262,7 @@
 		toIdentity.relay = relay;
 		toIdentity.relay.toIdentity = toIdentity;
 
-		for (THIdentity* viaIdentity in toIdentity.vias) {
+		for (THLink* viaIdentity in toIdentity.vias) {
 			// if the via has an active line that ISNT a bridge, lets try them
 			if (viaIdentity.currentLine && viaIdentity.activePath) {
 				[toIdentity.relay attachVia:viaIdentity];
@@ -285,24 +280,15 @@
         return;
     }
     
-    // Find a way to it from the mesh
-	if (!existingPendingJob) {
-		[self.meshBuckets seek:toIdentity completion:^(BOOL found) {
-			if (found) {
-				CLCLogDebug(@"identity %@ found in meshbuckets", toIdentity.hashname);
-				[self openLine:toIdentity completion:lineOpenCompletion];
-			}
-		}];
-	}
+    // TODO ask a router
 }
 
--(void)closeLine:(THLine *)line
+-(void)closeLine:(E3XExchange *)line
 {
 	if (line.cachedOpen) {
 		line.cachedOpen = nil;
 	}
 	
-	[self.meshBuckets removeLine:line];
     if (line.inLineId) [self.openLines removeObjectForKey:line.inLineId];
 	
 	if (line.toIdentity.currentLine == line) {
@@ -332,12 +318,12 @@
 -(void)processOpen:(THPacket*)incomingPacket
 {
     CLCLogInfo(@"Processing an open from %@ with type %@", incomingPacket.returnPath, [incomingPacket.body subdataWithRange:NSMakeRange(0, 1)]);
-    THCipherSet* cipherSet = [self.identity.cipherParts objectForKey:[[incomingPacket.body subdataWithRange:NSMakeRange(0, 1)] hexString]];
+    E3XCipherSet* cipherSet = [self.identity.cipherParts objectForKey:[[incomingPacket.body subdataWithRange:NSMakeRange(0, 1)] hexString]];
     if (!cipherSet) {
         CLCLogInfo(@"Invalid cipher set requested %@", [[incomingPacket.body subdataWithRange:NSMakeRange(0, 1)] hexString]);
         return;
     }
-    THLine* newLine = [cipherSet processOpen:incomingPacket];
+    E3XExchange* newLine = [cipherSet processOpen:incomingPacket];
     if (!newLine) {
         CLCLogInfo(@"Unable to process open packet");
         return;
@@ -356,7 +342,6 @@
     }
     
     // remove any existing lines to this hashname
-    [self.meshBuckets removeLine:newLine];
     if (newLine.inLineId) [self.openLines removeObjectForKey:newLine.inLineId];
     
     __block THPendingJob* pendingLineJob = nil;
@@ -364,7 +349,7 @@
         THPendingJob* job = (THPendingJob*)obj;
         if (job.type != PendingIdentity) return;
         
-        THIdentity* pendingIdentity = (THIdentity*)job.pending;
+        THLink* pendingIdentity = (THLink*)job.pending;
         if ([pendingIdentity.hashname isEqualToString:newLine.toIdentity.hashname]) {
             pendingLineJob = job;
             *stop = YES;
@@ -372,7 +357,7 @@
         }
     }];
     if (pendingLineJob && newLine.inLineId) {
-        THIdentity* pendingIdentity = (THIdentity*)pendingLineJob.pending;
+        THLink* pendingIdentity = (THLink*)pendingLineJob.pending;
         newLine = pendingIdentity.currentLine;
         CLCLogInfo(@"Finish opening line %@ for %@", newLine.inLineId, pendingIdentity.hashname);
         [newLine openLine];
@@ -385,7 +370,6 @@
         
         if (pendingLineJob) pendingLineJob.handler(newLine);
         
-        [self.meshBuckets linkToIdentity:newLine.toIdentity];
     } else {
         [newLine sendOpen];
         [newLine openLine];
@@ -399,13 +383,10 @@
         if (pendingLineJob) pendingLineJob.handler(newLine);
         
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            THChannel* linkChannel = [newLine.toIdentity channelForType:@"link"];
-            if (!linkChannel) {
-                [self.meshBuckets linkToIdentity:newLine.toIdentity];
-            }
+            E3XChannel* linkChannel = [newLine.toIdentity channelForType:@"link"];
+            // TODO what to do here??
         });
 		
-        [self.meshBuckets addIdentity:newLine.toIdentity];
     }
 	
 	// negotiate path after a short delay to allow any bridge path to come in
@@ -422,7 +403,7 @@
     [self.pendingJobs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         THPendingJob* job = (THPendingJob*)obj;
         if (job.type == PendingChannel) {
-            THChannel* channel = (THChannel*)job.pending;
+            E3XChannel* channel = (E3XChannel*)job.pending;
             if (![channel.toIdentity.hashname isEqualToString:newLine.toIdentity.hashname]) return;
             [self.pendingJobs removeObjectAtIndex:idx];
             job.handler(newLine);
@@ -442,7 +423,7 @@
     }
 }
 
--(THPacket*)generateOpen:(THLine *)toLine
+-(THPacket*)generateOpen:(E3XExchange *)toLine
 {
     // Find our highest matching cipher set
     NSMutableSet* ourIDs = [NSMutableSet setWithArray:[self.identity.cipherParts allKeys]];
@@ -453,7 +434,7 @@
     }
     NSSortDescriptor *sort = [NSSortDescriptor sortDescriptorWithKey:@"description" ascending:NO];
     NSArray* sortedCSIds = [ourIDs sortedArrayUsingDescriptors:@[sort]];
-    THCipherSet* cs = [self.identity.cipherParts objectForKey:[sortedCSIds objectAtIndex:0]];
+    E3XCipherSet* cs = [self.identity.cipherParts objectForKey:[sortedCSIds objectAtIndex:0]];
     return [cs generateOpen:toLine from:self.identity];
 }
 
@@ -466,7 +447,7 @@
         NSString* lineId = [[packet.body subdataWithRange:NSMakeRange(0, 16)] hexString];
         //CLCLogInfo(@"Received a line packet for %@", lineId);
         // Process a line packet
-        THLine* line = [self.openLines objectForKey:lineId];
+        E3XExchange* line = [self.openLines objectForKey:lineId];
         // If there is no line to handle this dump it
         if (line == nil) {
 			CLCLogWarning(@"line %@ not found in openLines", lineId);

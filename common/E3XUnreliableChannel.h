@@ -6,9 +6,9 @@
 //  Copyright (c) 2014 Telehash Foundation. All rights reserved.
 //
 
-#import "THChannel.h"
+#import "E3XChannel.h"
 
-@interface THUnreliableChannel : THChannel
+@interface E3XUnreliableChannel : E3XChannel
 -(void)handlePacket:(THPacket *)packet;
 -(void)sendPacket:(THPacket *)packet;
 @end

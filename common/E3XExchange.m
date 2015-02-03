@@ -7,35 +7,34 @@
 //  Copyright (c) 2013 Telehash Foundation. All rights reserved.
 //
 
-#import "THLine.h"
+#import "E3XExchange.h"
 #import "THPacket.h"
 #import "RNG.h"
 #import "NSData+HexString.h"
 #import "SHA256.h"
-#import "THIdentity.h"
+#import "THLink.h"
 #import "THRSA.h"
-#import "THSwitch.h"
+#import "THMesh.h"
 #import "CTRAES256.h"
 #import "NSString+HexString.h"
-#import "THChannel.h"
-#import "THMeshBuckets.h"
-#import "THCipherSet.h"
+#import "E3XChannel.h"
+#import "E3XCipherSet.h"
 #import "THPeerRelay.h"
 #import "THPath.h"
-#import "THCipherSet2a.h"
-#import "THUnreliableChannel.h"
-#import "THReliableChannel.h"
+#import "E3XCipherSet2a.h"
+#import "E3XUnreliableChannel.h"
+#import "E3XReliableChannel.h"
 #import "CLCLog.h"
-#import "THCipherSet3a.h"
+#import "E3XCipherSet3a.h"
 #import "THRelay.h"
 
 #include <arpa/inet.h>
 
 @interface THPathHandler : NSObject<THChannelDelegate>
-@property THLine* line;
+@property E3XExchange* line;
 @end
 
-@implementation THLine
+@implementation E3XExchange
 {
     NSUInteger _nextChannelId;
     NSMutableArray* channelHandlers;
@@ -56,7 +55,7 @@
 {
 	self.lastOutActivity = time(NULL);
 	
-    THSwitch* defaultSwitch = [THSwitch defaultSwitch];
+    THMesh* defaultSwitch = [THMesh defaultSwitch];
 	
 	if (!self.cachedOpen) {
 		self.cachedOpen = [defaultSwitch generateOpen:self];
@@ -88,7 +87,7 @@
 -(void)openLine;
 {
     // Do the distance calc and see if we start at 1 or 2
-    THSwitch* thSwitch = [THSwitch defaultSwitch];
+    THMesh* thSwitch = [THMesh defaultSwitch];
     if ([self.toIdentity.hashname compare:thSwitch.identity.hashname] == NSOrderedAscending) {
         _nextChannelId = 1;
     } else {
@@ -97,8 +96,8 @@
     [self.cipherSetInfo.cipherSet finalizeLineKeys:self];
     [self.toIdentity.channels enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
         // Get all our pending reliable channels spun out
-        if ([obj class] != [THReliableChannel class]) return;
-        THReliableChannel* channel = (THReliableChannel*)obj;
+        if ([obj class] != [E3XReliableChannel class]) return;
+        E3XReliableChannel* channel = (E3XReliableChannel*)obj;
         // If the channel already thinks it's good, we'll just ignore it's state
         if (channel.state == THChannelOpen) return;
 
@@ -132,58 +131,17 @@
     }
     NSString* channelType = [innerPacket.json objectForKey:@"type"];
     
-    THSwitch* thSwitch = [THSwitch defaultSwitch];
+    THMesh* thSwitch = [THMesh defaultSwitch];
     
     // if the switch is handling it bail
     if ([thSwitch findPendingSeek:innerPacket]) return;
     
-    THChannel* channel = [self.toIdentity.channels objectForKey:channelId];
+    E3XChannel* channel = [self.toIdentity.channels objectForKey:channelId];
     
-    if ([channelType isEqualToString:@"seek"]) {
-        // On a seek we send back what we know about
-        THPacket* response = [THPacket new];
-        [response.json setObject:@(YES) forKey:@"end"];
-        [response.json setObject:channelId forKey:@"c"];
-        THSwitch* defaultSwitch = [THSwitch defaultSwitch];
-		
-		THIdentity* identity = [THIdentity identityFromHashname:[innerPacket.json objectForKey:@"seek"]];
-        NSArray* seeIdentities = [defaultSwitch.meshBuckets closeInBucket:identity];
-		NSMutableArray* sees = [NSMutableArray array];
-		
-		if (seeIdentities != nil) {
-			for (THIdentity* seeIdentity in seeIdentities) {
-				NSString* seekString = [seeIdentity seekStringForIdentity:identity];
-				if (seekString) {
-					[sees addObject:seekString];
-				}
-			}
-		}
-		
-        [response.json setObject:sees forKey:@"see"];
-        
-        [self sendPacket:response];
-    } else if ([channelType isEqualToString:@"link"] && !channel) {
-        THSwitch* defaultSwitch = [THSwitch defaultSwitch];
-        
-        [defaultSwitch.meshBuckets addIdentity:self.toIdentity];
-        
-        THUnreliableChannel* linkChannel = [[THUnreliableChannel alloc] initToIdentity:self.toIdentity];
-        linkChannel.channelId = [innerPacket.json objectForKey:@"c"];
-        linkChannel.type = @"link";
-        linkChannel.delegate = defaultSwitch.meshBuckets;
-        linkChannel.lastInActivity = time(NULL);
-		linkChannel.direction = THChannelInbound;
-		
-        THUnreliableChannel* curChannel = (THUnreliableChannel*)[self.toIdentity channelForType:@"link"];
-        if (curChannel) {
-            [self.toIdentity.channels removeObjectForKey:curChannel.channelId];
-        }
-        [defaultSwitch openChannel:linkChannel firstPacket:nil];
-        [defaultSwitch.meshBuckets channel:linkChannel handlePacket:innerPacket];
-    } else if ([channelType isEqualToString:@"peer"]) {
+    if ([channelType isEqualToString:@"peer"]) {
         // TODO:  Check this logic in association with the move to channels on identity
 		CLCLogInfo(@"peer request to %@", [innerPacket.json objectForKey:@"peer"]);
-        THLine* peerLine = [thSwitch lineToHashname:[innerPacket.json objectForKey:@"peer"]];
+        E3XExchange* peerLine = [thSwitch lineToHashname:[innerPacket.json objectForKey:@"peer"]];
         if (!peerLine) {
 			CLCLogWarning(@"unable to establish line for peer request");
             // What? We don't know about this person, bye bye
@@ -203,9 +161,9 @@
 		// TODO dan review this flow
         THPeerRelay* relay = [THPeerRelay new];
         
-        THUnreliableChannel* connectChannel = [[THUnreliableChannel alloc] initToIdentity:peerLine.toIdentity];
+        E3XUnreliableChannel* connectChannel = [[E3XUnreliableChannel alloc] initToIdentity:peerLine.toIdentity];
         connectChannel.delegate = relay;
-        THUnreliableChannel* peerChannel = [[THUnreliableChannel alloc] initToIdentity:self.toIdentity];
+        E3XUnreliableChannel* peerChannel = [[E3XUnreliableChannel alloc] initToIdentity:self.toIdentity];
         peerChannel.channelId = [innerPacket.json objectForKey:@"c"];
         peerChannel.delegate = relay;
         [thSwitch openChannel:peerChannel firstPacket:nil];
@@ -220,13 +178,13 @@
         // TODO:  XXX Can this become a function?  is it a generic pattern?
         NSDictionary* fromParts = [innerPacket.json objectForKey:@"from"];
         NSString* highestPart = [[fromParts.allKeys sortedArrayUsingSelector:@selector(compare:)] lastObject];
-        THCipherSet* cs;
+        E3XCipherSet* cs;
         if ([highestPart isEqualToString:@"3a"]) {
-            cs = [[THCipherSet3a alloc] initWithPublicKey:innerPacket.body privateKey:nil];
+            cs = [[E3XCipherSet3a alloc] initWithPublicKey:innerPacket.body privateKey:nil];
         } else if ([highestPart isEqualToString:@"2a"]) {
-            cs = [[THCipherSet2a alloc] initWithPublicKey:innerPacket.body privateKey:nil];
+            cs = [[E3XCipherSet2a alloc] initWithPublicKey:innerPacket.body privateKey:nil];
         }
-        THIdentity* peerIdentity = [THIdentity identityFromParts:fromParts key:cs];
+        THLink* peerIdentity = [THLink identityFromParts:fromParts key:cs];
         if (!peerIdentity) {
             // We couldn't verify the identity, so shut it down
             THPacket* closePacket = [THPacket new];
@@ -273,7 +231,7 @@
             [peerIdentity addPath:packet.returnPath];
         }
         
-        THUnreliableChannel* peerChannel = [[THUnreliableChannel alloc] initToIdentity:self.toIdentity];
+        E3XUnreliableChannel* peerChannel = [[E3XUnreliableChannel alloc] initToIdentity:self.toIdentity];
         peerChannel.channelId = [innerPacket.json objectForKey:@"c"];
         peerChannel.type = @"connect";
         [thSwitch openChannel:peerChannel firstPacket:nil];
@@ -296,7 +254,7 @@
         if (channel) {
             if (seq) {
                 // This is a reliable channel, let's make sure we're in a good state
-                THReliableChannel* reliableChannel = (THReliableChannel*)channel;
+                E3XReliableChannel* reliableChannel = (E3XReliableChannel*)channel;
                 if (seq.unsignedIntegerValue == 0 && [[innerPacket.json objectForKey:@"ack"] unsignedIntegerValue] == 0) {
                     reliableChannel.state = THChannelOpen;
                 }
@@ -319,13 +277,13 @@
                 return;
             }
 			
-            THChannel* newChannel;
+            E3XChannel* newChannel;
             THChannelType newChannelType;
             if (seq && [seq unsignedIntegerValue] == 0) {
-                newChannel = [[THReliableChannel alloc] initToIdentity:self.toIdentity];
+                newChannel = [[E3XReliableChannel alloc] initToIdentity:self.toIdentity];
                 newChannelType = ReliableChannel;
             } else {
-                newChannel = [[THUnreliableChannel alloc] initToIdentity:self.toIdentity];
+                newChannel = [[E3XUnreliableChannel alloc] initToIdentity:self.toIdentity];
                 newChannelType = UnreliableChannel;
             }
 			
@@ -334,7 +292,7 @@
 			newChannel.direction = THChannelInbound;
             newChannel.type = channelType;
 			
-            THSwitch* defaultSwitch = [THSwitch defaultSwitch];
+            THMesh* defaultSwitch = [THMesh defaultSwitch];
             [self.toIdentity.channels setObject:newChannel forKey:channelId];
             [newChannel handlePacket:innerPacket];
 			
@@ -384,7 +342,7 @@
         [self.toIdentity.relay sendPacket:lineOutPacket];
     } else {
 		CLCLogWarning(@"no path or relay available on line to %@, attempting a re-open", self.toIdentity.hashname);
-		[[THSwitch defaultSwitch] openLine:self.toIdentity];
+		[[THMesh defaultSwitch] openLine:self.toIdentity];
 		//TODO: we need to pause the channel and buffer before we actually get here...
 	}
     
@@ -397,12 +355,12 @@
 
 -(void)close
 {
-    [[THSwitch defaultSwitch] closeLine:self];
+    [[THMesh defaultSwitch] closeLine:self];
 }
 
 -(void)negotiatePath
 {
-    THSwitch* thSwitch = [THSwitch defaultSwitch];
+    THMesh* thSwitch = [THMesh defaultSwitch];
 
     THPacket* pathPacket = [THPacket new];
     [pathPacket.json setObject:[thSwitch.identity pathInformationTo:self.toIdentity allowLocal:YES] forKey:@"paths"];
@@ -413,7 +371,7 @@
     THPathHandler* handler = [THPathHandler new];
     handler.line = self;
     
-    THUnreliableChannel* pathChannel = [[THUnreliableChannel alloc] initToIdentity:self.toIdentity];
+    E3XUnreliableChannel* pathChannel = [[E3XUnreliableChannel alloc] initToIdentity:self.toIdentity];
     pathChannel.delegate = handler;
     [thSwitch openChannel:pathChannel firstPacket:pathPacket];
     
@@ -437,7 +395,7 @@
 
 -(void)handlePath:(THPacket*)packet
 {
-    THSwitch* thSwitch = [THSwitch defaultSwitch];
+    THMesh* thSwitch = [THMesh defaultSwitch];
     
     // Add the given paths to the identity
     NSArray* offeredPaths = [packet.json objectForKey:@"paths"];
@@ -480,9 +438,9 @@
 
 @implementation THPathHandler
 
--(BOOL)channel:(THChannel *)channel handlePacket:(THPacket *)packet
+-(BOOL)channel:(E3XChannel *)channel handlePacket:(THPacket *)packet
 {
-    THSwitch* thSwitch = [THSwitch defaultSwitch];
+    THMesh* thSwitch = [THMesh defaultSwitch];
     NSDictionary* returnPath = [packet.json objectForKey:@"path"];
     
     // See if our switch has this identity, we can learn our public IP this way
@@ -511,11 +469,11 @@
     return YES;
 }
 
--(void)channel:(THChannel *)channel didChangeStateTo:(THChannelState)channelState
+-(void)channel:(E3XChannel *)channel didChangeStateTo:(THChannelState)channelState
 {
 }
 
--(void)channel:(THChannel *)channel didFailWithError:(NSError *)error
+-(void)channel:(E3XChannel *)channel didFailWithError:(NSError *)error
 {
 }
 

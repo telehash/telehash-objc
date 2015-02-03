@@ -7,18 +7,18 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "THIdentity.h"
-#import "THSwitch.h"
-#import "THChannel.h"
+#import "THLink.h"
+#import "THMesh.h"
+#import "E3XChannel.h"
 
 @class THPacket;
-@class THChannel;
+@class E3XChannel;
 @class THCipherSetLineInfo;
 @class THPath;
 
-@interface THLine : NSObject
+@interface E3XExchange : NSObject
 
-@property THIdentity* toIdentity;
+@property THLink* toIdentity;
 @property THCipherSetLineInfo* cipherSetInfo;
 @property THPacket* cachedOpen;
 

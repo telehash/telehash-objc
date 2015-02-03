@@ -7,8 +7,8 @@
 //
 
 #import <Cocoa/Cocoa.h>
-#import <THSwitch.h>
-#import <THChannel.h>
+#import <THMesh.h>
+#import <E3XChannel.h>
 
 @interface THAppDelegate : NSObject <THSwitchDelegate, THChannelDelegate, NSTableViewDataSource, NSTableViewDelegate> {
     IBOutlet NSTableView* tableView;
@@ -19,14 +19,14 @@
     IBOutlet NSTextField* pathField;
     IBOutlet NSObjectController* objController;
     IBOutlet NSArrayController* channelArrayController;
-    THSwitch* thSwitch;
+    THMesh* thSwitch;
 }
 
 @property NSString* identityPath;
 @property (assign) IBOutlet NSWindow *window;
 
--(void)channelReady:(THChannel *)channel type:(THChannelType)type firstPacket:(THPacket *)packet;
--(BOOL)channel:(THChannel*)channel handlePacket:(THPacket *)packet;
+-(void)channelReady:(E3XChannel *)channel type:(THChannelType)type firstPacket:(THPacket *)packet;
+-(BOOL)channel:(E3XChannel*)channel handlePacket:(THPacket *)packet;
 
 -(NSInteger)numberOfRowsInTableView:(NSTableView *)tableView;
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex;

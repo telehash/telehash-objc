@@ -51,34 +51,34 @@
 		8231EBC51836BD3600BC41C1 /* NSString+HexString.h in Headers */ = {isa = PBXBuildFile; fileRef = 8231EBC31836BD3600BC41C1 /* NSString+HexString.h */; };
 		8231EBC61836BD3600BC41C1 /* NSString+HexString.m in Sources */ = {isa = PBXBuildFile; fileRef = 8231EBC41836BD3600BC41C1 /* NSString+HexString.m */; };
 		8231EBC71836BD3600BC41C1 /* NSString+HexString.m in Sources */ = {isa = PBXBuildFile; fileRef = 8231EBC41836BD3600BC41C1 /* NSString+HexString.m */; };
-		8231EC1B1836F37F00BC41C1 /* THLine.h in Headers */ = {isa = PBXBuildFile; fileRef = 8231EC191836F37F00BC41C1 /* THLine.h */; };
-		8231EC1C1836F37F00BC41C1 /* THLine.m in Sources */ = {isa = PBXBuildFile; fileRef = 8231EC1A1836F37F00BC41C1 /* THLine.m */; };
-		8231EC1D1836F37F00BC41C1 /* THLine.m in Sources */ = {isa = PBXBuildFile; fileRef = 8231EC1A1836F37F00BC41C1 /* THLine.m */; };
+		8231EC1B1836F37F00BC41C1 /* E3XExchange.h in Headers */ = {isa = PBXBuildFile; fileRef = 8231EC191836F37F00BC41C1 /* E3XExchange.h */; };
+		8231EC1C1836F37F00BC41C1 /* E3XExchange.m in Sources */ = {isa = PBXBuildFile; fileRef = 8231EC1A1836F37F00BC41C1 /* E3XExchange.m */; };
+		8231EC1D1836F37F00BC41C1 /* E3XExchange.m in Sources */ = {isa = PBXBuildFile; fileRef = 8231EC1A1836F37F00BC41C1 /* E3XExchange.m */; };
 		8236E1A718F5EDB600169201 /* THTransport.h in Headers */ = {isa = PBXBuildFile; fileRef = 8236E1A518F5EDB600169201 /* THTransport.h */; };
 		8236E1A818F5EDB600169201 /* THTransport.m in Sources */ = {isa = PBXBuildFile; fileRef = 8236E1A618F5EDB600169201 /* THTransport.m */; };
 		8236E1A918F5EDB600169201 /* THTransport.m in Sources */ = {isa = PBXBuildFile; fileRef = 8236E1A618F5EDB600169201 /* THTransport.m */; };
 		8249D63F1905F6640009F03B /* libsodium.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8249D63E1905F6640009F03B /* libsodium.a */; };
 		8249D6411905F6730009F03B /* libsodium.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8249D6401905F6730009F03B /* libsodium.a */; };
-		8249D6441906100C0009F03B /* THCipherSet3a.h in Headers */ = {isa = PBXBuildFile; fileRef = 8249D6421906100C0009F03B /* THCipherSet3a.h */; };
-		8249D6451906100C0009F03B /* THCipherSet3a.m in Sources */ = {isa = PBXBuildFile; fileRef = 8249D6431906100C0009F03B /* THCipherSet3a.m */; };
-		8249D6461906100C0009F03B /* THCipherSet3a.m in Sources */ = {isa = PBXBuildFile; fileRef = 8249D6431906100C0009F03B /* THCipherSet3a.m */; };
-		8249D649190627300009F03B /* THCipherSet2a.h in Headers */ = {isa = PBXBuildFile; fileRef = 8249D647190627300009F03B /* THCipherSet2a.h */; };
-		8249D64A190627300009F03B /* THCipherSet2a.m in Sources */ = {isa = PBXBuildFile; fileRef = 8249D648190627300009F03B /* THCipherSet2a.m */; };
-		8249D64B190627300009F03B /* THCipherSet2a.m in Sources */ = {isa = PBXBuildFile; fileRef = 8249D648190627300009F03B /* THCipherSet2a.m */; };
+		8249D6441906100C0009F03B /* E3XCipherSet3a.h in Headers */ = {isa = PBXBuildFile; fileRef = 8249D6421906100C0009F03B /* E3XCipherSet3a.h */; };
+		8249D6451906100C0009F03B /* E3XCipherSet3a.m in Sources */ = {isa = PBXBuildFile; fileRef = 8249D6431906100C0009F03B /* E3XCipherSet3a.m */; };
+		8249D6461906100C0009F03B /* E3XCipherSet3a.m in Sources */ = {isa = PBXBuildFile; fileRef = 8249D6431906100C0009F03B /* E3XCipherSet3a.m */; };
+		8249D649190627300009F03B /* E3XCipherSet2a.h in Headers */ = {isa = PBXBuildFile; fileRef = 8249D647190627300009F03B /* E3XCipherSet2a.h */; };
+		8249D64A190627300009F03B /* E3XCipherSet2a.m in Sources */ = {isa = PBXBuildFile; fileRef = 8249D648190627300009F03B /* E3XCipherSet2a.m */; };
+		8249D64B190627300009F03B /* E3XCipherSet2a.m in Sources */ = {isa = PBXBuildFile; fileRef = 8249D648190627300009F03B /* E3XCipherSet2a.m */; };
 		824F74B3191061D300B4E807 /* CLCLog.h in Headers */ = {isa = PBXBuildFile; fileRef = 824F74B1191061D300B4E807 /* CLCLog.h */; };
 		824F74B4191061D300B4E807 /* CLCLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 824F74B2191061D300B4E807 /* CLCLog.m */; };
 		824F74B5191061D300B4E807 /* CLCLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 824F74B2191061D300B4E807 /* CLCLog.m */; };
 		8251ADB418C02349005CB9E2 /* libcryptopp-osx.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8263D95B18BD16F000DED8E5 /* libcryptopp-osx.a */; };
 		8251ADBA18C023DC005CB9E2 /* open.pkt in Resources */ = {isa = PBXBuildFile; fileRef = 8251ADB918C023DC005CB9E2 /* open.pkt */; };
-		8251ADBD18C05A26005CB9E2 /* THCipherSet.h in Headers */ = {isa = PBXBuildFile; fileRef = 8251ADBB18C05A26005CB9E2 /* THCipherSet.h */; };
-		8251ADBE18C05A26005CB9E2 /* THCipherSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 8251ADBC18C05A26005CB9E2 /* THCipherSet.m */; };
-		8251ADBF18C05A26005CB9E2 /* THCipherSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 8251ADBC18C05A26005CB9E2 /* THCipherSet.m */; };
-		827CB8AB190C887F001EB8F9 /* THUnreliableChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = 827CB8A9190C887F001EB8F9 /* THUnreliableChannel.h */; };
-		827CB8AC190C8880001EB8F9 /* THUnreliableChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = 827CB8AA190C887F001EB8F9 /* THUnreliableChannel.m */; };
-		827CB8AD190C8880001EB8F9 /* THUnreliableChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = 827CB8AA190C887F001EB8F9 /* THUnreliableChannel.m */; };
-		827CB8B4190C8890001EB8F9 /* THReliableChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = 827CB8B2190C8890001EB8F9 /* THReliableChannel.h */; };
-		827CB8B5190C8890001EB8F9 /* THReliableChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = 827CB8B3190C8890001EB8F9 /* THReliableChannel.m */; };
-		827CB8B6190C8890001EB8F9 /* THReliableChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = 827CB8B3190C8890001EB8F9 /* THReliableChannel.m */; };
+		8251ADBD18C05A26005CB9E2 /* E3XCipherSet.h in Headers */ = {isa = PBXBuildFile; fileRef = 8251ADBB18C05A26005CB9E2 /* E3XCipherSet.h */; };
+		8251ADBE18C05A26005CB9E2 /* E3XCipherSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 8251ADBC18C05A26005CB9E2 /* E3XCipherSet.m */; };
+		8251ADBF18C05A26005CB9E2 /* E3XCipherSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 8251ADBC18C05A26005CB9E2 /* E3XCipherSet.m */; };
+		827CB8AB190C887F001EB8F9 /* E3XUnreliableChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = 827CB8A9190C887F001EB8F9 /* E3XUnreliableChannel.h */; };
+		827CB8AC190C8880001EB8F9 /* E3XUnreliableChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = 827CB8AA190C887F001EB8F9 /* E3XUnreliableChannel.m */; };
+		827CB8AD190C8880001EB8F9 /* E3XUnreliableChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = 827CB8AA190C887F001EB8F9 /* E3XUnreliableChannel.m */; };
+		827CB8B4190C8890001EB8F9 /* E3XReliableChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = 827CB8B2190C8890001EB8F9 /* E3XReliableChannel.h */; };
+		827CB8B5190C8890001EB8F9 /* E3XReliableChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = 827CB8B3190C8890001EB8F9 /* E3XReliableChannel.m */; };
+		827CB8B6190C8890001EB8F9 /* E3XReliableChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = 827CB8B3190C8890001EB8F9 /* E3XReliableChannel.m */; };
 		8298FF4918C5B5B0009CD379 /* GCMAES256.mm in Sources */ = {isa = PBXBuildFile; fileRef = 8298FF4718C5B5B0009CD379 /* GCMAES256.mm */; };
 		8298FF4A18C5B5B0009CD379 /* GCMAES256.h in Headers */ = {isa = PBXBuildFile; fileRef = 8298FF4818C5B5B0009CD379 /* GCMAES256.h */; };
 		8298FF4F18C5B5B4009CD379 /* GCMAES256.mm in Sources */ = {isa = PBXBuildFile; fileRef = 8298FF4718C5B5B0009CD379 /* GCMAES256.mm */; };
@@ -88,24 +88,21 @@
 		82A31BA4183457EB005077AD /* NSData+HexString.m in Sources */ = {isa = PBXBuildFile; fileRef = 82A31BA2183457EB005077AD /* NSData+HexString.m */; };
 		82A31BA5183457EB005077AD /* NSData+HexString.m in Sources */ = {isa = PBXBuildFile; fileRef = 82A31BA2183457EB005077AD /* NSData+HexString.m */; };
 		82B1720317FDE18F00C29EAF /* test.pkt in Resources */ = {isa = PBXBuildFile; fileRef = 82B1720217FDE18F00C29EAF /* test.pkt */; };
-		82B1720617FDE90600C29EAF /* THSwitch.h in Headers */ = {isa = PBXBuildFile; fileRef = 82B1720417FDE90600C29EAF /* THSwitch.h */; };
-		82B1720717FDE90600C29EAF /* THSwitch.m in Sources */ = {isa = PBXBuildFile; fileRef = 82B1720517FDE90600C29EAF /* THSwitch.m */; };
-		82B1720817FDE90600C29EAF /* THSwitch.m in Sources */ = {isa = PBXBuildFile; fileRef = 82B1720517FDE90600C29EAF /* THSwitch.m */; };
-		82B1720B180095B100C29EAF /* THChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = 82B17209180095B100C29EAF /* THChannel.h */; };
-		82B1720C180095B100C29EAF /* THChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = 82B1720A180095B100C29EAF /* THChannel.m */; };
-		82B1720D180095B100C29EAF /* THChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = 82B1720A180095B100C29EAF /* THChannel.m */; };
+		82B1720617FDE90600C29EAF /* THMesh.h in Headers */ = {isa = PBXBuildFile; fileRef = 82B1720417FDE90600C29EAF /* THMesh.h */; };
+		82B1720717FDE90600C29EAF /* THMesh.m in Sources */ = {isa = PBXBuildFile; fileRef = 82B1720517FDE90600C29EAF /* THMesh.m */; };
+		82B1720817FDE90600C29EAF /* THMesh.m in Sources */ = {isa = PBXBuildFile; fileRef = 82B1720517FDE90600C29EAF /* THMesh.m */; };
+		82B1720B180095B100C29EAF /* E3XChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = 82B17209180095B100C29EAF /* E3XChannel.h */; };
+		82B1720C180095B100C29EAF /* E3XChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = 82B1720A180095B100C29EAF /* E3XChannel.m */; };
+		82B1720D180095B100C29EAF /* E3XChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = 82B1720A180095B100C29EAF /* E3XChannel.m */; };
 		82B1721018009A6C00C29EAF /* GCDAsyncUdpSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 82B1720E18009A6C00C29EAF /* GCDAsyncUdpSocket.h */; };
 		82B1721118009A6C00C29EAF /* GCDAsyncUdpSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 82B1720F18009A6C00C29EAF /* GCDAsyncUdpSocket.m */; };
 		82B1721218009A6C00C29EAF /* GCDAsyncUdpSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 82B1720F18009A6C00C29EAF /* GCDAsyncUdpSocket.m */; };
-		82B172151800A51B00C29EAF /* THIdentity.h in Headers */ = {isa = PBXBuildFile; fileRef = 82B172131800A51B00C29EAF /* THIdentity.h */; };
-		82B172161800A51B00C29EAF /* THIdentity.m in Sources */ = {isa = PBXBuildFile; fileRef = 82B172141800A51B00C29EAF /* THIdentity.m */; };
-		82B172171800A51B00C29EAF /* THIdentity.m in Sources */ = {isa = PBXBuildFile; fileRef = 82B172141800A51B00C29EAF /* THIdentity.m */; };
+		82B172151800A51B00C29EAF /* THLink.h in Headers */ = {isa = PBXBuildFile; fileRef = 82B172131800A51B00C29EAF /* THLink.h */; };
+		82B172161800A51B00C29EAF /* THLink.m in Sources */ = {isa = PBXBuildFile; fileRef = 82B172141800A51B00C29EAF /* THLink.m */; };
+		82B172171800A51B00C29EAF /* THLink.m in Sources */ = {isa = PBXBuildFile; fileRef = 82B172141800A51B00C29EAF /* THLink.m */; };
 		82B70ACE18404D4900E819F3 /* THPacketBuffer.h in Headers */ = {isa = PBXBuildFile; fileRef = 82B70ACC18404D4900E819F3 /* THPacketBuffer.h */; };
 		82B70ACF18404D4900E819F3 /* THPacketBuffer.m in Sources */ = {isa = PBXBuildFile; fileRef = 82B70ACD18404D4900E819F3 /* THPacketBuffer.m */; };
 		82B70AD018404D4900E819F3 /* THPacketBuffer.m in Sources */ = {isa = PBXBuildFile; fileRef = 82B70ACD18404D4900E819F3 /* THPacketBuffer.m */; };
-		82DB236B187C8343002C74C9 /* THMeshBuckets.h in Headers */ = {isa = PBXBuildFile; fileRef = 82DB2369187C8343002C74C9 /* THMeshBuckets.h */; };
-		82DB236C187C8343002C74C9 /* THMeshBuckets.m in Sources */ = {isa = PBXBuildFile; fileRef = 82DB236A187C8343002C74C9 /* THMeshBuckets.m */; };
-		82DB236D187C8343002C74C9 /* THMeshBuckets.m in Sources */ = {isa = PBXBuildFile; fileRef = 82DB236A187C8343002C74C9 /* THMeshBuckets.m */; };
 		82DB2375187C83E4002C74C9 /* THPendingJob.h in Headers */ = {isa = PBXBuildFile; fileRef = 82DB2373187C83E4002C74C9 /* THPendingJob.h */; };
 		82DB2376187C83E4002C74C9 /* THPendingJob.m in Sources */ = {isa = PBXBuildFile; fileRef = 82DB2374187C83E4002C74C9 /* THPendingJob.m */; };
 		82DB2377187C83E4002C74C9 /* THPendingJob.m in Sources */ = {isa = PBXBuildFile; fileRef = 82DB2374187C83E4002C74C9 /* THPendingJob.m */; };
@@ -246,25 +243,25 @@
 		8231EBC31836BD3600BC41C1 /* NSString+HexString.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+HexString.h"; sourceTree = "<group>"; };
 		8231EBC41836BD3600BC41C1 /* NSString+HexString.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+HexString.m"; sourceTree = "<group>"; };
 		8231EC081836C60D00BC41C1 /* Telehash Playground.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "Telehash Playground.xcodeproj"; path = "Telehash Playground/Telehash Playground.xcodeproj"; sourceTree = "<group>"; };
-		8231EC191836F37F00BC41C1 /* THLine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THLine.h; sourceTree = "<group>"; };
-		8231EC1A1836F37F00BC41C1 /* THLine.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THLine.m; sourceTree = "<group>"; };
+		8231EC191836F37F00BC41C1 /* E3XExchange.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = E3XExchange.h; sourceTree = "<group>"; };
+		8231EC1A1836F37F00BC41C1 /* E3XExchange.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = E3XExchange.m; sourceTree = "<group>"; };
 		8236E1A518F5EDB600169201 /* THTransport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THTransport.h; sourceTree = "<group>"; };
 		8236E1A618F5EDB600169201 /* THTransport.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THTransport.m; sourceTree = "<group>"; };
 		8249D63E1905F6640009F03B /* libsodium.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsodium.a; path = libsodium/build/lib/libsodium.a; sourceTree = "<group>"; };
 		8249D6401905F6730009F03B /* libsodium.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsodium.a; path = "libsodium/build-ios/lib/libsodium.a"; sourceTree = "<group>"; };
-		8249D6421906100C0009F03B /* THCipherSet3a.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THCipherSet3a.h; sourceTree = "<group>"; };
-		8249D6431906100C0009F03B /* THCipherSet3a.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THCipherSet3a.m; sourceTree = "<group>"; };
-		8249D647190627300009F03B /* THCipherSet2a.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THCipherSet2a.h; sourceTree = "<group>"; };
-		8249D648190627300009F03B /* THCipherSet2a.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THCipherSet2a.m; sourceTree = "<group>"; };
+		8249D6421906100C0009F03B /* E3XCipherSet3a.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = E3XCipherSet3a.h; sourceTree = "<group>"; };
+		8249D6431906100C0009F03B /* E3XCipherSet3a.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = E3XCipherSet3a.m; sourceTree = "<group>"; };
+		8249D647190627300009F03B /* E3XCipherSet2a.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = E3XCipherSet2a.h; sourceTree = "<group>"; };
+		8249D648190627300009F03B /* E3XCipherSet2a.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = E3XCipherSet2a.m; sourceTree = "<group>"; };
 		824F74B1191061D300B4E807 /* CLCLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CLCLog.h; sourceTree = "<group>"; };
 		824F74B2191061D300B4E807 /* CLCLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CLCLog.m; sourceTree = "<group>"; };
 		8251ADB918C023DC005CB9E2 /* open.pkt */ = {isa = PBXFileReference; lastKnownFileType = file; path = open.pkt; sourceTree = "<group>"; };
-		8251ADBB18C05A26005CB9E2 /* THCipherSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THCipherSet.h; sourceTree = "<group>"; };
-		8251ADBC18C05A26005CB9E2 /* THCipherSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THCipherSet.m; sourceTree = "<group>"; };
-		827CB8A9190C887F001EB8F9 /* THUnreliableChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THUnreliableChannel.h; sourceTree = "<group>"; };
-		827CB8AA190C887F001EB8F9 /* THUnreliableChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THUnreliableChannel.m; sourceTree = "<group>"; };
-		827CB8B2190C8890001EB8F9 /* THReliableChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THReliableChannel.h; sourceTree = "<group>"; };
-		827CB8B3190C8890001EB8F9 /* THReliableChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THReliableChannel.m; sourceTree = "<group>"; };
+		8251ADBB18C05A26005CB9E2 /* E3XCipherSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = E3XCipherSet.h; sourceTree = "<group>"; };
+		8251ADBC18C05A26005CB9E2 /* E3XCipherSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = E3XCipherSet.m; sourceTree = "<group>"; };
+		827CB8A9190C887F001EB8F9 /* E3XUnreliableChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = E3XUnreliableChannel.h; sourceTree = "<group>"; };
+		827CB8AA190C887F001EB8F9 /* E3XUnreliableChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = E3XUnreliableChannel.m; sourceTree = "<group>"; };
+		827CB8B2190C8890001EB8F9 /* E3XReliableChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = E3XReliableChannel.h; sourceTree = "<group>"; };
+		827CB8B3190C8890001EB8F9 /* E3XReliableChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = E3XReliableChannel.m; sourceTree = "<group>"; };
 		8298FF4718C5B5B0009CD379 /* GCMAES256.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = GCMAES256.mm; sourceTree = "<group>"; };
 		8298FF4818C5B5B0009CD379 /* GCMAES256.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCMAES256.h; sourceTree = "<group>"; };
 		8298FF5C18C83ECB009CD379 /* server.der */ = {isa = PBXFileReference; lastKnownFileType = file; path = server.der; sourceTree = "<group>"; };
@@ -272,19 +269,17 @@
 		82A31BA1183457EB005077AD /* NSData+HexString.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+HexString.h"; sourceTree = "<group>"; };
 		82A31BA2183457EB005077AD /* NSData+HexString.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData+HexString.m"; sourceTree = "<group>"; };
 		82B1720217FDE18F00C29EAF /* test.pkt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file; path = test.pkt; sourceTree = "<group>"; };
-		82B1720417FDE90600C29EAF /* THSwitch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THSwitch.h; sourceTree = "<group>"; };
-		82B1720517FDE90600C29EAF /* THSwitch.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THSwitch.m; sourceTree = "<group>"; };
-		82B17209180095B100C29EAF /* THChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THChannel.h; sourceTree = "<group>"; };
-		82B1720A180095B100C29EAF /* THChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THChannel.m; sourceTree = "<group>"; };
+		82B1720417FDE90600C29EAF /* THMesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THMesh.h; sourceTree = "<group>"; };
+		82B1720517FDE90600C29EAF /* THMesh.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THMesh.m; sourceTree = "<group>"; };
+		82B17209180095B100C29EAF /* E3XChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = E3XChannel.h; sourceTree = "<group>"; };
+		82B1720A180095B100C29EAF /* E3XChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = E3XChannel.m; sourceTree = "<group>"; };
 		82B1720E18009A6C00C29EAF /* GCDAsyncUdpSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDAsyncUdpSocket.h; sourceTree = "<group>"; };
 		82B1720F18009A6C00C29EAF /* GCDAsyncUdpSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GCDAsyncUdpSocket.m; sourceTree = "<group>"; };
-		82B172131800A51B00C29EAF /* THIdentity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THIdentity.h; sourceTree = "<group>"; };
-		82B172141800A51B00C29EAF /* THIdentity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THIdentity.m; sourceTree = "<group>"; };
+		82B172131800A51B00C29EAF /* THLink.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THLink.h; sourceTree = "<group>"; };
+		82B172141800A51B00C29EAF /* THLink.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THLink.m; sourceTree = "<group>"; };
 		82B70ACC18404D4900E819F3 /* THPacketBuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THPacketBuffer.h; sourceTree = "<group>"; };
 		82B70ACD18404D4900E819F3 /* THPacketBuffer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THPacketBuffer.m; sourceTree = "<group>"; };
 		82D221361871D3630015E7EA /* cryptopp.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = cryptopp.xcodeproj; path = cryptopp/cryptopp/cryptopp.xcodeproj; sourceTree = "<group>"; };
-		82DB2369187C8343002C74C9 /* THMeshBuckets.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THMeshBuckets.h; sourceTree = "<group>"; };
-		82DB236A187C8343002C74C9 /* THMeshBuckets.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THMeshBuckets.m; sourceTree = "<group>"; };
 		82DB2373187C83E4002C74C9 /* THPendingJob.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THPendingJob.h; sourceTree = "<group>"; };
 		82DB2374187C83E4002C74C9 /* THPendingJob.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THPendingJob.m; sourceTree = "<group>"; };
 		82EF372F1927AF3D001D3DB4 /* THRelay.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THRelay.h; sourceTree = "<group>"; };
@@ -501,40 +496,38 @@
 				824F74B2191061D300B4E807 /* CLCLog.m */,
 				82B1720E18009A6C00C29EAF /* GCDAsyncUdpSocket.h */,
 				82B1720F18009A6C00C29EAF /* GCDAsyncUdpSocket.m */,
-				82B1720417FDE90600C29EAF /* THSwitch.h */,
-				82B1720517FDE90600C29EAF /* THSwitch.m */,
-				82DB2369187C8343002C74C9 /* THMeshBuckets.h */,
-				82DB236A187C8343002C74C9 /* THMeshBuckets.m */,
-				82B172131800A51B00C29EAF /* THIdentity.h */,
-				82B172141800A51B00C29EAF /* THIdentity.m */,
+				82B1720417FDE90600C29EAF /* THMesh.h */,
+				82B1720517FDE90600C29EAF /* THMesh.m */,
+				82B172131800A51B00C29EAF /* THLink.h */,
+				82B172141800A51B00C29EAF /* THLink.m */,
 				820BADFA18D81476003D7CBA /* THPath.h */,
 				820BADFB18D81476003D7CBA /* THPath.m */,
 				8236E1A518F5EDB600169201 /* THTransport.h */,
 				8236E1A618F5EDB600169201 /* THTransport.m */,
-				8231EC191836F37F00BC41C1 /* THLine.h */,
-				8231EC1A1836F37F00BC41C1 /* THLine.m */,
+				8231EC191836F37F00BC41C1 /* E3XExchange.h */,
+				8231EC1A1836F37F00BC41C1 /* E3XExchange.m */,
 				82EF372F1927AF3D001D3DB4 /* THRelay.h */,
 				82EF37301927AF3D001D3DB4 /* THRelay.m */,
 				820BADF118D77EFA003D7CBA /* THPeerRelay.h */,
 				820BADF218D77EFA003D7CBA /* THPeerRelay.m */,
-				82B17209180095B100C29EAF /* THChannel.h */,
-				82B1720A180095B100C29EAF /* THChannel.m */,
-				827CB8A9190C887F001EB8F9 /* THUnreliableChannel.h */,
-				827CB8AA190C887F001EB8F9 /* THUnreliableChannel.m */,
-				827CB8B2190C8890001EB8F9 /* THReliableChannel.h */,
-				827CB8B3190C8890001EB8F9 /* THReliableChannel.m */,
+				82B17209180095B100C29EAF /* E3XChannel.h */,
+				82B1720A180095B100C29EAF /* E3XChannel.m */,
+				827CB8A9190C887F001EB8F9 /* E3XUnreliableChannel.h */,
+				827CB8AA190C887F001EB8F9 /* E3XUnreliableChannel.m */,
+				827CB8B2190C8890001EB8F9 /* E3XReliableChannel.h */,
+				827CB8B3190C8890001EB8F9 /* E3XReliableChannel.m */,
 				822C6D4217FCDB31008C04BA /* THPacket.h */,
 				822C6D4317FCDB31008C04BA /* THPacket.m */,
 				82B70ACC18404D4900E819F3 /* THPacketBuffer.h */,
 				82B70ACD18404D4900E819F3 /* THPacketBuffer.m */,
 				82DB2373187C83E4002C74C9 /* THPendingJob.h */,
 				82DB2374187C83E4002C74C9 /* THPendingJob.m */,
-				8251ADBB18C05A26005CB9E2 /* THCipherSet.h */,
-				8251ADBC18C05A26005CB9E2 /* THCipherSet.m */,
-				8249D6421906100C0009F03B /* THCipherSet3a.h */,
-				8249D6431906100C0009F03B /* THCipherSet3a.m */,
-				8249D647190627300009F03B /* THCipherSet2a.h */,
-				8249D648190627300009F03B /* THCipherSet2a.m */,
+				8251ADBB18C05A26005CB9E2 /* E3XCipherSet.h */,
+				8251ADBC18C05A26005CB9E2 /* E3XCipherSet.m */,
+				8249D6421906100C0009F03B /* E3XCipherSet3a.h */,
+				8249D6431906100C0009F03B /* E3XCipherSet3a.m */,
+				8249D647190627300009F03B /* E3XCipherSet2a.h */,
+				8249D648190627300009F03B /* E3XCipherSet2a.m */,
 				82A31BA1183457EB005077AD /* NSData+HexString.h */,
 				82A31BA2183457EB005077AD /* NSData+HexString.m */,
 				8231EBC31836BD3600BC41C1 /* NSString+HexString.h */,
@@ -568,32 +561,31 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8251ADBD18C05A26005CB9E2 /* THCipherSet.h in Headers */,
+				8251ADBD18C05A26005CB9E2 /* E3XCipherSet.h in Headers */,
 				82DB2375187C83E4002C74C9 /* THPendingJob.h in Headers */,
 				820BADF318D77EFA003D7CBA /* THPeerRelay.h in Headers */,
 				8236E1A718F5EDB600169201 /* THTransport.h in Headers */,
 				82B70ACE18404D4900E819F3 /* THPacketBuffer.h in Headers */,
-				82DB236B187C8343002C74C9 /* THMeshBuckets.h in Headers */,
 				822C6D2F17FCCD0C008C04BA /* ECDH.h in Headers */,
 				8218D1C217FA6F410053AFAC /* THRSA.h in Headers */,
 				822C6D3417FCD3F6008C04BA /* CTRAES256.h in Headers */,
-				8249D649190627300009F03B /* THCipherSet2a.h in Headers */,
+				8249D649190627300009F03B /* E3XCipherSet2a.h in Headers */,
 				822C6D3E17FCD8C5008C04BA /* RNG.h in Headers */,
 				82B1721018009A6C00C29EAF /* GCDAsyncUdpSocket.h in Headers */,
-				8231EC1B1836F37F00BC41C1 /* THLine.h in Headers */,
+				8231EC1B1836F37F00BC41C1 /* E3XExchange.h in Headers */,
 				8298FF4A18C5B5B0009CD379 /* GCMAES256.h in Headers */,
 				824F74B3191061D300B4E807 /* CLCLog.h in Headers */,
 				822C6D4417FCDB31008C04BA /* THPacket.h in Headers */,
 				822C6D3917FCD754008C04BA /* SHA256.h in Headers */,
-				82B1720B180095B100C29EAF /* THChannel.h in Headers */,
-				8249D6441906100C0009F03B /* THCipherSet3a.h in Headers */,
-				827CB8B4190C8890001EB8F9 /* THReliableChannel.h in Headers */,
-				82B172151800A51B00C29EAF /* THIdentity.h in Headers */,
-				827CB8AB190C887F001EB8F9 /* THUnreliableChannel.h in Headers */,
+				82B1720B180095B100C29EAF /* E3XChannel.h in Headers */,
+				8249D6441906100C0009F03B /* E3XCipherSet3a.h in Headers */,
+				827CB8B4190C8890001EB8F9 /* E3XReliableChannel.h in Headers */,
+				82B172151800A51B00C29EAF /* THLink.h in Headers */,
+				827CB8AB190C887F001EB8F9 /* E3XUnreliableChannel.h in Headers */,
 				82EF37311927AF3D001D3DB4 /* THRelay.h in Headers */,
 				8231EBC51836BD3600BC41C1 /* NSString+HexString.h in Headers */,
 				82A31BA3183457EB005077AD /* NSData+HexString.h in Headers */,
-				82B1720617FDE90600C29EAF /* THSwitch.h in Headers */,
+				82B1720617FDE90600C29EAF /* THMesh.h in Headers */,
 				820BADFC18D81476003D7CBA /* THPath.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -798,29 +790,28 @@
 				820BADF418D77EFA003D7CBA /* THPeerRelay.m in Sources */,
 				822C6D4517FCDB31008C04BA /* THPacket.m in Sources */,
 				822C6D3A17FCD754008C04BA /* SHA256.mm in Sources */,
-				8251ADBE18C05A26005CB9E2 /* THCipherSet.m in Sources */,
-				8231EC1C1836F37F00BC41C1 /* THLine.m in Sources */,
-				82DB236C187C8343002C74C9 /* THMeshBuckets.m in Sources */,
-				827CB8AC190C8880001EB8F9 /* THUnreliableChannel.m in Sources */,
-				82B1720717FDE90600C29EAF /* THSwitch.m in Sources */,
-				8249D64A190627300009F03B /* THCipherSet2a.m in Sources */,
+				8251ADBE18C05A26005CB9E2 /* E3XCipherSet.m in Sources */,
+				8231EC1C1836F37F00BC41C1 /* E3XExchange.m in Sources */,
+				827CB8AC190C8880001EB8F9 /* E3XUnreliableChannel.m in Sources */,
+				82B1720717FDE90600C29EAF /* THMesh.m in Sources */,
+				8249D64A190627300009F03B /* E3XCipherSet2a.m in Sources */,
 				822C6D3517FCD3F6008C04BA /* CTRAES256.mm in Sources */,
-				8249D6451906100C0009F03B /* THCipherSet3a.m in Sources */,
+				8249D6451906100C0009F03B /* E3XCipherSet3a.m in Sources */,
 				8236E1A818F5EDB600169201 /* THTransport.m in Sources */,
 				82EF37321927AF3D001D3DB4 /* THRelay.m in Sources */,
 				82DB2376187C83E4002C74C9 /* THPendingJob.m in Sources */,
 				8231EBC61836BD3600BC41C1 /* NSString+HexString.m in Sources */,
 				820BADFD18D81476003D7CBA /* THPath.m in Sources */,
-				82B1720C180095B100C29EAF /* THChannel.m in Sources */,
+				82B1720C180095B100C29EAF /* E3XChannel.m in Sources */,
 				82B70ACF18404D4900E819F3 /* THPacketBuffer.m in Sources */,
 				82B1721118009A6C00C29EAF /* GCDAsyncUdpSocket.m in Sources */,
-				827CB8B5190C8890001EB8F9 /* THReliableChannel.m in Sources */,
+				827CB8B5190C8890001EB8F9 /* E3XReliableChannel.m in Sources */,
 				82A31BA4183457EB005077AD /* NSData+HexString.m in Sources */,
 				822C6D3F17FCD8C5008C04BA /* RNG.mm in Sources */,
 				824F74B4191061D300B4E807 /* CLCLog.m in Sources */,
 				822C6D3017FCCD0C008C04BA /* ECDH.mm in Sources */,
 				8218D17B17FA6E8A0053AFAC /* telehash.m in Sources */,
-				82B172161800A51B00C29EAF /* THIdentity.m in Sources */,
+				82B172161800A51B00C29EAF /* THLink.m in Sources */,
 				8298FF4918C5B5B0009CD379 /* GCMAES256.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -841,29 +832,28 @@
 				820BADF518D77EFA003D7CBA /* THPeerRelay.m in Sources */,
 				822C6D4617FCDB31008C04BA /* THPacket.m in Sources */,
 				822C6D3B17FCD754008C04BA /* SHA256.mm in Sources */,
-				8251ADBF18C05A26005CB9E2 /* THCipherSet.m in Sources */,
-				8231EC1D1836F37F00BC41C1 /* THLine.m in Sources */,
-				82DB236D187C8343002C74C9 /* THMeshBuckets.m in Sources */,
-				827CB8AD190C8880001EB8F9 /* THUnreliableChannel.m in Sources */,
-				82B1720817FDE90600C29EAF /* THSwitch.m in Sources */,
-				8249D64B190627300009F03B /* THCipherSet2a.m in Sources */,
+				8251ADBF18C05A26005CB9E2 /* E3XCipherSet.m in Sources */,
+				8231EC1D1836F37F00BC41C1 /* E3XExchange.m in Sources */,
+				827CB8AD190C8880001EB8F9 /* E3XUnreliableChannel.m in Sources */,
+				82B1720817FDE90600C29EAF /* THMesh.m in Sources */,
+				8249D64B190627300009F03B /* E3XCipherSet2a.m in Sources */,
 				822C6D3617FCD3F6008C04BA /* CTRAES256.mm in Sources */,
-				8249D6461906100C0009F03B /* THCipherSet3a.m in Sources */,
+				8249D6461906100C0009F03B /* E3XCipherSet3a.m in Sources */,
 				8236E1A918F5EDB600169201 /* THTransport.m in Sources */,
 				82EF37331927AF3D001D3DB4 /* THRelay.m in Sources */,
 				82DB2377187C83E4002C74C9 /* THPendingJob.m in Sources */,
 				8231EBC71836BD3600BC41C1 /* NSString+HexString.m in Sources */,
 				820BADFE18D81476003D7CBA /* THPath.m in Sources */,
-				82B1720D180095B100C29EAF /* THChannel.m in Sources */,
+				82B1720D180095B100C29EAF /* E3XChannel.m in Sources */,
 				82B70AD018404D4900E819F3 /* THPacketBuffer.m in Sources */,
 				82B1721218009A6C00C29EAF /* GCDAsyncUdpSocket.m in Sources */,
-				827CB8B6190C8890001EB8F9 /* THReliableChannel.m in Sources */,
+				827CB8B6190C8890001EB8F9 /* E3XReliableChannel.m in Sources */,
 				82A31BA5183457EB005077AD /* NSData+HexString.m in Sources */,
 				822C6D4017FCD8C5008C04BA /* RNG.mm in Sources */,
 				824F74B5191061D300B4E807 /* CLCLog.m in Sources */,
 				822C6D3117FCCD0C008C04BA /* ECDH.mm in Sources */,
 				8218D1A417FA6EA50053AFAC /* telehash_ios.m in Sources */,
-				82B172171800A51B00C29EAF /* THIdentity.m in Sources */,
+				82B172171800A51B00C29EAF /* THLink.m in Sources */,
 				8298FF4F18C5B5B4009CD379 /* GCMAES256.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1014,8 +1004,12 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/cryptopp",
 					"$(PROJECT_DIR)/libsodium/build/include",
+					/usr/local/include,
 				);
-				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/libsodium/build/lib";
+				LIBRARY_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/libsodium/build/lib",
+					/usr/local/lib,
+				);
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -1030,8 +1024,12 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/cryptopp",
 					"$(PROJECT_DIR)/libsodium/build/include",
+					/usr/local/include,
 				);
-				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/libsodium/build/lib";
+				LIBRARY_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/libsodium/build/lib",
+					/usr/local/lib,
+				);
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};

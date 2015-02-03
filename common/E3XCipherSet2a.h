@@ -6,19 +6,19 @@
 //  Copyright (c) 2014 Telehash Foundation. All rights reserved.
 //
 
-#import "THCipherSet.h"
+#import "E3XCipherSet.h"
 
 @class ECDH;
 @class RSA;
 
-@interface THCipherSet2a : THCipherSet
+@interface E3XCipherSet2a : E3XCipherSet
 @property (retain) RSA* rsaKeys;
 -(void)generateKeys;
 -(id)initWithPublicKeyPath:(NSString*)publicKeyPath privateKeyPath:(NSString*)privateKeyPath;
 -(id)initWithPublicKey:(NSData *)publicKey privateKey:(NSData *)privateKey;
--(THLine*)processOpen:(THPacket*)openPacket;
--(void)finalizeLineKeys:(THLine*)line;
--(THPacket*)generateOpen:(THLine*)line from:(THIdentity*)fromIdentity;
+-(E3XExchange*)processOpen:(THPacket*)openPacket;
+-(void)finalizeLineKeys:(E3XExchange*)line;
+-(THPacket*)generateOpen:(E3XExchange*)line from:(THLink*)fromIdentity;
 @end
 
 @interface THCipherSetLineInfo2a : THCipherSetLineInfo

@@ -6,29 +6,29 @@
 //  Copyright (c) 2014 Telehash Foundation. All rights reserved.
 //
 
-#import "THCipherSet.h"
+#import "E3XCipherSet.h"
 #import "THPacket.h"
-#import "THIdentity.h"
-#import "THLine.h"
-#import "THCipherSet2a.h"
-#import "THCipherSet3a.h"
+#import "THLink.h"
+#import "E3XExchange.h"
+#import "E3XCipherSet2a.h"
+#import "E3XCipherSet3a.h"
 #import "CLCLog.h"
 
-@implementation THCipherSet
-+(THCipherSet*)cipherSetForOpen:(THPacket *)openPacket
+@implementation E3XCipherSet
++(E3XCipherSet*)cipherSetForOpen:(THPacket *)openPacket
 {
     unsigned char* bytes = (unsigned char*)openPacket.body.bytes;
     switch (bytes[0]) {
     case 0x2a:
-        return [THCipherSet2a new];
+        return [E3XCipherSet2a new];
     case 0x3a:
-        return [THCipherSet3a new];
+        return [E3XCipherSet3a new];
     default:
         return nil;
     }
 }
 
--(THLine*)processOpen:(THPacket*)openPacket switch:(THSwitch*)thSwitch
+-(E3XExchange*)processOpen:(THPacket*)openPacket switch:(THMesh*)thSwitch
 {
     CLCLogError(@"Not implemented");
     return nil;
@@ -40,7 +40,7 @@
     return nil;
 }
 
--(void)finalizeLineKeys:(THLine *)line
+-(void)finalizeLineKeys:(E3XExchange *)line
 {
     CLCLogError(@"Not implemented THCipherSet finalizeKeys");
 }

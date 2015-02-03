@@ -9,23 +9,23 @@
 #import <Foundation/Foundation.h>
 
 @class THPacket;
-@class THSwitch;
-@class THLine;
-@class THIdentity;
+@class THMesh;
+@class E3XExchange;
+@class THLink;
 
-@interface THCipherSet : NSObject
+@interface E3XCipherSet : NSObject
 @property (readonly) NSData* fingerprint;
 @property (readonly) NSData* publicKey;
-+(THCipherSet*)cipherSetForOpen:(THPacket*)openPacket;
--(THLine*)processOpen:(THPacket*)openPacket;
--(void)finalizeLineKeys:(THLine*)line;
--(THPacket*)generateOpen:(THLine*)line from:(THIdentity*)fromIdentity;
++(E3XCipherSet*)cipherSetForOpen:(THPacket*)openPacket;
+-(E3XExchange*)processOpen:(THPacket*)openPacket;
+-(void)finalizeLineKeys:(E3XExchange*)line;
+-(THPacket*)generateOpen:(E3XExchange*)line from:(THLink*)fromIdentity;
 -(void)generateKeys;
 -(NSString*)identifier;
 @end
 
 @interface THCipherSetLineInfo : NSObject
-@property THCipherSet* cipherSet;
+@property E3XCipherSet* cipherSet;
 -(NSData*)encryptLinePacket:(THPacket*)packet;
 -(void)decryptLinePacket:(THPacket*)packet;
 @end

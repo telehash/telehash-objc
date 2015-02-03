@@ -7,13 +7,13 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "THChannel.h"
+#import "E3XChannel.h"
 
-@class THIdentity;
-@class THChannel;
+@class THLink;
+@class E3XChannel;
 
 @interface THPeerRelay : NSObject<THChannelDelegate>
-@property THChannel* connectChannel;
-@property THChannel* peerChannel;
+@property E3XChannel* connectChannel;
+@property E3XChannel* peerChannel;
 -(void)sendPacket:(THPacket*)packet;
 @end

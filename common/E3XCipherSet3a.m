@@ -6,12 +6,12 @@
 //  Copyright (c) 2014 Telehash Foundation. All rights reserved.
 //
 
-#import "THCipherSet3a.h"
+#import "E3XCipherSet3a.h"
 #import "THPacket.h"
 #import "SHA256.h"
 #import "NSData+HexString.h"
-#import "THIdentity.h"
-#import "THLine.h"
+#import "THLink.h"
+#import "E3XExchange.h"
 #import "NSString+HexString.h"
 #import "RNG.h"
 #import "CLCLog.h"
@@ -19,7 +19,7 @@
 static unsigned char csId3a[1] = {0x3a};
 static uint8_t nonce3a[crypto_secretbox_NONCEBYTES] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
 
-@implementation THCipherSet3a
+@implementation E3XCipherSet3a
 -(NSString*)identifier
 {
     return @"3a";
@@ -68,7 +68,7 @@ static uint8_t nonce3a[crypto_secretbox_NONCEBYTES] = {0, 0, 0, 0, 0, 0, 0, 0, 0
     return [SHA256 hashWithData:[NSData dataWithBytesNoCopy:publicKey length:crypto_box_PUBLICKEYBYTES freeWhenDone:NO]];
 }
 
--(THLine*)processOpen:(THPacket*)openPacket;
+-(E3XExchange*)processOpen:(THPacket*)openPacket;
 {
     // Process an open packet
     NSData* pubLineKey = [openPacket.body subdataWithRange:NSMakeRange(crypto_onetimeauth_BYTES + 1, crypto_box_PUBLICKEYBYTES)];
@@ -91,7 +91,7 @@ static uint8_t nonce3a[crypto_secretbox_NONCEBYTES] = {0, 0, 0, 0, 0, 0, 0, 0, 0
     }
     innerPacket.returnPath = openPacket.returnPath;
     
-    THCipherSet3a* incomingCS = [[THCipherSet3a alloc] initWithPublicKey:innerPacket.body privateKey:nil];
+    E3XCipherSet3a* incomingCS = [[E3XCipherSet3a alloc] initWithPublicKey:innerPacket.body privateKey:nil];
     if (!incomingCS) {
         CLCLogInfo(@"Unable to create cipher set for incoming key.");
         return nil;
@@ -113,7 +113,7 @@ static uint8_t nonce3a[crypto_secretbox_NONCEBYTES] = {0, 0, 0, 0, 0, 0, 0, 0, 0
         return nil;
     }
     
-    THIdentity* senderIdentity = [THIdentity identityFromParts:[innerPacket.json objectForKey:@"from"] key:incomingCS];
+    THLink* senderIdentity = [THLink identityFromParts:[innerPacket.json objectForKey:@"from"] key:incomingCS];
     if (!senderIdentity) {
         CLCLogInfo(@"Unable to validate and verify identity");
         return nil;
@@ -138,13 +138,13 @@ static uint8_t nonce3a[crypto_secretbox_NONCEBYTES] = {0, 0, 0, 0, 0, 0, 0, 0, 0
         [senderIdentity closeChannels];
     }
     
-    THLine* newLine = senderIdentity.currentLine;
+    E3XExchange* newLine = senderIdentity.currentLine;
     if (newLine) {
         // This is a partially opened line
         THCipherSetLineInfo3a* lineInfo = (THCipherSetLineInfo3a*)newLine.cipherSetInfo;
         lineInfo.remoteLineKey = pubLineKey;
     } else {
-        newLine = [THLine new];
+        newLine = [E3XExchange new];
         newLine.toIdentity = senderIdentity;
         senderIdentity.currentLine = newLine;
         
@@ -160,7 +160,7 @@ static uint8_t nonce3a[crypto_secretbox_NONCEBYTES] = {0, 0, 0, 0, 0, 0, 0, 0, 0
     
 }
 
--(void)finalizeLineKeys:(THLine*)line
+-(void)finalizeLineKeys:(E3XExchange*)line
 {
     THCipherSetLineInfo3a* lineInfo = (THCipherSetLineInfo3a*)line.cipherSetInfo;
     
@@ -181,7 +181,7 @@ static uint8_t nonce3a[crypto_secretbox_NONCEBYTES] = {0, 0, 0, 0, 0, 0, 0, 0, 0
     //CLCLogDebug(@"Encryptor key %@",  lineInfo.encryptorKey);
     
 }
--(THPacket*)generateOpen:(THLine*)line from:(THIdentity*)fromIdentity
+-(THPacket*)generateOpen:(E3XExchange*)line from:(THLink*)fromIdentity
 {
     if (!line.cipherSetInfo) {
         THCipherSetLineInfo3a* lineInfo = [THCipherSetLineInfo3a new];
@@ -189,7 +189,7 @@ static uint8_t nonce3a[crypto_secretbox_NONCEBYTES] = {0, 0, 0, 0, 0, 0, 0, 0, 0
         line.cipherSetInfo = lineInfo;
     }
     THCipherSetLineInfo3a* lineInfo = (THCipherSetLineInfo3a*)line.cipherSetInfo;
-    THCipherSet3a* remoteCS = (THCipherSet3a*)lineInfo.cipherSet;
+    E3XCipherSet3a* remoteCS = (E3XCipherSet3a*)lineInfo.cipherSet;
     
     THPacket* innerPacket = [THPacket new];
     [innerPacket.json setObject:line.toIdentity.hashname forKey:@"to"];
@@ -199,7 +199,7 @@ static uint8_t nonce3a[crypto_secretbox_NONCEBYTES] = {0, 0, 0, 0, 0, 0, 0, 0, 0
     [innerPacket.json setObject:[NSNumber numberWithInteger:at] forKey:@"at"];
     NSMutableDictionary* fingerprints = [NSMutableDictionary dictionaryWithCapacity:fromIdentity.cipherParts.count];
     for (NSString* csId in fromIdentity.cipherParts) {
-        THCipherSet* cipherSet = [fromIdentity.cipherParts objectForKey:csId];
+        E3XCipherSet* cipherSet = [fromIdentity.cipherParts objectForKey:csId];
         [fingerprints setObject:[cipherSet.fingerprint hexString] forKey:csId];
     }
     [innerPacket.json setObject:fingerprints forKey:@"from"];

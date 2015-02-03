@@ -6,11 +6,11 @@
 //  Copyright (c) 2014 Telehash Foundation. All rights reserved.
 //
 
-#import "THUnreliableChannel.h"
+#import "E3XUnreliableChannel.h"
 #import "THPacket.h"
 #import "CLCLog.h"
 
-@implementation THUnreliableChannel
+@implementation E3XUnreliableChannel
 {
     NSMutableArray* packetBuffer;
     THChannelState _state;
@@ -21,7 +21,7 @@
     CLCLogDebug(@"gone for unreliable %@", self.channelId);
 }
 
--(id)initToIdentity:(THIdentity *)identity;
+-(id)initToIdentity:(THLink *)identity;
 {
     self = [super initToIdentity:identity];
     return self;
