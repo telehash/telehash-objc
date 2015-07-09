@@ -1,5 +1,5 @@
 //
-//  THCipherSet.m
+//  E3XCipherSet.m
 //  telehash
 //
 //  Created by Thomas Muldowney on 2/27/14.
@@ -42,20 +42,20 @@
 
 -(void)finalizeLineKeys:(E3XExchange *)line
 {
-    CLCLogError(@"Not implemented THCipherSet finalizeKeys");
+    CLCLogError(@"Not implemented E3XCipherSet finalizeKeys");
 }
 @end
 
-@implementation THCipherSetLineInfo
+@implementation E3XCipherSetLineInfo
 -(NSData*)encryptLinePacket:(THPacket*)packet
 {
-    CLCLogError(@"Not implemented THCipherSetLineInfo encryptLinePacket:");
+    CLCLogError(@"Not implemented E3XCipherSetLineInfo encryptLinePacket:");
     return nil;
 }
 
 -(void)decryptLinePacket:(THPacket *)packet
 {
-    CLCLogError(@"Not implemented THCipherSetLineInfo decryptLinePacket:");
+    CLCLogError(@"Not implemented E3XCipherSetLineInfo decryptLinePacket:");
 }
 @end
 

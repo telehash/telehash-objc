@@ -7,13 +7,13 @@
 //
 
 #import <UIKit/UIKit.h>
-#import <THSwitch.h>
-#import <THChannel.h>
+#import <THMesh.h>
+#import <E3XChannel.h>
 
 @class THDetailViewController;
 
-@interface THMasterViewController : UITableViewController<THSwitchDelegate, THChannelDelegate> {
-    THSwitch* thSwitch;
+@interface THMasterViewController : UITableViewController<THMeshDelegate, E3XChannelDelegate> {
+    THMesh* thSwitch;
 }
 
 @property (strong, nonatomic) THDetailViewController *detailViewController;

@@ -8,7 +8,7 @@
 
 #import "THAppDelegate.h"
 #import <Security/Security.h>
-#import <THIdentity.h>
+#import <THLink.h>
 
 static const UInt8 kKeychainItemIdentifier[]    = "org.telehash.thFieldTest.publicKey\0";
 

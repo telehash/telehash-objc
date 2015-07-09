@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		79C22A231B4F310C0051F148 /* seeds.json in Resources */ = {isa = PBXBuildFile; fileRef = 79C22A221B4F310C0051F148 /* seeds.json */; };
 		8207A07E18562A5E009EF845 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8207A07D18562A5E009EF845 /* Foundation.framework */; };
 		8207A08018562A5E009EF845 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8207A07F18562A5E009EF845 /* CoreGraphics.framework */; };
 		8207A08218562A5E009EF845 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8207A08118562A5E009EF845 /* UIKit.framework */; };
@@ -27,8 +28,7 @@
 		823652DC18FCE92D00F75308 /* libcryptopp-ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 823652DB18FCE92D00F75308 /* libcryptopp-ios.a */; };
 		82835BD91857962800168C3B /* libc++.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 82835BD81857962800168C3B /* libc++.dylib */; };
 		82835BDF185798BB00168C3B /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 82835BDE185798BB00168C3B /* Security.framework */; };
-		82835BE118579A0800168C3B /* seeds-real.json in Resources */ = {isa = PBXBuildFile; fileRef = 82835BE018579A0800168C3B /* seeds-real.json */; };
-		82E44855188E0AEE00B3AAEB /* seeds.json in Resources */ = {isa = PBXBuildFile; fileRef = 82E44854188E0AEE00B3AAEB /* seeds.json */; };
+		82835BE118579A0800168C3B /* seeds-old.json in Resources */ = {isa = PBXBuildFile; fileRef = 82835BE018579A0800168C3B /* seeds-old.json */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -42,6 +42,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		79C22A221B4F310C0051F148 /* seeds.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = seeds.json; sourceTree = "<group>"; };
 		8207A07A18562A5E009EF845 /* thFieldTest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = thFieldTest.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8207A07D18562A5E009EF845 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		8207A07F18562A5E009EF845 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -70,9 +71,8 @@
 		8263D95718BD16B600DED8E5 /* libcryptopp-ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libcryptopp-ios.a"; path = "../../../../../Library/Developer/Xcode/DerivedData/telehash-hdsfxjzmsvyqtyccnkdyjwfyzarx/Build/Products/Debug-iphoneos/libcryptopp-ios.a"; sourceTree = "<group>"; };
 		82835BD81857962800168C3B /* libc++.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libc++.dylib"; path = "usr/lib/libc++.dylib"; sourceTree = SDKROOT; };
 		82835BDE185798BB00168C3B /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
-		82835BE018579A0800168C3B /* seeds-real.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "seeds-real.json"; sourceTree = "<group>"; };
+		82835BE018579A0800168C3B /* seeds-old.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "seeds-old.json"; sourceTree = "<group>"; };
 		82D222CA1871E0F70015E7EA /* libcryptopp.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcryptopp.a; path = "../../../../../Library/Developer/Xcode/DerivedData/telehash-hdsfxjzmsvyqtyccnkdyjwfyzarx/Build/Products/Debug-iphoneos/libcryptopp.a"; sourceTree = "<group>"; };
-		82E44854188E0AEE00B3AAEB /* seeds.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = seeds.json; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -160,12 +160,12 @@
 		8207A08418562A5E009EF845 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
-				82835BE018579A0800168C3B /* seeds-real.json */,
+				79C22A221B4F310C0051F148 /* seeds.json */,
+				82835BE018579A0800168C3B /* seeds-old.json */,
 				8207A08518562A5E009EF845 /* thFieldTest-Info.plist */,
 				8207A08618562A5E009EF845 /* InfoPlist.strings */,
 				8207A08918562A5E009EF845 /* main.m */,
 				8207A08B18562A5E009EF845 /* thFieldTest-Prefix.pch */,
-				82E44854188E0AEE00B3AAEB /* seeds.json */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -267,10 +267,10 @@
 			files = (
 				8207A09418562A5E009EF845 /* Main_iPad.storyboard in Resources */,
 				8207A09C18562A5E009EF845 /* Images.xcassets in Resources */,
-				82E44855188E0AEE00B3AAEB /* seeds.json in Resources */,
+				79C22A231B4F310C0051F148 /* seeds.json in Resources */,
 				8207A09118562A5E009EF845 /* Main_iPhone.storyboard in Resources */,
 				8207A08818562A5E009EF845 /* InfoPlist.strings in Resources */,
-				82835BE118579A0800168C3B /* seeds-real.json in Resources */,
+				82835BE118579A0800168C3B /* seeds-old.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

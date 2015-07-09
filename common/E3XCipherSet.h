@@ -1,5 +1,5 @@
 //
-//  THCipherSet.h
+//  E3XCipherSet.h
 //  telehash
 //
 //  Created by Thomas Muldowney on 2/27/14.
@@ -24,7 +24,7 @@
 -(NSString*)identifier;
 @end
 
-@interface THCipherSetLineInfo : NSObject
+@interface E3XCipherSetLineInfo : NSObject
 @property E3XCipherSet* cipherSet;
 -(NSData*)encryptLinePacket:(THPacket*)packet;
 -(void)decryptLinePacket:(THPacket*)packet;

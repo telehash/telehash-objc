@@ -12,7 +12,7 @@
 @class THLink;
 @class E3XChannel;
 
-@interface THPeerRelay : NSObject<THChannelDelegate>
+@interface THPeerRelay : NSObject<E3XChannelDelegate>
 @property E3XChannel* connectChannel;
 @property E3XChannel* peerChannel;
 -(void)sendPacket:(THPacket*)packet;

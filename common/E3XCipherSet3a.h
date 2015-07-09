@@ -1,5 +1,5 @@
 //
-//  THCipherSet3a.h
+//  E3XCipherSet3a.h
 //  telehash
 //
 //  Created by Thomas Muldowney on 4/21/14.
@@ -19,7 +19,7 @@
 -(void)savePublicKeyPath:(NSString*)publicKeyPath privateKeyPath:(NSString*)privateKeyPath;
 @end
 
-@interface THCipherSetLineInfo3a : THCipherSetLineInfo
+@interface E3XCipherSetLineInfo3a : E3XCipherSetLineInfo
 @property (readonly) NSMutableData* publicLineKey;
 @property (readonly) NSMutableData* secretLineKey;
 @property NSData* remoteLineKey;

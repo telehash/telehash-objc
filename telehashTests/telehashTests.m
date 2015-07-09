@@ -59,12 +59,12 @@
 -(void)testHashname
 {
     /* XXX TODO:  Rewrite this for the new hashnames
-    THIdentity* identity = [THIdentity new];
+    THLink* identity = [THLink new];
     NSURL* pubURL = [[NSURL alloc] initFileURLWithPath:@"telehashTests/server.pder"];
     NSData* serverPub = [NSData dataWithContentsOfURL:pubURL];
     NSURL* privURL = [[NSURL alloc] initFileURLWithPath:@"telehashTests/server.der"];
     NSData* serverPriv = [NSData dataWithContentsOfURL:privURL];
-    THCipherSet2a* cs2a = [[THCipherSet2a alloc] initWithPublicKey:serverPub privateKey:serverPriv];
+    E3XCipherSet2a* cs2a = [[E3XCipherSet2a alloc] initWithPublicKey:serverPub privateKey:serverPriv];
     [identity.cipherParts setValue:cs2a forKey:@"2a"];
     
     XCTAssertEqualObjects(@"50a5d0d0e00080edf6cdf98eae2fc38196890e6c443e3d268b5963cf0052a900", identity.hashname, @"Hashname incorrect");

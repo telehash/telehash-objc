@@ -127,11 +127,11 @@
 	}
 }
 
--(void)channel:(E3XChannel *)channel didChangeStateTo:(THChannelState)channelState
+-(void)channel:(E3XChannel *)channel didChangeStateTo:(E3XChannelState)channelState
 {
 	CLCLogDebug(@"relay peerChannel for %@ didChangeStateTo: %d", self.toIdentity.hashname, channelState);
 	
-	if (channel == self.peerChannel && (channelState == THChannelEnded || channelState == THChannelErrored)) {
+	if (channel == self.peerChannel && (channelState == E3XChannelEnded || channelState == E3XChannelErrored)) {
 		CLCLogWarning(@"relay peerChannel for %@ closed", self.toIdentity.hashname);
 		self.peerChannel = nil;
 	}

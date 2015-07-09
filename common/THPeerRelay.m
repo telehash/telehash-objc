@@ -41,7 +41,7 @@
     return YES;
 }
 
--(void)channel:(E3XChannel *)channel didChangeStateTo:(THChannelState)channelState
+-(void)channel:(E3XChannel *)channel didChangeStateTo:(E3XChannelState)channelState
 {
     CLCLogWarning(@"THPeerRelay channel didChangeStateTo: %d", channelState);
 }
