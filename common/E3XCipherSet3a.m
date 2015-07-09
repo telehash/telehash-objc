@@ -1,5 +1,5 @@
 //
-//  THCipherSet3a.m
+//  E3XCipherSet3a.m
 //  telehash
 //
 //  Created by Thomas Muldowney on 4/21/14.
@@ -141,14 +141,14 @@ static uint8_t nonce3a[crypto_secretbox_NONCEBYTES] = {0, 0, 0, 0, 0, 0, 0, 0, 0
     E3XExchange* newLine = senderIdentity.currentLine;
     if (newLine) {
         // This is a partially opened line
-        THCipherSetLineInfo3a* lineInfo = (THCipherSetLineInfo3a*)newLine.cipherSetInfo;
+        E3XCipherSetLineInfo3a* lineInfo = (E3XCipherSetLineInfo3a*)newLine.cipherSetInfo;
         lineInfo.remoteLineKey = pubLineKey;
     } else {
         newLine = [E3XExchange new];
         newLine.toIdentity = senderIdentity;
         senderIdentity.currentLine = newLine;
         
-        THCipherSetLineInfo3a* lineInfo = [THCipherSetLineInfo3a new];
+        E3XCipherSetLineInfo3a* lineInfo = [E3XCipherSetLineInfo3a new];
         lineInfo.cipherSet = incomingCS;
         lineInfo.remoteLineKey = pubLineKey;
         
@@ -162,7 +162,7 @@ static uint8_t nonce3a[crypto_secretbox_NONCEBYTES] = {0, 0, 0, 0, 0, 0, 0, 0, 0
 
 -(void)finalizeLineKeys:(E3XExchange*)line
 {
-    THCipherSetLineInfo3a* lineInfo = (THCipherSetLineInfo3a*)line.cipherSetInfo;
+    E3XCipherSetLineInfo3a* lineInfo = (E3XCipherSetLineInfo3a*)line.cipherSetInfo;
     
     NSMutableData* agreedKey = [NSMutableData dataWithLength:crypto_box_BEFORENMBYTES];
     crypto_box_beforenm([agreedKey mutableBytes], [lineInfo.remoteLineKey bytes], [lineInfo.secretLineKey bytes]);
@@ -184,11 +184,11 @@ static uint8_t nonce3a[crypto_secretbox_NONCEBYTES] = {0, 0, 0, 0, 0, 0, 0, 0, 0
 -(THPacket*)generateOpen:(E3XExchange*)line from:(THLink*)fromIdentity
 {
     if (!line.cipherSetInfo) {
-        THCipherSetLineInfo3a* lineInfo = [THCipherSetLineInfo3a new];
+        E3XCipherSetLineInfo3a* lineInfo = [E3XCipherSetLineInfo3a new];
         lineInfo.cipherSet = [line.toIdentity.cipherParts objectForKey:[self identifier]];
         line.cipherSetInfo = lineInfo;
     }
-    THCipherSetLineInfo3a* lineInfo = (THCipherSetLineInfo3a*)line.cipherSetInfo;
+    E3XCipherSetLineInfo3a* lineInfo = (E3XCipherSetLineInfo3a*)line.cipherSetInfo;
     E3XCipherSet3a* remoteCS = (E3XCipherSet3a*)lineInfo.cipherSet;
     
     THPacket* innerPacket = [THPacket new];
@@ -254,7 +254,7 @@ static uint8_t nonce3a[crypto_secretbox_NONCEBYTES] = {0, 0, 0, 0, 0, 0, 0, 0, 0
 }
 @end
 
-@implementation THCipherSetLineInfo3a
+@implementation E3XCipherSetLineInfo3a
 -(id)init
 {
     self = [super init];

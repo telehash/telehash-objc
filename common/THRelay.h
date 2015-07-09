@@ -11,7 +11,7 @@
 #import "E3XUnreliableChannel.h"
 #import "THPath.h"
 
-@interface THRelay : NSObject<THChannelDelegate>
+@interface THRelay : NSObject<E3XChannelDelegate>
 @property (assign) THLink* toIdentity;
 @property (retain) THLink* relayIdentity;
 @property (retain) THPath* relayedPath;

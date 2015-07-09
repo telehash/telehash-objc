@@ -13,7 +13,7 @@
 @implementation E3XUnreliableChannel
 {
     NSMutableArray* packetBuffer;
-    THChannelState _state;
+    E3XChannelState _state;
 }
 
 -(void)dealloc
@@ -27,15 +27,15 @@
     return self;
 }
 
--(void)setState:(THChannelState)state
+-(void)setState:(E3XChannelState)state
 {
     _state = state;
-    if (_state == THChannelOpen) {
+    if (_state == E3XChannelOpen) {
         [self flushSend];
     }
 }
 
--(THChannelState)state
+-(E3XChannelState)state
 {
     return _state;
 }
@@ -48,11 +48,11 @@
     NSString* packetType = [packet.json objectForKey:@"type"];
     if (!self.type && packetType) self.type = packetType;
     
-    if (self.state != THChannelOpening && [self.delegate respondsToSelector:@selector(channel:handlePacket:)]) {
+    if (self.state != E3XChannelOpening && [self.delegate respondsToSelector:@selector(channel:handlePacket:)]) {
         [self.delegate channel:self handlePacket:packet];
     }
-    if (self.state != THChannelEnded && [[packet.json objectForKey:@"end"] boolValue] == YES) {
-        self.state = THChannelEnded;
+    if (self.state != E3XChannelEnded && [[packet.json objectForKey:@"end"] boolValue] == YES) {
+        self.state = E3XChannelEnded;
         [self close];
     }
 }
@@ -61,7 +61,7 @@
 {
     [super sendPacket:packet];
     
-    if (self.state == THChannelEnded || self.state == THChannelErrored) return;
+    if (self.state == E3XChannelEnded || self.state == E3XChannelErrored) return;
     
     // Save the type
     NSString* packetType = [packet.json objectForKey:@"type"];
@@ -69,10 +69,10 @@
     
     [packet.json setObject:self.channelId forKey:@"c"];
     
-    if (self.state == THChannelPaused || self.state == THChannelOpening) {
+    if (self.state == E3XChannelPaused || self.state == E3XChannelOpening) {
         if (!packetBuffer) packetBuffer = [NSMutableArray array];
         [packetBuffer addObject:packet];
-    } else if (self.state == THChannelOpen) {
+    } else if (self.state == E3XChannelOpen) {
         [self realSend:packet];
     }
 }
@@ -88,7 +88,7 @@
 -(void)flushSend
 {
     while (packetBuffer.count > 0) {
-        if (self.state != THChannelOpen) return;
+        if (self.state != E3XChannelOpen) return;
         THPacket* outPacket = [packetBuffer firstObject];
         [packetBuffer removeObjectAtIndex:0];
         [self realSend:outPacket];

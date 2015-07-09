@@ -1,5 +1,5 @@
 //
-//  THSwitch.m
+//  THMesh.m
 //  telehash
 //
 //  Created by Thomas Muldowney on 10/3/13.
@@ -80,7 +80,7 @@
     for (NSString* key in self.transports) {
         [[self.transports objectForKey:key] start];
     }
-    [self updateStatus:THSwitchListening];
+    [self updateStatus:THMeshListening];
 }
 
 -(void)addTransport:(THTransport *)transport
@@ -149,7 +149,7 @@
         channel.channelId = [NSNumber numberWithUnsignedInteger:line.nextChannelId];
     }
     [channel.toIdentity.channels setObject:channel forKey:channel.channelId];
-    channel.state = THChannelOpen;
+    channel.state = E3XChannelOpen;
     if (packet) [channel sendPacket:packet];
 }
 
@@ -413,7 +413,7 @@
     }];
 }
 
--(void)updateStatus:(THSwitchStatus)status
+-(void)updateStatus:(THMeshStatus)status
 {
     if (status != self.status) {
         self.status = status;

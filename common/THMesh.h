@@ -1,5 +1,5 @@
 //
-//  THSwitch.h
+//  THMesh.h
 //  telehash
 //
 //  Created by Thomas Muldowney on 10/3/13.
@@ -18,23 +18,23 @@
 typedef enum {
     ReliableChannel,
     UnreliableChannel
-} THChannelType;
+} E3XChannelType;
 
 typedef enum {
     THSWitchOffline,
-    THSwitchListening,
-    THSwitchOnline
-} THSwitchStatus;
+    THMeshListening,
+    THMeshOnline
+} THMeshStatus;
 
 typedef void(^LineOpenBlock)(THLink*);
 
 @class THMesh;
 
-@protocol THSwitchDelegate <NSObject>
+@protocol THMeshDelegate <NSObject>
 
 -(void)openedLine:(E3XExchange*)line;
--(void)channelReady:(E3XChannel*)channel type:(THChannelType)type firstPacket:(THPacket*)packet;
--(void)thSwitch:(THMesh*)thSwitch status:(THSwitchStatus)status;
+-(void)channelReady:(E3XChannel*)channel type:(E3XChannelType)type firstPacket:(THPacket*)packet;
+-(void)thSwitch:(THMesh*)thSwitch status:(THMeshStatus)status;
 
 @end
 
@@ -45,8 +45,8 @@ typedef void(^LineOpenBlock)(THLink*);
 @property NSMutableDictionary* openLines;
 @property NSMutableArray* pendingJobs;
 @property THLink* identity;
-@property id<THSwitchDelegate> delegate;
-@property THSwitchStatus status;
+@property id<THMeshDelegate> delegate;
+@property THMeshStatus status;
 @property NSMutableDictionary* transports;
 @property NSMutableArray* potentialBridges;
 
@@ -64,7 +64,7 @@ typedef void(^LineOpenBlock)(THLink*);
 -(void)openLine:(THLink*)toIdentity;
 -(void)closeLine:(E3XExchange*)line;
 -(void)loadSeeds:(NSData*)seedData;
--(void)updateStatus:(THSwitchStatus)status;
+-(void)updateStatus:(THMeshStatus)status;
 -(THPacket*)generateOpen:(E3XExchange*)toLine;
 -(void)handlePacket:(THPacket*)packet;
 

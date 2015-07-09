@@ -1,5 +1,5 @@
 //
-//  THIdentity.m
+//  THLink.m
 //  telehash
 //
 //  Created by Thomas Muldowney on 10/5/13.
@@ -345,8 +345,8 @@ int nlz(unsigned long x) {
 {
 	[self.channels enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
 		E3XChannel* curChannel = (E3XChannel*)obj;
-		if (curChannel.state != THChannelEnded) {
-			curChannel.state = THChannelEnded;
+		if (curChannel.state != E3XChannelEnded) {
+			curChannel.state = E3XChannelEnded;
 		}
 	}];
 	

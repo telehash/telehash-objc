@@ -1,6 +1,6 @@
 
 //
-//  THLine.m
+//  E3XExchange.m
 //  telehash
 //
 //  Created by Thomas Muldowney on 11/15/13.
@@ -30,7 +30,7 @@
 
 #include <arpa/inet.h>
 
-@interface THPathHandler : NSObject<THChannelDelegate>
+@interface THPathHandler : NSObject<E3XChannelDelegate>
 @property E3XExchange* line;
 @end
 
@@ -99,7 +99,7 @@
         if ([obj class] != [E3XReliableChannel class]) return;
         E3XReliableChannel* channel = (E3XReliableChannel*)obj;
         // If the channel already thinks it's good, we'll just ignore it's state
-        if (channel.state == THChannelOpen) return;
+        if (channel.state == E3XChannelOpen) return;
 
         [channel flushOut];
     }];
@@ -256,7 +256,7 @@
                 // This is a reliable channel, let's make sure we're in a good state
                 E3XReliableChannel* reliableChannel = (E3XReliableChannel*)channel;
                 if (seq.unsignedIntegerValue == 0 && [[innerPacket.json objectForKey:@"ack"] unsignedIntegerValue] == 0) {
-                    reliableChannel.state = THChannelOpen;
+                    reliableChannel.state = E3XChannelOpen;
                 }
             }
             [channel handlePacket:innerPacket];
@@ -278,7 +278,7 @@
             }
 			
             E3XChannel* newChannel;
-            THChannelType newChannelType;
+            E3XChannelType newChannelType;
             if (seq && [seq unsignedIntegerValue] == 0) {
                 newChannel = [[E3XReliableChannel alloc] initToIdentity:self.toIdentity];
                 newChannelType = ReliableChannel;
@@ -288,8 +288,8 @@
             }
 			
             newChannel.channelId = channelId;
-            newChannel.state = THChannelOpening;
-			newChannel.direction = THChannelInbound;
+            newChannel.state = E3XChannelOpening;
+			newChannel.direction = E3XChannelInbound;
             newChannel.type = channelType;
 			
             THMesh* defaultSwitch = [THMesh defaultSwitch];
@@ -297,7 +297,7 @@
             [newChannel handlePacket:innerPacket];
 			
             // Now we're full open and ready to roll
-            newChannel.state = THChannelOpen;
+            newChannel.state = E3XChannelOpen;
             if ([defaultSwitch.delegate respondsToSelector:@selector(channelReady:type:firstPacket:)]) {
                 [defaultSwitch.delegate channelReady:newChannel type:newChannelType firstPacket:innerPacket];
             }
@@ -377,7 +377,7 @@
     
     [self addChannelHandler:handler];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-		CLCLogDebug(@"THLine removing pathChannel %@", pathChannel.channelId);
+		CLCLogDebug(@"E3XExchange removing pathChannel %@", pathChannel.channelId);
         [self removeChannelHandler:handler];
         [pathChannel close];
     });
@@ -469,7 +469,7 @@
     return YES;
 }
 
--(void)channel:(E3XChannel *)channel didChangeStateTo:(THChannelState)channelState
+-(void)channel:(E3XChannel *)channel didChangeStateTo:(E3XChannelState)channelState
 {
 }
 

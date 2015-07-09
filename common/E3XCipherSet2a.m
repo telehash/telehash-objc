@@ -1,5 +1,5 @@
 //
-//  THCipherSet2a.m
+//  E3XCipherSet2a.m
 //  telehash
 //
 //  Created by Thomas Muldowney on 4/21/14.
@@ -26,7 +26,7 @@ static unsigned char iv2a[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
 static unsigned char csId2a[] = {0x2a};
 static unsigned char eccHeader[] = {0x04};
 
-@implementation  THCipherSetLineInfo2a
+@implementation  E3XCipherSetLineInfo2a
 -(NSData*)encryptLinePacket:(THPacket*)packet iv:(NSData*)iv
 {
     // So broken...
@@ -166,7 +166,7 @@ static unsigned char eccHeader[] = {0x04};
     
     if (newLine) {
         // This is a partially opened line
-        THCipherSetLineInfo2a* lineInfo = (THCipherSetLineInfo2a*)newLine.cipherSetInfo;
+        E3XCipherSetLineInfo2a* lineInfo = (E3XCipherSetLineInfo2a*)newLine.cipherSetInfo;
         lineInfo.remoteECCKey = prefixedRemoteEccKey;
 		
 		// TODO temas review
@@ -176,7 +176,7 @@ static unsigned char eccHeader[] = {0x04};
         newLine.toIdentity = senderIdentity;
         senderIdentity.currentLine = newLine;
         
-        THCipherSetLineInfo2a* lineInfo = [THCipherSetLineInfo2a new];
+        E3XCipherSetLineInfo2a* lineInfo = [E3XCipherSetLineInfo2a new];
         lineInfo.cipherSet = incomingCS;
         lineInfo.remoteECCKey = prefixedRemoteEccKey;
         
@@ -189,7 +189,7 @@ static unsigned char eccHeader[] = {0x04};
 
 -(void)finalizeLineKeys:(E3XExchange*)line
 {
-    THCipherSetLineInfo2a* lineInfo = (THCipherSetLineInfo2a*)line.cipherSetInfo;
+    E3XCipherSetLineInfo2a* lineInfo = (E3XCipherSetLineInfo2a*)line.cipherSetInfo;
     // Make sure we have a valid ECDH context
     if (!lineInfo.ecdh) {
         lineInfo.ecdh = [ECDH new];
@@ -216,11 +216,11 @@ static unsigned char eccHeader[] = {0x04};
 {
     if (!line.cipherSetInfo) {
         // FIXME, should be the remote cipherSet
-        THCipherSetLineInfo2a* lineInfo =[THCipherSetLineInfo2a new];
+        E3XCipherSetLineInfo2a* lineInfo =[E3XCipherSetLineInfo2a new];
         lineInfo.cipherSet = [line.toIdentity.cipherParts objectForKey:[self identifier]];
         line.cipherSetInfo = lineInfo;
     }
-    THCipherSetLineInfo2a* lineInfo = (THCipherSetLineInfo2a*)line.cipherSetInfo;
+    E3XCipherSetLineInfo2a* lineInfo = (E3XCipherSetLineInfo2a*)line.cipherSetInfo;
     E3XCipherSet2a* remoteCS = (E3XCipherSet2a*)lineInfo.cipherSet;
     
     THPacket* openPacket = [THPacket new];

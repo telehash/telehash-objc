@@ -1,5 +1,5 @@
 //
-//  THIdentity.h
+//  THLink.h
 //  telehash
 //
 //  Created by Thomas Muldowney on 10/5/13.

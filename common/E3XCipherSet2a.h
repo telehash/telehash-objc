@@ -1,5 +1,5 @@
 //
-//  THCipherSet2a.h
+//  E3XCipherSet2a.h
 //  telehash
 //
 //  Created by Thomas Muldowney on 4/21/14.
@@ -21,7 +21,7 @@
 -(THPacket*)generateOpen:(E3XExchange*)line from:(THLink*)fromIdentity;
 @end
 
-@interface THCipherSetLineInfo2a : THCipherSetLineInfo
+@interface E3XCipherSetLineInfo2a : E3XCipherSetLineInfo
 @property ECDH* ecdh;
 @property NSData* remoteECCKey;
 @property NSData* encryptorKey;

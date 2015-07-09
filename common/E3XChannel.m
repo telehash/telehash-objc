@@ -1,5 +1,5 @@
 //
-//  THChannel.m
+//  E3XChannel.m
 //  telehash
 //
 //  Created by Thomas Muldowney on 10/5/13.
@@ -19,15 +19,15 @@
 
 @implementation E3XChannel
 {
-    THChannelState _state;
+    E3XChannelState _state;
 }
 
 -(id)initToIdentity:(THLink*)identity
 {
     self = [super init];
     if (self) {
-        _state = THChannelOpening;
-		self.direction = THChannelOutbound;
+        _state = E3XChannelOpening;
+		self.direction = E3XChannelOutbound;
         self.toIdentity = identity;
         self.channelId = 0; // We'll just go ahead and make one
 		self.createdAt = time(NULL);
@@ -39,12 +39,12 @@
     return self;
 }
 
--(THChannelState)state
+-(E3XChannelState)state
 {
     return _state;
 }
 
--(void)setState:(THChannelState)state
+-(void)setState:(E3XChannelState)state
 {
     _state = state;
     if ([self.delegate respondsToSelector:@selector(channel:didChangeStateTo:)]) {
@@ -54,9 +54,9 @@
 
 -(void)sendPacket:(THPacket *)packet;
 {
-    if (self.state == THChannelEnded) {
+    if (self.state == E3XChannelEnded) {
         // XXX Error that we're trying to send on an ended channel
-    } else if (self.state == THChannelErrored) {
+    } else if (self.state == E3XChannelErrored) {
         // XXX Error that we're trying to send on an errored channel
     }
 	
@@ -72,7 +72,7 @@
     NSString* err = [packet.json objectForKey:@"err"];
     if (err) {
         [self.delegate channel:self didFailWithError:[NSError errorWithDomain:@"telehash" code:100 userInfo:@{NSLocalizedDescriptionKey:err}]];
-        self.state = THChannelErrored;
+        self.state = E3XChannelErrored;
         [self.toIdentity.channels removeObjectForKey:self.channelId];
     }
 }
@@ -81,11 +81,11 @@
 {
 	if (!self.channelId) return;
 	
-    if (self.state != THChannelOpening && self.state != THChannelEnded) {
+    if (self.state != E3XChannelOpening && self.state != E3XChannelEnded) {
         THPacket* endPacket = [THPacket new];
         [endPacket.json setObject:@YES forKey:@"end"];
         [self sendPacket:endPacket];
-        self.state = THChannelEnded;
+        self.state = E3XChannelEnded;
     }
 	
     [self.toIdentity.channels removeObjectForKey:self.channelId];

@@ -1,5 +1,5 @@
 //
-//  THLine.h
+//  E3XExchange.h
 //  telehash
 //
 //  Created by Thomas Muldowney on 11/15/13.
@@ -13,13 +13,13 @@
 
 @class THPacket;
 @class E3XChannel;
-@class THCipherSetLineInfo;
+@class E3XCipherSetLineInfo;
 @class THPath;
 
 @interface E3XExchange : NSObject
 
 @property THLink* toIdentity;
-@property THCipherSetLineInfo* cipherSetInfo;
+@property E3XCipherSetLineInfo* cipherSetInfo;
 @property THPacket* cachedOpen;
 
 @property NSString* outLineId;

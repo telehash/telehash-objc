@@ -95,7 +95,7 @@
 {
     [super sendPacket:packet];
     
-    if (self.state == THChannelEnded || self.state == THChannelErrored) return;
+    if (self.state == E3XChannelEnded || self.state == E3XChannelErrored) return;
     
     // Save the type
     NSString* packetType = [packet.json objectForKey:@"type"];
@@ -131,7 +131,7 @@
 		[outPacketBuffer push:packet];
 	}
     
-    if (self.state == THChannelOpen) {
+    if (self.state == E3XChannelOpen) {
 #ifdef FUZZY_LOSS
         // 10% packet loss fuzz
         if ((int)(arc4random() % 11) == 1)
@@ -152,7 +152,7 @@
 		CLCLogDebug(@"resending %d missing packets", missedPackets.count);
 		for (THPacket* packet in missedPackets) {
             [packet.json removeObjectForKey:@"miss"];
-			if (self.state == THChannelOpen) [self.toIdentity sendPacket:packet];
+			if (self.state == E3XChannelOpen) [self.toIdentity sendPacket:packet];
 		}
 	} else {
 		CLCLogWarning(@"outPacketBuffer didnt have packets for resendMissingPackets");
@@ -184,9 +184,9 @@
             self.nextExpectedSequence = lastProcessed + 1;
         }
 		
-		if (self.state != THChannelEnded && [[curPacket.json objectForKey:@"end"] boolValue] == YES) {
+		if (self.state != E3XChannelEnded && [[curPacket.json objectForKey:@"end"] boolValue] == YES) {
 			// TODO: Shut it down!
-			self.state = THChannelEnded;
+			self.state = E3XChannelEnded;
 			[self close];
 			return;
 		}
