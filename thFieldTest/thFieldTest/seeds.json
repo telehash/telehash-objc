@@ -1,0 +1,30 @@
+{
+    "52f7ee68d64ab243351df4764c93910ba8da8eaea97add77a4b81df1821859da": {
+        "paths": [
+                  {
+                  "type": "http",
+                  "http": "http://107.170.62.175:42424"
+                  },
+                  {
+                  "type": "ipv4",
+                  "ip": "107.170.62.175",
+                  "port": 42424
+                  },
+                  {
+                  "type": "ipv6",
+                  "ip": "fe80::601:12ff:fe6b:8d01",
+                  "port": 42424
+                  }
+                  ],
+        "parts": {
+            "3a": "91159fd2f0c41978e30c33df4d56d26efe9f76181fbcc2270c6bafd73684f38f",
+            "2a": "0822a41c80bf03f20febd70801d1b4457d03434f156a76c3b283a1cf1e735478",
+            "1a": "607405b00f669acd5b4ca31f7f0b7192df47d5de0f168d0de1bf1ebb1d4e5606"
+        },
+        "keys": {
+            "3a": "G/ejyu3F9LTlaPDVYdbLVfxShuFH8V0ZHpiYhh37mWg=",
+            "2a": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAgUZDDXmoSGF3XSA52mKhc4AO0+QVvd8YGQzj5AiSPlsY14v+w4J6k1Je6I/36A2ZflEK1cYUcGw2Y70IEAmhDjSjIL4+ZynhV8rx15SbkdLTlgODRqh8N79wzXPSIGRlBG6EthZXlAa46fCls4fjGY5LzrsfPHCUa9axpdOGCY8Oui17IJ9+sv51XEVmqOBw6lejt4we14hE0+08/31QDeQzcrzGecARWBsKG7nXt8CqdnJ3D2uF5aFkhWNNM7R+AMLN9FifPYUWC4LmTWhtXawk3SE0EFjseSofXUScBEz+zEgToH79alGBYO+cytpCbSQGBP4DO+9VQR9MH93rMwIDAQAB",
+            "1a": "GPXvBy8AewF9RAeY7dFobJ5aYI8XZIWoUwt2j6mK/u+ihazyGrmtYw=="
+        }
+    }
+}
