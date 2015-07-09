@@ -1,5 +1,13 @@
 telehash.xcodeproj/project.xcworkspace/xcshareddata/
 
+#####
+# CocoaPods installed Pods directory
+# This one is debatable, as many prefer to have Pods cached for non-CocoaPods users
+#
+# Discussion: http://stackoverflow.com/questions/9446644/what-goes-into-your-gitignore-if-youre-using-cocoapods
+
+Pods
+
 #########################
 # .gitignore file for Xcode4 and Xcode5 Source projects
 #

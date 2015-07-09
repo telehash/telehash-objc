@@ -31,3 +31,9 @@ Using as a standalone library
 -----------------------------
 
 See the sub-project thFieldTest for an example of using the library.
+
+To install the pre-requisite libsodium, simply type the following CocoaPods command:
+
+pod install --no-integrate
+
+NB: --no-integrate avoids CocoaPods generating an xcodeworkspace for this project.

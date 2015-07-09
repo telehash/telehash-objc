@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		79C22A1C1B4F2D840051F148 /* libPods-libsodium.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 79C22A171B4F2D590051F148 /* libPods-libsodium.a */; };
+		79C22A1D1B4F2D840051F148 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 79C22A151B4F2D590051F148 /* libPods.a */; };
 		820BADF318D77EFA003D7CBA /* THPeerRelay.h in Headers */ = {isa = PBXBuildFile; fileRef = 820BADF118D77EFA003D7CBA /* THPeerRelay.h */; };
 		820BADF418D77EFA003D7CBA /* THPeerRelay.m in Sources */ = {isa = PBXBuildFile; fileRef = 820BADF218D77EFA003D7CBA /* THPeerRelay.m */; };
 		820BADF518D77EFA003D7CBA /* THPeerRelay.m in Sources */ = {isa = PBXBuildFile; fileRef = 820BADF218D77EFA003D7CBA /* THPeerRelay.m */; };
@@ -58,7 +60,6 @@
 		8236E1A818F5EDB600169201 /* THTransport.m in Sources */ = {isa = PBXBuildFile; fileRef = 8236E1A618F5EDB600169201 /* THTransport.m */; };
 		8236E1A918F5EDB600169201 /* THTransport.m in Sources */ = {isa = PBXBuildFile; fileRef = 8236E1A618F5EDB600169201 /* THTransport.m */; };
 		8249D63F1905F6640009F03B /* libsodium.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8249D63E1905F6640009F03B /* libsodium.a */; };
-		8249D6411905F6730009F03B /* libsodium.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8249D6401905F6730009F03B /* libsodium.a */; };
 		8249D6441906100C0009F03B /* E3XCipherSet3a.h in Headers */ = {isa = PBXBuildFile; fileRef = 8249D6421906100C0009F03B /* E3XCipherSet3a.h */; };
 		8249D6451906100C0009F03B /* E3XCipherSet3a.m in Sources */ = {isa = PBXBuildFile; fileRef = 8249D6431906100C0009F03B /* E3XCipherSet3a.m */; };
 		8249D6461906100C0009F03B /* E3XCipherSet3a.m in Sources */ = {isa = PBXBuildFile; fileRef = 8249D6431906100C0009F03B /* E3XCipherSet3a.m */; };
@@ -112,6 +113,34 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		79C22A141B4F2D590051F148 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 79C22A0F1B4F2D580051F148 /* Pods.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 5769BB36ACF0AD3987FFA1B4;
+			remoteInfo = Pods;
+		};
+		79C22A161B4F2D590051F148 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 79C22A0F1B4F2D580051F148 /* Pods.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = F0141CB16C942C7E214F7D45;
+			remoteInfo = "Pods-libsodium";
+		};
+		79C22A1E1B4F2D8B0051F148 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 79C22A0F1B4F2D580051F148 /* Pods.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 454FBD4AF4ED4CD44B8538FB;
+			remoteInfo = Pods;
+		};
+		79C22A201B4F2D8B0051F148 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 79C22A0F1B4F2D580051F148 /* Pods.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 1BAB48A2ADEB538A00553177;
+			remoteInfo = "Pods-libsodium";
+		};
 		8207A0BF18562A5F009EF845 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 8207A0B818562A5E009EF845 /* thFieldTest.xcodeproj */;
@@ -199,6 +228,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		79C22A0F1B4F2D580051F148 /* Pods.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Pods.xcodeproj; path = Pods/Pods.xcodeproj; sourceTree = "<group>"; };
 		8207A0B818562A5E009EF845 /* thFieldTest.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = thFieldTest.xcodeproj; path = thFieldTest/thFieldTest.xcodeproj; sourceTree = "<group>"; };
 		820BADF118D77EFA003D7CBA /* THPeerRelay.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THPeerRelay.h; sourceTree = "<group>"; };
 		820BADF218D77EFA003D7CBA /* THPeerRelay.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THPeerRelay.m; sourceTree = "<group>"; };
@@ -312,7 +342,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8249D6411905F6730009F03B /* libsodium.a in Frameworks */,
+				79C22A1C1B4F2D840051F148 /* libPods-libsodium.a in Frameworks */,
+				79C22A1D1B4F2D840051F148 /* libPods.a in Frameworks */,
 				8218D19D17FA6EA50053AFAC /* Foundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -331,6 +362,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		79C22A101B4F2D580051F148 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				79C22A151B4F2D590051F148 /* libPods.a */,
+				79C22A171B4F2D590051F148 /* libPods-libsodium.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		8207A0B918562A5E009EF845 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -343,6 +383,7 @@
 		8218D16417FA6E8A0053AFAC = {
 			isa = PBXGroup;
 			children = (
+				79C22A0F1B4F2D580051F148 /* Pods.xcodeproj */,
 				82D221361871D3630015E7EA /* cryptopp.xcodeproj */,
 				8207A0B818562A5E009EF845 /* thFieldTest.xcodeproj */,
 				8231EC081836C60D00BC41C1 /* Telehash Playground.xcodeproj */,
@@ -640,6 +681,8 @@
 			buildRules = (
 			);
 			dependencies = (
+				79C22A1F1B4F2D8B0051F148 /* PBXTargetDependency */,
+				79C22A211B4F2D8B0051F148 /* PBXTargetDependency */,
 				8263D96718BD275000DED8E5 /* PBXTargetDependency */,
 			);
 			name = "telehash-ios";
@@ -695,6 +738,10 @@
 					ProjectRef = 82D221361871D3630015E7EA /* cryptopp.xcodeproj */;
 				},
 				{
+					ProductGroup = 79C22A101B4F2D580051F148 /* Products */;
+					ProjectRef = 79C22A0F1B4F2D580051F148 /* Pods.xcodeproj */;
+				},
+				{
 					ProductGroup = 8231EC091836C60D00BC41C1 /* Products */;
 					ProjectRef = 8231EC081836C60D00BC41C1 /* Telehash Playground.xcodeproj */;
 				},
@@ -714,6 +761,20 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
+		79C22A151B4F2D590051F148 /* libPods.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libPods.a;
+			remoteRef = 79C22A141B4F2D590051F148 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		79C22A171B4F2D590051F148 /* libPods-libsodium.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = "libPods-libsodium.a";
+			remoteRef = 79C22A161B4F2D590051F148 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		8207A0C018562A5F009EF845 /* thFieldTest.app */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.application;
@@ -869,6 +930,16 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		79C22A1F1B4F2D8B0051F148 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = Pods;
+			targetProxy = 79C22A1E1B4F2D8B0051F148 /* PBXContainerItemProxy */;
+		};
+		79C22A211B4F2D8B0051F148 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "Pods-libsodium";
+			targetProxy = 79C22A201B4F2D8B0051F148 /* PBXContainerItemProxy */;
+		};
 		8218D18517FA6E8B0053AFAC /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 8218D16C17FA6E8A0053AFAC /* telehash */;
@@ -1102,6 +1173,7 @@
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 					"$(PROJECT_DIR)/cryptopp",
 					"$(PROJECT_DIR)/libsodium/build-ios/include",
+					"$(PROJECT_DIR)/Pods/**",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LIBRARY_SEARCH_PATHS = (
@@ -1130,6 +1202,7 @@
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 					"$(PROJECT_DIR)/cryptopp",
 					"$(PROJECT_DIR)/libsodium/build-ios/include",
+					"$(PROJECT_DIR)/Pods/**",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LIBRARY_SEARCH_PATHS = (
