@@ -10,12 +10,12 @@
 
 #import "THDetailViewController.h"
 
-#import <THIdentity.h>
-#import <THCipherSet.h>
+#import <THLink.h>
+#import <E3XCipherSet.h>
 #import <NSData+HexString.h>
 #import <THPath.h>
 #import <THTransport.h>
-#import <THCipherSet2a.h>
+#import <E3XCipherSet2a.h>
 
 @implementation THMasterViewController
 
@@ -41,7 +41,7 @@
     self.detailViewController = (THDetailViewController *)[[self.splitViewController.viewControllers lastObject] topViewController];
     */
     
-    thSwitch = [THSwitch defaultSwitch];
+    thSwitch = [THMesh defaultSwitch];
     
     NSArray *searchPaths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     NSString *documentPath = [searchPaths objectAtIndex:0];
@@ -50,12 +50,12 @@
     NSString* privPath = [NSString stringWithFormat:@"%@/privkey.der", documentPath];
     
     // Insert code here to initialize your application
-    thSwitch = [THSwitch defaultSwitch];
+    thSwitch = [THMesh defaultSwitch];
     thSwitch.delegate = self;
-    THIdentity* baseIdentity = [THIdentity new];
-    THCipherSet2a* cs2a = [[THCipherSet2a alloc] initWithPublicKeyPath:pubPath privateKeyPath:privPath];
+    THLink* baseIdentity = [THLink new];
+    E3XCipherSet2a* cs2a = [[E3XCipherSet2a alloc] initWithPublicKeyPath:pubPath privateKeyPath:privPath];
     if (!cs2a) {
-        cs2a = [THCipherSet2a new];
+        cs2a = [E3XCipherSet2a new];
         [cs2a generateKeys];
         [cs2a.rsaKeys savePublicKey:pubPath privateKey:privPath];
     }
@@ -90,12 +90,12 @@
     // Dispose of any resources that can be recreated.
 }
 
--(void)openedLine:(THLine *)line
+-(void)openedLine:(E3XExchange *)line
 {
     [self.tableView reloadData];
 }
 
--(void)channelReady:(THChannel *)channel type:(THChannelType)type firstPacket:(THPacket *)packet
+-(void)channelReady:(E3XChannel *)channel type:(E3XChannelType)type firstPacket:(THPacket *)packet
 {
     [self.tableView reloadData];
 }
@@ -119,7 +119,7 @@
     NSMutableArray *keys = [[thSwitch.openLines allKeys] mutableCopy];
     [keys sortUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
     NSString* key = [keys objectAtIndex:section];
-    THLine* line = [thSwitch.openLines objectForKey:key];
+    E3XExchange* line = [thSwitch.openLines objectForKey:key];
     return line.toIdentity.channels.count;
 }
 
@@ -130,10 +130,10 @@
     NSMutableArray *keys = [[thSwitch.openLines allKeys] mutableCopy];
     [keys sortUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
     NSString* key = [keys objectAtIndex:indexPath.section];
-    THLine* line = [thSwitch.openLines objectForKey:key];
+    E3XExchange* line = [thSwitch.openLines objectForKey:key];
     keys = [[line.toIdentity.channels allKeys] mutableCopy];
     [keys sortUsingSelector:@selector(compare:)];
-    THChannel* channel = [line.toIdentity.channels objectForKey:[keys objectAtIndex:indexPath.row]];
+    E3XChannel* channel = [line.toIdentity.channels objectForKey:[keys objectAtIndex:indexPath.row]];
     cell.textLabel.text = [NSString stringWithFormat:@"Channel - %@ - %@", channel.type, channel.channelId];
     return cell;
 }
@@ -169,10 +169,10 @@
     NSMutableArray *keys = [[thSwitch.openLines allKeys] mutableCopy];
     [keys sortUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
     NSString* key = [keys objectAtIndex:indexPath.section];
-    THLine* line = [thSwitch.openLines objectForKey:key];
+    E3XExchange* line = [thSwitch.openLines objectForKey:key];
     keys = [[line.toIdentity.channels allKeys] mutableCopy];
     [keys sortUsingSelector:@selector(compare:)];
-    THChannel* channel = [line.toIdentity.channels objectForKey:[keys objectAtIndex:indexPath.row]];
+    E3XChannel* channel = [line.toIdentity.channels objectForKey:[keys objectAtIndex:indexPath.row]];
     
     self.detailViewController.detailItem = line.toIdentity.activePath.information;
 }
@@ -184,10 +184,10 @@
         NSMutableArray *keys = [[thSwitch.openLines allKeys] mutableCopy];
         [keys sortUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
         NSString* key = [keys objectAtIndex:indexPath.section];
-        THLine* line = [thSwitch.openLines objectForKey:key];
+        E3XExchange* line = [thSwitch.openLines objectForKey:key];
         keys = [[line.toIdentity.channels allKeys] mutableCopy];
         [keys sortUsingSelector:@selector(compare:)];
-        THChannel* channel = [line.toIdentity.channels objectForKey:[keys objectAtIndex:indexPath.row]];
+        E3XChannel* channel = [line.toIdentity.channels objectForKey:[keys objectAtIndex:indexPath.row]];
 
         [[segue destinationViewController] setDetailItem:line.toIdentity.activePath.information];
     }
@@ -196,7 +196,7 @@
 -(void)doStuff
 {
     [self.tableView reloadData];
-    //[thSwitch openLine:[THIdentity identityFromHashname:@"580154007d7c0c925735e62354eb54fd7f12245a1e7755905960478c537c1144"]];
+    //[thSwitch openLine:[THLink identityFromHashname:@"580154007d7c0c925735e62354eb54fd7f12245a1e7755905960478c537c1144"]];
 }
 
 @end

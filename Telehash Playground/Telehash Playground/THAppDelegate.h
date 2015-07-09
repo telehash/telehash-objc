@@ -10,7 +10,7 @@
 #import <THMesh.h>
 #import <E3XChannel.h>
 
-@interface THAppDelegate : NSObject <THSwitchDelegate, THChannelDelegate, NSTableViewDataSource, NSTableViewDelegate> {
+@interface THAppDelegate : NSObject <THMeshDelegate, E3XChannelDelegate, NSTableViewDataSource, NSTableViewDelegate> {
     IBOutlet NSTableView* tableView;
     IBOutlet NSTextField* hashnameField;
     IBOutlet NSTextField* addressField;
@@ -25,7 +25,7 @@
 @property NSString* identityPath;
 @property (assign) IBOutlet NSWindow *window;
 
--(void)channelReady:(E3XChannel *)channel type:(THChannelType)type firstPacket:(THPacket *)packet;
+-(void)channelReady:(E3XChannel *)channel type:(E3XChannelType)type firstPacket:(THPacket *)packet;
 -(BOOL)channel:(E3XChannel*)channel handlePacket:(THPacket *)packet;
 
 -(NSInteger)numberOfRowsInTableView:(NSTableView *)tableView;

@@ -129,7 +129,7 @@
     [tableView reloadData];
 }
 
--(void)channelReady:(E3XChannel *)channel type:(THChannelType)type firstPacket:(THPacket *)packet;
+-(void)channelReady:(E3XChannel *)channel type:(E3XChannelType)type firstPacket:(THPacket *)packet;
 {
     NSLog(@"Channel is ready");
     NSLog(@"First packet is %@", packet.json);
@@ -147,7 +147,7 @@
     if (key.length > 0) {
 /*
         NSData* keyData = [[NSData alloc] initWithBase64EncodedString:key options:0];
-        connectToIdentity = [THIdentity identityFromPublicKey:keyData];
+        connectToIdentity = [THLink identityFromPublicKey:keyData];
         NSString* address = [addressField stringValue];
         NSInteger port = [portField integerValue];
         if (address && port > 0) {
@@ -164,17 +164,17 @@
     }
 }
 
--(void)thSwitch:(THMesh *)inSwitch status:(THSwitchStatus)status
+-(void)thSwitch:(THMesh *)inSwitch status:(THMeshStatus)status
 {
     NSLog(@"Switch status is now %d", status);
-    if (status == THSwitchOnline && !pingChannel) {
+    if (status == THMeshOnline && !pingChannel) {
 #if 0
         if (![inSwitch.identity.hashname isEqualToString:@"ee5dc2630603638dfb980cbe7062378bdc70091947d9fa6dac5cf9b072296aad"]) {
 
             THPacket* pingPacket = [THPacket new];
             [pingPacket.json setObject:@"ping" forKey:@"type"];
             
-            pingChannel = [[THReliableChannel alloc] initToIdentity:[THIdentity identityFromHashname:@"ee5dc2630603638dfb980cbe7062378bdc70091947d9fa6dac5cf9b072296aad"]];
+            pingChannel = [[THReliableChannel alloc] initToIdentity:[THLink identityFromHashname:@"ee5dc2630603638dfb980cbe7062378bdc70091947d9fa6dac5cf9b072296aad"]];
             pingChannel.delegate = self;
             
             [inSwitch openChannel:pingChannel firstPacket:pingPacket];
